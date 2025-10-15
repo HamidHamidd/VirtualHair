@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using VirtualHair.Models;
 
 namespace VirtualHair.Data;
 
@@ -9,4 +10,8 @@ public class ApplicationDbContext : IdentityDbContext
         : base(options)
     {
     }
+
+public DbSet<VirtualHair.Models.Hairstyle> Hairstyle { get; set; } = default!;
+
+public DbSet<VirtualHair.Models.Fade> Fade { get; set; } = default!;
 }

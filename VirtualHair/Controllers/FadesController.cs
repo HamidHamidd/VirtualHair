@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using VirtualHair.Data;
 using VirtualHair.Models;
@@ -28,17 +29,10 @@ namespace VirtualHair.Controllers
         // GET: Fades/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var fade = await _context.Fade
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (fade == null)
-            {
-                return NotFound();
-            }
+            var fade = await _context.Fade.FirstOrDefaultAsync(m => m.Id == id);
+            if (fade == null) return NotFound();
 
             return View(fade);
         }
@@ -50,14 +44,21 @@ namespace VirtualHair.Controllers
         }
 
         // POST: Fades/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,ImageUrl,Type")] Fade fade)
+        public async Task<IActionResult> Create([Bind("Id,Name,Type")] Fade fade, IFormFile imageFile)
         {
             if (ModelState.IsValid)
             {
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        await imageFile.CopyToAsync(ms);
+                        fade.ImageData = ms.ToArray();
+                    }
+                }
+
                 _context.Add(fade);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -68,33 +69,32 @@ namespace VirtualHair.Controllers
         // GET: Fades/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var fade = await _context.Fade.FindAsync(id);
-            if (fade == null)
-            {
-                return NotFound();
-            }
+            if (fade == null) return NotFound();
+
             return View(fade);
         }
 
         // POST: Fades/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,ImageUrl,Type")] Fade fade)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Type")] Fade fade, IFormFile imageFile)
         {
-            if (id != fade.Id)
-            {
-                return NotFound();
-            }
+            if (id != fade.Id) return NotFound();
 
             if (ModelState.IsValid)
             {
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        await imageFile.CopyToAsync(ms);
+                        fade.ImageData = ms.ToArray();
+                    }
+                }
+
                 try
                 {
                     _context.Update(fade);
@@ -102,14 +102,8 @@ namespace VirtualHair.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!FadeExists(fade.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if (!FadeExists(fade.Id)) return NotFound();
+                    else throw;
                 }
                 return RedirectToAction(nameof(Index));
             }
@@ -119,17 +113,10 @@ namespace VirtualHair.Controllers
         // GET: Fades/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var fade = await _context.Fade
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (fade == null)
-            {
-                return NotFound();
-            }
+            var fade = await _context.Fade.FirstOrDefaultAsync(m => m.Id == id);
+            if (fade == null) return NotFound();
 
             return View(fade);
         }
@@ -143,9 +130,8 @@ namespace VirtualHair.Controllers
             if (fade != null)
             {
                 _context.Fade.Remove(fade);
+                await _context.SaveChangesAsync();
             }
-
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 

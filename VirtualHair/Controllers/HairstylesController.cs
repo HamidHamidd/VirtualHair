@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using VirtualHair.Data;
 using VirtualHair.Models;
@@ -28,17 +29,10 @@ namespace VirtualHair.Controllers
         // GET: Hairstyles/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var hairstyle = await _context.Hairstyle
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (hairstyle == null)
-            {
-                return NotFound();
-            }
+            var hairstyle = await _context.Hairstyle.FirstOrDefaultAsync(m => m.Id == id);
+            if (hairstyle == null) return NotFound();
 
             return View(hairstyle);
         }
@@ -50,14 +44,21 @@ namespace VirtualHair.Controllers
         }
 
         // POST: Hairstyles/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,ImageUrl,Gender,Length,Color")] Hairstyle hairstyle)
+        public async Task<IActionResult> Create([Bind("Id,Name,Gender,Length,Color")] Hairstyle hairstyle, IFormFile imageFile)
         {
             if (ModelState.IsValid)
             {
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        await imageFile.CopyToAsync(ms);
+                        hairstyle.ImageData = ms.ToArray();
+                    }
+                }
+
                 _context.Add(hairstyle);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -68,33 +69,32 @@ namespace VirtualHair.Controllers
         // GET: Hairstyles/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var hairstyle = await _context.Hairstyle.FindAsync(id);
-            if (hairstyle == null)
-            {
-                return NotFound();
-            }
+            if (hairstyle == null) return NotFound();
+
             return View(hairstyle);
         }
 
         // POST: Hairstyles/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,ImageUrl,Gender,Length,Color")] Hairstyle hairstyle)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Gender,Length,Color")] Hairstyle hairstyle, IFormFile imageFile)
         {
-            if (id != hairstyle.Id)
-            {
-                return NotFound();
-            }
+            if (id != hairstyle.Id) return NotFound();
 
             if (ModelState.IsValid)
             {
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        await imageFile.CopyToAsync(ms);
+                        hairstyle.ImageData = ms.ToArray();
+                    }
+                }
+
                 try
                 {
                     _context.Update(hairstyle);
@@ -102,14 +102,8 @@ namespace VirtualHair.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!HairstyleExists(hairstyle.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if (!HairstyleExists(hairstyle.Id)) return NotFound();
+                    else throw;
                 }
                 return RedirectToAction(nameof(Index));
             }
@@ -119,17 +113,10 @@ namespace VirtualHair.Controllers
         // GET: Hairstyles/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var hairstyle = await _context.Hairstyle
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (hairstyle == null)
-            {
-                return NotFound();
-            }
+            var hairstyle = await _context.Hairstyle.FirstOrDefaultAsync(m => m.Id == id);
+            if (hairstyle == null) return NotFound();
 
             return View(hairstyle);
         }
@@ -143,9 +130,8 @@ namespace VirtualHair.Controllers
             if (hairstyle != null)
             {
                 _context.Hairstyle.Remove(hairstyle);
+                await _context.SaveChangesAsync();
             }
-
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 

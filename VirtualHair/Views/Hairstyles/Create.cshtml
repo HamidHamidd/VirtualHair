@@ -1,0 +1,43 @@
+﻿@model VirtualHair.Models.Hairstyle
+
+<h2>Create Hairstyle</h2>
+
+<form asp-action="Create" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Gender" class="form-label"></label>
+        <select asp-for="Gender" class="form-select" asp-items="Html.GetEnumSelectList<Gender>()"></select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Length" class="form-label"></label>
+        <input asp-for="Length" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="DefaultFade" class="form-label"></label>
+        <select asp-for="DefaultFade" class="form-select" asp-items="Html.GetEnumSelectList<FadeType>()"></select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="DefaultColorHex" class="form-label"></label>
+        <input asp-for="DefaultColorHex" class="form-control" type="color" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Upload Image</label>
+        <input asp-for="ImageFile" class="form-control" type="file" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary ms-2">Back</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

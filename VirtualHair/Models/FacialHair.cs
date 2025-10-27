@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Http;
 
 namespace VirtualHair.Models
 {
@@ -9,8 +11,11 @@ namespace VirtualHair.Models
         [Required, MaxLength(80)]
         public string Name { get; set; } = "";
 
-        [Required, MaxLength(260)]
-        public string ImageUrl { get; set; } = ""; 
+        [MaxLength(260)]
+        public string? ImagePath { get; set; }  
+
+        [NotMapped]
+        public IFormFile? ImageFile { get; set; }  
 
         [MaxLength(7)]
         public string? DefaultColorHex { get; set; }

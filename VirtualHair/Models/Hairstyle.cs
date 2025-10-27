@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Http;
 
 namespace VirtualHair.Models
 {
@@ -17,10 +19,13 @@ namespace VirtualHair.Models
         public FadeType DefaultFade { get; set; } = FadeType.None;
 
         [MaxLength(7)]
-        public string? DefaultColorHex { get; set; } 
+        public string? DefaultColorHex { get; set; }
 
-        [Required, MaxLength(260)]
-        public string ImageUrl { get; set; } = ""; 
+        [MaxLength(260)]
+        public string? ImagePath { get; set; }  
+
+        [NotMapped]
+        public IFormFile? ImageFile { get; set; }  
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }

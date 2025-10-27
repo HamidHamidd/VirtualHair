@@ -1,0 +1,40 @@
+﻿@model VirtualHair.Models.FacialHair
+
+<h2>Edit Facial Hair</h2>
+
+<form asp-action="Edit" enctype="multipart/form-data">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="CreatedAt" />
+    <input type="hidden" asp-for="ImagePath" />
+
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="DefaultColorHex" class="form-label"></label>
+        <input asp-for="DefaultColorHex" class="form-control" type="color" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label d-block">Current Image</label>
+        @if (!string.IsNullOrEmpty(Model.ImagePath))
+        {
+            <img src="@Model.ImagePath" alt="preview" style="max-height:160px" class="img-thumbnail mb-2" />
+        }
+        else
+        {
+            <div class="text-muted">No image uploaded yet.</div>
+        }
+        <input asp-for="ImageFile" class="form-control" type="file" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Update</button>
+    <a asp-action="Index" class="btn btn-secondary ms-2">Back</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

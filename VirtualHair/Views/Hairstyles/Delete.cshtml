@@ -1,0 +1,41 @@
+﻿@model VirtualHair.Models.Hairstyle
+
+@{
+    ViewData["Title"] = "Delete Hairstyle";
+}
+
+<h2>Delete Hairstyle</h2>
+
+<div class="alert alert-danger">
+    <h5>Are you sure you want to delete this hairstyle?</h5>
+</div>
+
+<div class="card shadow-sm p-3 mb-3">
+    <div class="row">
+        <div class="col-md-4 text-center">
+            @if (!string.IsNullOrEmpty(Model.ImagePath))
+            {
+                <img src="@Model.ImagePath" alt="@Model.Name" class="img-fluid rounded" style="max-height:250px;" />
+            }
+            else
+            {
+                <span class="text-muted">No image available</span>
+            }
+        </div>
+        <div class="col-md-8">
+            <h4>@Model.Name</h4>
+            <p><strong>Gender:</strong> @Model.Gender</p>
+            <p><strong>Length:</strong> @Model.Length</p>
+            <p><strong>Fade:</strong> @Model.DefaultFade</p>
+            <p><strong>Color:</strong> @Model.DefaultColorHex</p>
+        </div>
+    </div>
+</div>
+
+<form asp-action="Delete">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">
+        <i class="bi bi-trash"></i> Confirm Delete
+    </button>
+    <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
+</form>

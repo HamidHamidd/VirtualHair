@@ -1,0 +1,58 @@
+﻿@model IEnumerable<VirtualHair.Models.FacialHair>
+
+@{
+    ViewData["Title"] = "Facial Hairs";
+}
+
+<h2 class="mb-3">Facial Hairs</h2>
+
+<p>
+    <a asp-action="Create" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Add New Facial Hair
+    </a>
+</p>
+
+<table class="table table-striped align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>Image</th>
+            <th>@Html.DisplayNameFor(model => model.First().Name)</th>
+            <th>Color</th>
+            <th>Created</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.ImagePath))
+                    {
+                        <img src="@item.ImagePath" alt="@item.Name" style="height:70px;" class="img-thumbnail" />
+                    }
+                    else
+                    {
+                        <span class="text-muted">No image</span>
+                    }
+                </td>
+                <td>@item.Name</td>
+                <td>
+                    <span style="display:inline-block;width:24px;height:24px;background-color:@item.DefaultColorHex;border:1px solid #ccc;"></span>
+                </td>
+                <td>@item.CreatedAt.ToLocalTime()</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary me-1">
+                        <i class="bi bi-pencil-square"></i> Edit
+                    </a>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info me-1">
+                        <i class="bi bi-eye"></i> Details
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
+                        <i class="bi bi-trash"></i> Delete
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -12,39 +12,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - VirtualHair</title>
 
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-
-    <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
-    <!-- Google Translate -->
     <meta name="google" content="notranslate" />
 </head>
-<body class="bg-body text-body">
 
+<body class="bg-body text-body">
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg bg-body shadow-sm fixed-top">
         <div class="container-fluid d-flex justify-content-between align-items-center">
-            <a class="navbar-brand fw-bold fs-4 ms-2 text-primary" asp-controller="Home" asp-action="Index">
-                VirtualHair
+            <a class="navbar-brand fw-bold fs-3 ms-2 virtualhair-logo" asp-controller="Home" asp-action="Index">
+                <i class="fa-solid fa-scissors logo-icon me-1"></i>
+                <span class="text-gradient">Virtual</span><span class="text-accent">Hair</span>
             </a>
-
-            <!-- Hamburger Button -->
-            <button class="btn btn-outline-secondary me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu" aria-controls="offcanvasMenu">
+            <button class="btn btn-outline-secondary me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu">
                 <i class="fa-solid fa-bars"></i>
             </button>
         </div>
     </nav>
 
     <!-- Offcanvas Menu -->
-    <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenuLabel">
+    <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasMenu">
         <div class="offcanvas-header border-bottom">
-            <h5 class="offcanvas-title" id="offcanvasMenuLabel">Menu</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            <h5 class="offcanvas-title">Menu</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
         </div>
-
         <div class="offcanvas-body">
             <ul class="nav flex-column">
                 <li class="nav-item"><a asp-controller="Home" asp-action="Index" class="nav-link text-light"><i class="fa-solid fa-house me-2"></i>Home</a></li>
@@ -64,15 +57,26 @@
 
                 <hr class="text-secondary" />
 
-                <li class="nav-item d-flex justify-content-between align-items-center">
-                    <span class="text-light">Dark Mode</span>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="darkModeToggle">
-                    </div>
+                <!-- Theme Toggle -->
+                <li class="nav-item text-center">
+                    <button id="themeToggleBtn" class="btn btn-outline-light w-100 d-flex justify-content-center align-items-center gap-2">
+                        <i id="themeIcon" class="fa-solid fa-sun"></i>
+                        <span id="themeLabel">Light Mode</span>
+                    </button>
                 </li>
 
-                <li class="nav-item mt-3">
+                <!-- Languages -->
+                <li class="nav-item mt-4 text-center">
+                    <label class="text-light mb-2 fw-semibold">🌍 Language</label>
                     <div id="google_translate_element"></div>
+                    <div class="language-option mt-2">
+                        <img src="https://flagcdn.com/w20/gb.png" alt="English" title="English">
+                        <img src="https://flagcdn.com/w20/bg.png" alt="Български" title="Български">
+                        <img src="https://flagcdn.com/w20/tr.png" alt="Türkçe" title="Türkçe">
+                        <img src="https://flagcdn.com/w20/ru.png" alt="Русский" title="Русский">
+                        <img src="https://flagcdn.com/w20/de.png" alt="Deutsch" title="Deutsch">
+                        <img src="https://flagcdn.com/w20/cn.png" alt="中文" title="中文">
+                    </div>
                 </li>
 
                 <hr class="text-secondary" />
@@ -90,55 +94,60 @@
         </div>
     </div>
 
-    <!-- Main Body -->
     <div class="container mt-5 pt-5">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+        <main role="main">@RenderBody()</main>
     </div>
 
-    <!-- Footer -->
     <footer class="text-center py-4 border-top mt-auto">
         <p class="text-secondary mb-0">© 2025 VirtualHair. All rights reserved.</p>
     </footer>
 
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Google Translate Script -->
-    <script type="text/javascript">
+    <script>
         function googleTranslateElementInit() {
             new google.translate.TranslateElement({
                 pageLanguage: 'en',
                 includedLanguages: 'en,bg,tr,ru,de,zh-CN',
                 layout: google.translate.TranslateElement.InlineLayout.HORIZONTAL
             }, 'google_translate_element');
+
+            // премества оригиналния "Powered by Google" под селектора
+            const googleBranding = document.querySelector('.goog-logo-link');
+            if (googleBranding) {
+                googleBranding.style.display = 'block';
+                googleBranding.style.textAlign = 'center';
+                googleBranding.style.margin = '6px auto 0 auto';
+            }
         }
-    </script>
-    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-    <!-- Dark Mode Script -->
-    <script>
-        const toggle = document.getElementById('darkModeToggle');
         const html = document.documentElement;
+        const themeBtn = document.getElementById('themeToggleBtn');
+        const themeIcon = document.getElementById('themeIcon');
+        const themeLabel = document.getElementById('themeLabel');
 
-        // Load mode from localStorage
         if (localStorage.getItem('theme') === 'dark') {
             html.setAttribute('data-bs-theme', 'dark');
-            toggle.checked = true;
+            themeIcon.classList.replace('fa-sun', 'fa-moon');
+            themeLabel.textContent = 'Dark Mode';
         }
 
-        toggle.addEventListener('change', () => {
-            if (toggle.checked) {
-                html.setAttribute('data-bs-theme', 'dark');
-                localStorage.setItem('theme', 'dark');
-            } else {
+        themeBtn.addEventListener('click', () => {
+            if (html.getAttribute('data-bs-theme') === 'dark') {
                 html.setAttribute('data-bs-theme', 'light');
                 localStorage.setItem('theme', 'light');
+                themeIcon.classList.replace('fa-moon', 'fa-sun');
+                themeLabel.textContent = 'Light Mode';
+            } else {
+                html.setAttribute('data-bs-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                themeIcon.classList.replace('fa-sun', 'fa-moon');
+                themeLabel.textContent = 'Dark Mode';
             }
         });
     </script>
 
+    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

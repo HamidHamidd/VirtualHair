@@ -1,48 +1,149 @@
-body {
-    font-family: 'Segoe UI', sans-serif;
-    transition: background-color 0.3s ease, color 0.3s ease;
+﻿/* ===============================
+   BASE STYLES
+=============================== */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    scroll-behavior: smooth;
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
 }
 
-/* Offcanvas menu blur & animation */
-.offcanvas {
-    background-color: rgba(20, 20, 20, 0.8) !important;
-    backdrop-filter: blur(8px);
-    animation: slideIn 0.4s ease;
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateX(100px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-/* Smooth transitions for color themes */
-[data-bs-theme="dark"] {
-    --bs-body-bg: #121212;
-    --bs-body-color: #f1f1f1;
-}
-
-.nav-link {
-    font-size: 1.05rem;
-    transition: all 0.2s ease;
-}
-
-    .nav-link:hover {
-        color: #00bfff !important;
-        transform: translateX(3px);
-    }
-
-.btn-outline-light:hover {
-    background-color: #00bfff !important;
-    color: white !important;
+main {
+    min-height: 75vh;
 }
 
 footer {
-    backdrop-filter: blur(5px);
+    font-size: 0.9rem;
 }
+
+/* ===============================
+   NAVBAR / LOGO STYLING
+=============================== */
+.navbar {
+    backdrop-filter: blur(10px);
+    background-color: rgba(255, 255, 255, 0.85);
+    transition: background-color 0.3s ease;
+}
+
+[data-bs-theme="dark"] .navbar {
+    background-color: rgba(20, 20, 20, 0.85);
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+}
+
+.navbar .btn-outline-secondary {
+    border: none;
+    color: #555;
+    font-size: 1.3rem;
+}
+
+[data-bs-theme="dark"] .navbar .btn-outline-secondary {
+    color: #f1f1f1;
+}
+
+/* ===============================
+   GOOGLE TRANSLATE FIXES
+=============================== */
+#google_translate_element {
+    width: 100%;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.goog-te-gadget {
+    font-size: 0 !important;
+    text-align: center;
+}
+
+    .goog-te-gadget .goog-te-combo {
+        width: 80% !important;
+        max-width: 200px !important;
+        font-size: 0.9rem !important;
+        font-weight: 500;
+        padding: 6px 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(120, 120, 120, 0.4);
+        background-color: rgba(255, 255, 255, 0.9);
+        color: #111;
+        outline: none;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+[data-bs-theme="dark"] .goog-te-gadget .goog-te-combo {
+    background-color: rgba(35, 35, 35, 0.95);
+    color: #f1f1f1;
+    border: 1px solid rgba(180, 180, 180, 0.4);
+}
+
+.goog-te-gadget .goog-te-combo:hover {
+    box-shadow: 0 0 8px rgba(0, 191, 255, 0.4);
+    transform: scale(1.02);
+}
+
+/* премества "Powered by Google" под селектора */
+.goog-logo-link {
+    display: block !important;
+    text-align: center !important;
+    margin-top: 6px !important;
+    opacity: 0.8 !important;
+}
+
+/* скрива излишната версия */
+#google_translate_element span a:has(img) {
+    display: none !important;
+}
+
+/* ===============================
+   LANGUAGE FLAGS
+=============================== */
+.language-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+}
+
+    .language-option img {
+        width: 22px;
+        height: 15px;
+        object-fit: cover;
+        border-radius: 3px;
+        box-shadow: 0 0 3px rgba(0,0,0,0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .language-option img:hover {
+            transform: scale(1.15);
+            box-shadow: 0 0 8px rgba(0,191,255,0.6);
+        }
+
+/* ===============================
+   THEME TOGGLE BUTTON
+=============================== */
+#themeToggleBtn {
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    padding: 8px;
+}
+
+    #themeToggleBtn:hover {
+        background-color: rgba(0, 191, 255, 0.1);
+        box-shadow: 0 0 10px rgba(0,191,255,0.3);
+    }
+
+    #themeToggleBtn i {
+        transition: transform 0.5s ease;
+    }
+
+    #themeToggleBtn:active i {
+        transform: rotate(360deg);
+    }

@@ -1,31 +1,48 @@
-html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
 body {
-  margin-bottom: 60px;
+    font-family: 'Segoe UI', sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+/* Offcanvas menu blur & animation */
+.offcanvas {
+    background-color: rgba(20, 20, 20, 0.8) !important;
+    backdrop-filter: blur(8px);
+    animation: slideIn 0.4s ease;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Smooth transitions for color themes */
+[data-bs-theme="dark"] {
+    --bs-body-bg: #121212;
+    --bs-body-color: #f1f1f1;
+}
+
+.nav-link {
+    font-size: 1.05rem;
+    transition: all 0.2s ease;
+}
+
+    .nav-link:hover {
+        color: #00bfff !important;
+        transform: translateX(3px);
+    }
+
+.btn-outline-light:hover {
+    background-color: #00bfff !important;
+    color: white !important;
+}
+
+footer {
+    backdrop-filter: blur(5px);
 }

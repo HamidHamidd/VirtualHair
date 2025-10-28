@@ -9,6 +9,25 @@ html, body {
     scroll-behavior: smooth;
     background-color: var(--bs-body-bg);
     color: var(--bs-body-color);
+    transition: background-color 0.6s ease, color 0.6s ease; /* плавен ефект */
+}
+
+/* ===============================
+   FADE-IN ANIMATION ON PAGE LOAD
+=============================== */
+body {
+    opacity: 0;
+    animation: fadeInPage 0.6s ease-in-out forwards;
+}
+
+@keyframes fadeInPage {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 main {
@@ -32,98 +51,69 @@ footer {
     background-color: rgba(20, 20, 20, 0.85);
 }
 
-.navbar-brand {
-    display: flex;
-    align-items: center;
-    font-weight: 700;
+/* ===============================
+   MENU ANIMATION (OFFCANVAS)
+=============================== */
+.offcanvas-body .nav-item {
+    opacity: 0;
+    transform: translateX(15px);
+    animation: slideIn 0.5s forwards;
 }
 
-.navbar .btn-outline-secondary {
-    border: none;
-    color: #555;
-    font-size: 1.3rem;
+.offcanvas.show .nav-item {
+    animation-delay: calc(var(--order, 0) * 0.08s);
 }
 
-[data-bs-theme="dark"] .navbar .btn-outline-secondary {
-    color: #f1f1f1;
+@keyframes slideIn {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 /* ===============================
-   GOOGLE TRANSLATE FIXES
+   MENU BUTTON HOVER EFFECT
 =============================== */
-#google_translate_element {
+.offcanvas .nav-link {
+    font-weight: 500;
+    color: #f1f1f1;
+    transition: all 0.25s ease;
+    border-radius: 8px;
+    padding: 8px 10px;
+}
+
+    .offcanvas .nav-link:hover {
+        background-color: rgba(0, 191, 255, 0.15);
+        color: #00bfff;
+        transform: scale(1.05);
+        box-shadow: 0 0 8px rgba(0, 191, 255, 0.4);
+    }
+
+/* ===============================
+   MINI LOADER / SHIMMER
+=============================== */
+.page-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    text-align: center;
-    margin-top: 10px;
+    height: 4px;
+    background: linear-gradient(90deg, #00bfff, #007bff, #00bfff);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite linear;
+    z-index: 2000;
+    display: none;
 }
 
-.goog-te-gadget {
-    font-size: 0 !important;
-    text-align: center;
-}
-
-    .goog-te-gadget .goog-te-combo {
-        width: 80% !important;
-        max-width: 200px !important;
-        font-size: 0.9rem !important;
-        font-weight: 500;
-        padding: 6px 10px;
-        border-radius: 8px;
-        border: 1px solid rgba(120, 120, 120, 0.4);
-        background-color: rgba(255, 255, 255, 0.9);
-        color: #111;
-        outline: none;
-        text-align: center;
-        transition: all 0.3s ease;
+@keyframes shimmer {
+    from {
+        background-position: 200% 0;
     }
 
-[data-bs-theme="dark"] .goog-te-gadget .goog-te-combo {
-    background-color: rgba(35, 35, 35, 0.95);
-    color: #f1f1f1;
-    border: 1px solid rgba(180, 180, 180, 0.4);
-}
-
-.goog-te-gadget .goog-te-combo:hover {
-    box-shadow: 0 0 8px rgba(0, 191, 255, 0.4);
-    transform: scale(1.02);
-}
-
-/* премества "Powered by Google" под селектора */
-.goog-logo-link {
-    display: block !important;
-    text-align: center !important;
-    margin-top: 6px !important;
-    opacity: 0.8 !important;
-}
-
-/* скрива излишната версия */
-#google_translate_element span a:has(img) {
-    display: none !important;
-}
-
-/* ===============================
-   LANGUAGE FLAGS
-=============================== */
-.language-option {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    justify-content: center;
-}
-
-    .language-option img {
-        width: 22px;
-        height: 15px;
-        object-fit: cover;
-        border-radius: 3px;
-        box-shadow: 0 0 3px rgba(0,0,0,0.3);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    to {
+        background-position: -200% 0;
     }
-
-        .language-option img:hover {
-            transform: scale(1.15);
-            box-shadow: 0 0 8px rgba(0,191,255,0.6);
-        }
+}
 
 /* ===============================
    THEME TOGGLE BUTTON
@@ -146,4 +136,18 @@ footer {
 
     #themeToggleBtn:active i {
         transform: rotate(360deg);
+    }
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(100, 100, 100, 0.5);
+    border-radius: 6px;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(80, 200, 255, 0.7);
     }

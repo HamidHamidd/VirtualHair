@@ -15,10 +15,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-    <meta name="google" content="notranslate" />
 </head>
 
 <body class="bg-body text-body">
+    <!-- Mini Loader -->
+    <div class="page-loader" id="pageLoader"></div>
+
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg bg-body shadow-sm fixed-top">
         <div class="container-fluid d-flex justify-content-between align-items-center">
@@ -40,55 +42,44 @@
         </div>
         <div class="offcanvas-body">
             <ul class="nav flex-column">
-                <li class="nav-item"><a asp-controller="Home" asp-action="Index" class="nav-link text-light"><i class="fa-solid fa-house me-2"></i>Home</a></li>
-                <li class="nav-item"><a asp-controller="Hairstyles" asp-action="Index" class="nav-link text-light"><i class="fa-solid fa-scissors me-2"></i>Hairstyles</a></li>
-                <li class="nav-item"><a asp-controller="FacialHairs" asp-action="Index" class="nav-link text-light"><i class="fa-solid fa-beard me-2"></i>Facial Hair</a></li>
+                <li class="nav-item" style="--order:1"><a asp-controller="Home" asp-action="Index" class="nav-link"><i class="fa-solid fa-house me-2"></i>Home</a></li>
+                <li class="nav-item" style="--order:2"><a asp-controller="Hairstyles" asp-action="Index" class="nav-link"><i class="fa-solid fa-scissors me-2"></i>Hairstyles</a></li>
+                <li class="nav-item" style="--order:3"><a asp-controller="FacialHairs" asp-action="Index" class="nav-link"><i class="fa-solid fa-beard me-2"></i>Facial Hair</a></li>
 
                 @if (isAuthenticated)
                 {
-                    <li class="nav-item"><a asp-controller="UserHairstyles" asp-action="Index" class="nav-link text-light"><i class="fa-solid fa-images me-2"></i>My Gallery</a></li>
-                    <li class="nav-item"><a asp-controller="Account" asp-action="Manage" class="nav-link text-light"><i class="fa-solid fa-user me-2"></i>Profile</a></li>
+                    <li class="nav-item" style="--order:4"><a asp-controller="UserHairstyles" asp-action="Index" class="nav-link"><i class="fa-solid fa-images me-2"></i>My Gallery</a></li>
+                    <li class="nav-item" style="--order:5"><a asp-controller="Account" asp-action="Manage" class="nav-link"><i class="fa-solid fa-user me-2"></i>Profile</a></li>
 
                     @if (isAdmin)
                     {
-                        <li class="nav-item"><a asp-controller="Admin" asp-action="Index" class="nav-link text-warning"><i class="fa-solid fa-toolbox me-2"></i>Admin Panel</a></li>
+                        <li class="nav-item" style="--order:6"><a asp-controller="Admin" asp-action="Index" class="nav-link text-warning"><i class="fa-solid fa-toolbox me-2"></i>Admin Panel</a></li>
                     }
                 }
 
                 <hr class="text-secondary" />
 
-                <!-- Theme Toggle -->
-                <li class="nav-item text-center">
+                <li class="nav-item text-center" style="--order:7">
                     <button id="themeToggleBtn" class="btn btn-outline-light w-100 d-flex justify-content-center align-items-center gap-2">
                         <i id="themeIcon" class="fa-solid fa-sun"></i>
                         <span id="themeLabel">Light Mode</span>
                     </button>
                 </li>
 
-                <!-- Languages -->
-                <li class="nav-item mt-4 text-center">
-                    <label class="text-light mb-2 fw-semibold">🌍 Language</label>
-                    <div id="google_translate_element"></div>
-                    <div class="language-option mt-2">
-                        <img src="https://flagcdn.com/w20/gb.png" alt="English" title="English">
-                        <img src="https://flagcdn.com/w20/bg.png" alt="Български" title="Български">
-                        <img src="https://flagcdn.com/w20/tr.png" alt="Türkçe" title="Türkçe">
-                        <img src="https://flagcdn.com/w20/ru.png" alt="Русский" title="Русский">
-                        <img src="https://flagcdn.com/w20/de.png" alt="Deutsch" title="Deutsch">
-                        <img src="https://flagcdn.com/w20/cn.png" alt="中文" title="中文">
-                    </div>
-                </li>
-
                 <hr class="text-secondary" />
 
                 @if (isAuthenticated)
                 {
-                    <li class="nav-item"><form asp-area="Identity" asp-page="/Account/Logout" method="post"><button type="submit" class="btn btn-danger w-100 mt-2">Logout</button></form></li>
+                    <li class="nav-item" style="--order:8">
+                        <form asp-area="Identity" asp-page="/Account/Logout" method="post">
+                            <button type="submit" class="btn btn-danger w-100 mt-2">Logout</button>
+                        </form>
+                    </li>
                 }
                 else
                 {
-                    <li class="nav-item"><a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-light w-100 mt-2">Login</a></li>
-                    <li class="nav-item"><a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary w-100 mt-2">Register</a></li>
+                    <li class="nav-item" style="--order:9"><a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-light w-100 mt-2">Login</a></li>
+                    <li class="nav-item" style="--order:10"><a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary w-100 mt-2">Register</a></li>
                 }
             </ul>
         </div>
@@ -105,22 +96,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement({
-                pageLanguage: 'en',
-                includedLanguages: 'en,bg,tr,ru,de,zh-CN',
-                layout: google.translate.TranslateElement.InlineLayout.HORIZONTAL
-            }, 'google_translate_element');
-
-            // премества оригиналния "Powered by Google" под селектора
-            const googleBranding = document.querySelector('.goog-logo-link');
-            if (googleBranding) {
-                googleBranding.style.display = 'block';
-                googleBranding.style.textAlign = 'center';
-                googleBranding.style.margin = '6px auto 0 auto';
-            }
-        }
-
+        // Theme persistence
         const html = document.documentElement;
         const themeBtn = document.getElementById('themeToggleBtn');
         const themeIcon = document.getElementById('themeIcon');
@@ -145,9 +121,13 @@
                 themeLabel.textContent = 'Dark Mode';
             }
         });
+
+        // Mini page loader
+        const pageLoader = document.getElementById('pageLoader');
+        window.addEventListener('beforeunload', () => pageLoader.style.display = 'block');
+        window.addEventListener('load', () => pageLoader.style.display = 'none');
     </script>
 
-    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

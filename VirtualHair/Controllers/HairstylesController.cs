@@ -1,16 +1,18 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using VirtualHair.Data;
 using VirtualHair.Models;
+using X.PagedList;
+using X.PagedList.Extensions;
 
 namespace VirtualHair.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     public class HairstylesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -23,12 +25,16 @@ namespace VirtualHair.Controllers
         }
 
         // GET: Hairstyles
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? page)
         {
-            var list = await _context.Hairstyles
-                .OrderByDescending(h => h.CreatedAt)
-                .ToListAsync();
-            return View(list);
+            const int pageSize = 6;
+            int pageNumber = page ?? 1;
+
+            var query = _context.Hairstyles
+                .OrderByDescending(h => h.CreatedAt);
+
+            var paged = query.ToPagedList(pageNumber, pageSize);
+            return View(paged);
         }
 
         // GET: Hairstyles/Details/5
@@ -42,35 +48,36 @@ namespace VirtualHair.Controllers
             return View(hairstyle);
         }
 
-        // GET: Hairstyles/Create
+        // GET: Hairstyles/Create  (само Admin)
+        [Authorize(Roles = "Admin")]
         public IActionResult Create() => View();
 
-        // POST: Hairstyles/Create
+        // POST: Hairstyles/Create  (само Admin)
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Hairstyle hairstyle)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid) return View(hairstyle);
+
+            if (hairstyle.ImageFile != null && hairstyle.ImageFile.Length > 0)
             {
-                if (hairstyle.ImageFile != null && hairstyle.ImageFile.Length > 0)
-                {
-                    var fileName = $"{Guid.NewGuid()}{Path.GetExtension(hairstyle.ImageFile.FileName)}";
-                    var savePath = Path.Combine(_uploadFolder, fileName);
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(hairstyle.ImageFile.FileName)}";
+                var savePath = Path.Combine(_uploadFolder, fileName);
 
-                    using var stream = new FileStream(savePath, FileMode.Create);
-                    await hairstyle.ImageFile.CopyToAsync(stream);
+                using var stream = new FileStream(savePath, FileMode.Create);
+                await hairstyle.ImageFile.CopyToAsync(stream);
 
-                    hairstyle.ImagePath = $"/uploads/hairstyles/{fileName}";
-                }
-
-                _context.Add(hairstyle);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                hairstyle.ImagePath = $"/uploads/hairstyles/{fileName}";
             }
-            return View(hairstyle);
+
+            _context.Add(hairstyle);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: Hairstyles/Edit/5
+        // GET: Hairstyles/Edit/5  (само Admin)
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -81,41 +88,40 @@ namespace VirtualHair.Controllers
             return View(hairstyle);
         }
 
-        // POST: Hairstyles/Edit/5
+        // POST: Hairstyles/Edit/5  (само Admin)
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Hairstyle hairstyle)
         {
             if (id != hairstyle.Id) return NotFound();
+            if (!ModelState.IsValid) return View(hairstyle);
 
-            if (ModelState.IsValid)
+            var existing = await _context.Hairstyles.AsNoTracking().FirstOrDefaultAsync(h => h.Id == id);
+            if (existing == null) return NotFound();
+
+            if (hairstyle.ImageFile != null && hairstyle.ImageFile.Length > 0)
             {
-                var existing = await _context.Hairstyles.AsNoTracking().FirstOrDefaultAsync(h => h.Id == id);
-                if (existing == null) return NotFound();
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(hairstyle.ImageFile.FileName)}";
+                var savePath = Path.Combine(_uploadFolder, fileName);
 
-                if (hairstyle.ImageFile != null && hairstyle.ImageFile.Length > 0)
-                {
-                    var fileName = $"{Guid.NewGuid()}{Path.GetExtension(hairstyle.ImageFile.FileName)}";
-                    var savePath = Path.Combine(_uploadFolder, fileName);
+                using var stream = new FileStream(savePath, FileMode.Create);
+                await hairstyle.ImageFile.CopyToAsync(stream);
 
-                    using var stream = new FileStream(savePath, FileMode.Create);
-                    await hairstyle.ImageFile.CopyToAsync(stream);
-
-                    hairstyle.ImagePath = $"/uploads/hairstyles/{fileName}";
-                }
-                else
-                {
-                    hairstyle.ImagePath = existing.ImagePath; // запазваме старата снимка
-                }
-
-                _context.Update(hairstyle);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                hairstyle.ImagePath = $"/uploads/hairstyles/{fileName}";
             }
-            return View(hairstyle);
+            else
+            {
+                hairstyle.ImagePath = existing.ImagePath; 
+            }
+
+            _context.Update(hairstyle);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: Hairstyles/Delete/5
+        // GET: Hairstyles/Delete/5  (само Admin)
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -126,15 +132,15 @@ namespace VirtualHair.Controllers
             return View(hairstyle);
         }
 
-        // POST: Hairstyles/Delete/5
+        // POST: Hairstyles/Delete/5  (само Admin)
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var hairstyle = await _context.Hairstyles.FindAsync(id);
             if (hairstyle != null)
             {
-                // почистване на файла (по избор)
                 if (!string.IsNullOrEmpty(hairstyle.ImagePath))
                 {
                     var fullPath = Path.Combine("wwwroot", hairstyle.ImagePath.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString()));

@@ -1,16 +1,18 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using VirtualHair.Data;
 using VirtualHair.Models;
+using X.PagedList;
+using X.PagedList.Extensions;
 
 namespace VirtualHair.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     public class FacialHairsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -23,12 +25,16 @@ namespace VirtualHair.Controllers
         }
 
         // GET: FacialHairs
-        public async Task<IActionResult> Index()
+        public IActionResult Index(int? page)
         {
-            var list = await _context.FacialHairs
-                .OrderByDescending(f => f.CreatedAt)
-                .ToListAsync();
-            return View(list);
+            const int pageSize = 6;
+            int pageNumber = page ?? 1;
+
+            var query = _context.FacialHairs
+                .OrderByDescending(f => f.CreatedAt);
+
+            var paged = query.ToList().ToPagedList(pageNumber, pageSize);
+            return View(paged);
         }
 
         // GET: FacialHairs/Details/5
@@ -36,43 +42,43 @@ namespace VirtualHair.Controllers
         {
             if (id == null) return NotFound();
 
-            var facialHair = await _context.FacialHairs.FirstOrDefaultAsync(m => m.Id == id);
+            var facialHair = await _context.FacialHairs.FirstOrDefaultAsync(f => f.Id == id);
             if (facialHair == null) return NotFound();
 
             return View(facialHair);
         }
 
-        // GET: FacialHairs/Create
+        // GET: FacialHairs/Create (само Admin)
+        [Authorize(Roles = "Admin")]
         public IActionResult Create() => View();
 
-        // POST: FacialHairs/Create
+        // POST: FacialHairs/Create (само Admin)
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(FacialHair facialHair)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid) return View(facialHair);
+
+            if (facialHair.ImageFile != null && facialHair.ImageFile.Length > 0)
             {
-                if (facialHair.ImageFile != null && facialHair.ImageFile.Length > 0)
-                {
-                    var fileName = $"{Guid.NewGuid()}{Path.GetExtension(facialHair.ImageFile.FileName)}";
-                    var savePath = Path.Combine(_uploadFolder, fileName);
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(facialHair.ImageFile.FileName)}";
+                var savePath = Path.Combine(_uploadFolder, fileName);
 
-                    using var stream = new FileStream(savePath, FileMode.Create);
-                    await facialHair.ImageFile.CopyToAsync(stream);
+                using var stream = new FileStream(savePath, FileMode.Create);
+                await facialHair.ImageFile.CopyToAsync(stream);
 
-                    facialHair.ImagePath = $"/uploads/facialhairs/{fileName}";
-                }
-
-                facialHair.CreatedAt = DateTime.UtcNow;
-                _context.Add(facialHair);
-                await _context.SaveChangesAsync();
-
-                return RedirectToAction(nameof(Index));
+                facialHair.ImagePath = $"/uploads/facialhairs/{fileName}";
             }
-            return View(facialHair);
+
+            facialHair.CreatedAt = DateTime.UtcNow;
+            _context.Add(facialHair);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: FacialHairs/Edit/5
+        // GET: FacialHairs/Edit/5 (само Admin)
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -83,53 +89,53 @@ namespace VirtualHair.Controllers
             return View(facialHair);
         }
 
-        // POST: FacialHairs/Edit/5
+        // POST: FacialHairs/Edit/5 (само Admin)
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, FacialHair facialHair)
         {
             if (id != facialHair.Id) return NotFound();
+            if (!ModelState.IsValid) return View(facialHair);
 
-            if (ModelState.IsValid)
+            var existing = await _context.FacialHairs.AsNoTracking().FirstOrDefaultAsync(f => f.Id == id);
+            if (existing == null) return NotFound();
+
+            if (facialHair.ImageFile != null && facialHair.ImageFile.Length > 0)
             {
-                var existing = await _context.FacialHairs.AsNoTracking().FirstOrDefaultAsync(f => f.Id == id);
-                if (existing == null) return NotFound();
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(facialHair.ImageFile.FileName)}";
+                var savePath = Path.Combine(_uploadFolder, fileName);
 
-                if (facialHair.ImageFile != null && facialHair.ImageFile.Length > 0)
-                {
-                    var fileName = $"{Guid.NewGuid()}{Path.GetExtension(facialHair.ImageFile.FileName)}";
-                    var savePath = Path.Combine(_uploadFolder, fileName);
+                using var stream = new FileStream(savePath, FileMode.Create);
+                await facialHair.ImageFile.CopyToAsync(stream);
 
-                    using var stream = new FileStream(savePath, FileMode.Create);
-                    await facialHair.ImageFile.CopyToAsync(stream);
-
-                    facialHair.ImagePath = $"/uploads/facialhairs/{fileName}";
-                }
-                else
-                {
-                    facialHair.ImagePath = existing.ImagePath; // запазваме старата снимка
-                }
-
-                _context.Update(facialHair);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                facialHair.ImagePath = $"/uploads/facialhairs/{fileName}";
             }
-            return View(facialHair);
+            else
+            {
+                facialHair.ImagePath = existing.ImagePath;
+            }
+
+            _context.Update(facialHair);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: FacialHairs/Delete/5
+        // GET: FacialHairs/Delete/5 (само Admin)
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
 
-            var facialHair = await _context.FacialHairs.FirstOrDefaultAsync(m => m.Id == id);
+            var facialHair = await _context.FacialHairs.FirstOrDefaultAsync(f => f.Id == id);
             if (facialHair == null) return NotFound();
 
             return View(facialHair);
         }
 
-        // POST: FacialHairs/Delete/5
+        // POST: FacialHairs/Delete/5 (само Admin)
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

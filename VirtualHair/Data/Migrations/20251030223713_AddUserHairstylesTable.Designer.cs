@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VirtualHair.Data;
 
@@ -11,9 +12,11 @@ using VirtualHair.Data;
 namespace VirtualHair.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251030223713_AddUserHairstylesTable")]
+    partial class AddUserHairstylesTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -373,9 +376,6 @@ namespace VirtualHair.Data.Migrations
                     b.Property<string>("UserId1")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int?>("UserPhotoId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("FacialHairId");
@@ -385,8 +385,6 @@ namespace VirtualHair.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.HasIndex("UserId1");
-
-                    b.HasIndex("UserPhotoId");
 
                     b.ToTable("UserHairstyles");
                 });
@@ -399,21 +397,13 @@ namespace VirtualHair.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("FileName")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<byte[]>("ImageData")
+                    b.Property<string>("StoredPath")
                         .IsRequired()
-                        .HasColumnType("varbinary(max)");
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -525,26 +515,9 @@ namespace VirtualHair.Data.Migrations
                         .WithMany()
                         .HasForeignKey("UserId1");
 
-                    b.HasOne("VirtualHair.Models.UserPhoto", "UserPhoto")
-                        .WithMany()
-                        .HasForeignKey("UserPhotoId");
-
                     b.Navigation("FacialHair");
 
                     b.Navigation("Hairstyle");
-
-                    b.Navigation("User");
-
-                    b.Navigation("UserPhoto");
-                });
-
-            modelBuilder.Entity("VirtualHair.Models.UserPhoto", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.Navigation("User");
                 });

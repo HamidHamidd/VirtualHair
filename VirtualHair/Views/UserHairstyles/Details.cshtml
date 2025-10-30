@@ -1,0 +1,44 @@
+﻿@model VirtualHair.Models.UserHairstyle
+
+@{
+    ViewData["Title"] = "Look Details";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-sm p-4 mx-auto" style="max-width: 700px;">
+        <h2 class="mb-4 text-center fw-semibold">@Model.Title</h2>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h6 class="text-muted">Hairstyle:</h6>
+                <p class="fw-medium">@Model.Hairstyle?.Name ?? "No hairstyle selected"</p>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-muted">Facial Hair:</h6>
+                <p class="fw-medium">@Model.FacialHair?.Name ?? "None"</p>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <h6 class="text-muted">Created On:</h6>
+            <p class="fw-medium">@Model.CreatedAt.ToString("MMMM dd, yyyy - HH:mm")</p>
+        </div>
+
+        @if (Model.UserPhoto != null)
+        {
+            <div class="text-center mb-3">
+                <img src="data:image/png;base64,@Convert.ToBase64String(Model.UserPhoto.ImageData)"
+                     alt="User Look Preview" class="img-fluid rounded shadow-sm" style="max-height: 300px;" />
+            </div>
+        }
+
+        <div class="text-center mt-4">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary me-2">
+                <i class="fa-solid fa-pen-to-square me-2"></i>Edit
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-arrow-left me-2"></i>Back to Gallery
+            </a>
+        </div>
+    </div>
+</div>

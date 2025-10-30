@@ -1,0 +1,46 @@
+﻿@model VirtualHair.Models.UserHairstyle
+
+@{
+    ViewData["Title"] = "Add New Look";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4 fw-semibold text-center">Add a New Look</h2>
+
+    <form asp-action="Create" method="post" enctype="multipart/form-data" class="shadow-sm p-4 rounded bg-body-tertiary">
+        <div class="mb-3">
+            <label asp-for="Title" class="form-label fw-semibold">Look Name</label>
+            <input asp-for="Title" class="form-control" placeholder="e.g. Summer Fade or Casual Style" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="HairstyleId" class="form-label fw-semibold">Hairstyle</label>
+            <select asp-for="HairstyleId" class="form-select" asp-items="@(new SelectList(ViewBag.Hairstyles, "Id", "Name"))">
+                <option value="">-- Select Hairstyle --</option>
+            </select>
+            <span asp-validation-for="HairstyleId" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="FacialHairId" class="form-label fw-semibold">Facial Hair (Optional)</label>
+            <select asp-for="FacialHairId" class="form-select" asp-items="@(new SelectList(ViewBag.FacialHairs, "Id", "Name"))">
+                <option value="">-- None --</option>
+            </select>
+            <span asp-validation-for="FacialHairId" class="text-danger"></span>
+        </div>
+
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary px-4">
+                <i class="fa-solid fa-save me-2"></i> Save Look
+            </button>
+            <a asp-action="Index" class="btn btn-outline-secondary px-4 ms-2">
+                <i class="fa-solid fa-arrow-left me-2"></i> Back to Gallery
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

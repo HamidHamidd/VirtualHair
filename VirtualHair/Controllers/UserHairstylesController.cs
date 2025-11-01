@@ -24,29 +24,41 @@ namespace VirtualHair.Controllers
         public async Task<IActionResult> Index()
         {
             var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["ErrorMessage"] = "⚠️ You must be logged in to view your gallery.";
+                return RedirectToAction("Index", "Home");
+            }
 
-            var looks = await _context.UserPhotos
-                .Join(_context.UserPhotos,
-                    u => u.UserId,
-                    p => p.UserId,
-                    (u, p) => u)
-                .ToListAsync();
-
-            var userLooks = await _context.UserPhotos
-                .Where(p => p.UserId == userId)
-                .ToListAsync();
-
-            var hairstyles = await _context.UserPhotos
-                .ToListAsync();
-
-            var items = await _context.UserHairstyles
+            var looks = await _context.UserHairstyles
                 .Include(x => x.Hairstyle)
                 .Include(x => x.FacialHair)
                 .Where(x => x.UserId == userId)
                 .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync();
 
-            return View(items);
+            return View(looks);
+        }
+
+        // GET: UserHairstyles/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var userId = _userManager.GetUserId(User);
+            var look = await _context.UserHairstyles
+                .Include(x => x.Hairstyle)
+                .Include(x => x.FacialHair)
+                .FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId);
+
+            if (look == null)
+            {
+                TempData["ErrorMessage"] = "⚠️ Look not found or access denied.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(look);
         }
 
         // GET: UserHairstyles/Create
@@ -63,52 +75,111 @@ namespace VirtualHair.Controllers
         public async Task<IActionResult> Create(UserHairstyle model)
         {
             var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["ErrorMessage"] = "⚠️ You must be logged in to create a look.";
+                return RedirectToAction("Index", "Home");
+            }
 
-            if (ModelState.IsValid)
+            if (model.HairstyleId == 0)
+                ModelState.AddModelError("HairstyleId", "Please select a hairstyle.");
+
+            var duplicate = await _context.UserHairstyles
+                .AnyAsync(x => x.UserId == userId && x.Title.ToLower() == model.Title.ToLower());
+
+            if (duplicate)
+            {
+                TempData["ErrorMessage"] = "⚠️ You already have a look with this name. Please choose another one.";
+                ViewBag.Hairstyles = await _context.Hairstyles.ToListAsync();
+                ViewBag.FacialHairs = await _context.FacialHairs.ToListAsync();
+                return View(model);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "❌ Validation failed.";
+                ViewBag.Hairstyles = await _context.Hairstyles.ToListAsync();
+                ViewBag.FacialHairs = await _context.FacialHairs.ToListAsync();
+                return View(model);
+            }
+
+            try
             {
                 model.UserId = userId;
                 model.CreatedAt = DateTime.UtcNow;
-
                 _context.UserHairstyles.Add(model);
                 await _context.SaveChangesAsync();
 
+                TempData["SuccessMessage"] = "✅ Look created successfully!";
                 return RedirectToAction(nameof(Index));
             }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"❌ Error while saving: {ex.Message}";
+                return View(model);
+            }
+        }
 
-            // Ако моделът не е валиден — презареждаме dropdown-ите
+        // GET: UserHairstyles/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var look = await _context.UserHairstyles.FindAsync(id);
+            if (look == null)
+                return NotFound();
+
+            ViewBag.Hairstyles = await _context.Hairstyles.ToListAsync();
+            ViewBag.FacialHairs = await _context.FacialHairs.ToListAsync();
+            return View(look);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, UserHairstyle model)
+        {
+            if (id != model.Id)
+                return NotFound();
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(model);
+                    await _context.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = "✅ Changes saved successfully!";
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_context.UserHairstyles.Any(e => e.Id == model.Id))
+                        return NotFound();
+                    else
+                        throw;
+                }
+            }
+
             ViewBag.Hairstyles = await _context.Hairstyles.ToListAsync();
             ViewBag.FacialHairs = await _context.FacialHairs.ToListAsync();
             return View(model);
         }
 
-        // GET: UserHairstyles/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var item = await _context.UserHairstyles
-                .Include(x => x.Hairstyle)
-                .Include(x => x.FacialHair)
-                .Include(x => x.UserPhoto)
-                .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (item == null) return NotFound();
-
-            return View(item);
-        }
-
         // GET: UserHairstyles/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null) return NotFound();
+            if (id == null)
+                return NotFound();
 
+            var userId = _userManager.GetUserId(User);
             var item = await _context.UserHairstyles
                 .Include(x => x.Hairstyle)
                 .Include(x => x.FacialHair)
-                .Include(x => x.UserPhoto)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId);
 
-            if (item == null) return NotFound();
+            if (item == null)
+                return NotFound();
 
             return View(item);
         }
@@ -124,6 +195,8 @@ namespace VirtualHair.Controllers
                 _context.UserHairstyles.Remove(look);
                 await _context.SaveChangesAsync();
             }
+
+            TempData["SuccessMessage"] = "🗑️ Look deleted successfully!";
             return RedirectToAction(nameof(Index));
         }
     }

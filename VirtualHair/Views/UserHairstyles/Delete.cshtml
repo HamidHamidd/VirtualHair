@@ -1,50 +1,73 @@
 ﻿@model VirtualHair.Models.UserHairstyle
-
 @{
     ViewData["Title"] = "Delete Look";
 }
 
-<div class="container mt-5">
-    <div class="card shadow-sm p-4 mx-auto" style="max-width: 700px;">
-        <h2 class="text-danger text-center fw-semibold mb-4">
-            <i class="fa-solid fa-triangle-exclamation me-2"></i>Delete Look
-        </h2>
+<div class="container py-4">
+    <div class="mx-auto" style="max-width: 720px;">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <h3 class="fw-semibold text-danger mb-3">Delete Look</h3>
+                <p class="text-secondary">Are you sure you want to permanently delete this look?</p>
 
-        <p class="text-center text-secondary mb-4">
-            Are you sure you want to delete this look? This action <strong>cannot be undone</strong>.
-        </p>
-
-        <div class="border rounded p-3 mb-4 bg-body-tertiary">
-            <h5 class="fw-semibold mb-2">@Model.Title</h5>
-
-            <div class="row">
-                <div class="col-md-6">
-                    <p class="mb-1"><strong>Hairstyle:</strong> @Model.Hairstyle?.Name ?? "No hairstyle"</p>
+                <div class="border rounded p-3 mb-4">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-12 col-sm-5">
+                            <div class="ratio ratio-4x3 bg-light rounded overflow-hidden">
+                                <img src="@(Model.ImagePath ?? "/images/no-image.png")" class="w-100 h-100" style="object-fit: cover;" alt="Preview" />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-7">
+                            <div class="mb-1"><strong>Name:</strong> @Model.Title</div>
+                            <div class="mb-1"><strong>Hairstyle:</strong> @Model.Hairstyle?.Name</div>
+                            <div class="mb-1"><strong>Facial hair:</strong> @(Model.FacialHair?.Name ?? "—")</div>
+                            <div class="mb-1"><strong>Created:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd")</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <p class="mb-1"><strong>Facial Hair:</strong> @Model.FacialHair?.Name ?? "None"</p>
-                </div>
+
+                <form asp-action="DeleteConfirmed" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger px-4">Delete</button>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">Cancel</a>
+                    </div>
+                </form>
             </div>
-
-            <p class="text-muted mb-1"><strong>Created:</strong> @Model.CreatedAt.ToString("MMMM dd, yyyy - HH:mm")</p>
-
-            @if (Model.UserPhoto != null)
-            {
-                <div class="text-center mt-3">
-                    <img src="data:image/png;base64,@Convert.ToBase64String(Model.UserPhoto.ImageData)"
-                         alt="User Look Preview" class="img-fluid rounded shadow-sm" style="max-height: 280px;" />
-                </div>
-            }
         </div>
-
-        <form asp-action="DeleteConfirmed" method="post" class="text-center">
-            <input type="hidden" asp-for="Id" />
-            <button type="submit" class="btn btn-danger px-4 me-2">
-                <i class="fa-solid fa-trash-can me-2"></i> Delete
-            </button>
-            <a asp-action="Index" class="btn btn-outline-secondary px-4">
-                <i class="fa-solid fa-arrow-left me-2"></i> Cancel
-            </a>
-        </form>
     </div>
 </div>
+
+<!-- Toasts -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1080">
+    <div id="toastMsg" class="toast align-items-center text-bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toastBody">Deleted successfully.</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const success = '@(TempData["SuccessMessage"] ?? "")';
+            const error = '@(TempData["ErrorMessage"] ?? "")';
+            if (success || error) {
+                const toast = document.getElementById('toastMsg');
+                const body = document.getElementById('toastBody');
+                if (error) {
+                    toast.classList.remove('text-bg-success');
+                    toast.classList.add('text-bg-danger');
+                    body.textContent = error;
+                } else {
+                    toast.classList.remove('text-bg-danger');
+                    toast.classList.add('text-bg-success');
+                    body.textContent = success;
+                }
+                new bootstrap.Toast(toast, { delay: 3000 }).show();
+            }
+        })();
+    </script>
+}

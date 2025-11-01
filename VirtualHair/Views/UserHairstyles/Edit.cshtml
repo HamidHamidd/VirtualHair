@@ -1,59 +1,85 @@
 ﻿@model VirtualHair.Models.UserHairstyle
-
 @{
     ViewData["Title"] = "Edit Look";
 }
 
-<div class="container mt-4">
-    <h2 class="mb-4 fw-semibold text-center">
-        <i class="fa-solid fa-pen-to-square me-2"></i>Edit Look
-    </h2>
+<div class="container py-4">
+    <div class="mx-auto" style="max-width: 720px;">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <h3 class="mb-3 fw-semibold">Edit Look</h3>
+                <p class="text-secondary mb-4">Update your saved look details.</p>
 
-    <form asp-action="Edit" method="post" enctype="multipart/form-data" class="shadow-sm p-4 rounded bg-body-tertiary">
-        <input type="hidden" asp-for="Id" />
+                <form asp-action="Edit" method="post" enctype="multipart/form-data" novalidate>
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
 
-        <div class="mb-3">
-            <label asp-for="Title" class="form-label fw-semibold">Look Name</label>
-            <input asp-for="Title" class="form-control" placeholder="e.g. Casual Fade or Business Style" />
-            <span asp-validation-for="Title" class="text-danger"></span>
-        </div>
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-        <div class="mb-3">
-            <label asp-for="HairstyleId" class="form-label fw-semibold">Hairstyle</label>
-            <select asp-for="HairstyleId" class="form-select" asp-items="@(new SelectList(ViewBag.Hairstyles, "Id", "Name", Model.HairstyleId))">
-                <option value="">-- Select Hairstyle --</option>
-            </select>
-            <span asp-validation-for="HairstyleId" class="text-danger"></span>
-        </div>
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label">Look name</label>
+                        <input asp-for="Title" class="form-control" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
 
-        <div class="mb-3">
-            <label asp-for="FacialHairId" class="form-label fw-semibold">Facial Hair (Optional)</label>
-            <select asp-for="FacialHairId" class="form-select" asp-items="@(new SelectList(ViewBag.FacialHairs, "Id", "Name", Model.FacialHairId))">
-                <option value="">-- None --</option>
-            </select>
-            <span asp-validation-for="FacialHairId" class="text-danger"></span>
-        </div>
+                    <div class="mb-3">
+                        <label asp-for="HairstyleId" class="form-label">Hairstyle</label>
+                        <select asp-for="HairstyleId" class="form-select"
+                                asp-items="@(new SelectList(ViewBag.Hairstyles, "Id", "Name", Model?.HairstyleId))">
+                            <option value="">-- Select hairstyle --</option>
+                        </select>
+                        <span asp-validation-for="HairstyleId" class="text-danger"></span>
+                    </div>
 
-        @if (Model.UserPhoto != null)
-        {
-            <div class="text-center mb-3">
-                <h6 class="text-muted">Current Photo:</h6>
-                <img src="data:image/png;base64,@Convert.ToBase64String(Model.UserPhoto.ImageData)"
-                     alt="User Photo" class="img-fluid rounded shadow-sm" style="max-height: 280px;" />
+                    <div class="mb-4">
+                        <label asp-for="FacialHairId" class="form-label">Facial hair (optional)</label>
+                        <select asp-for="FacialHairId" class="form-select"
+                                asp-items="@(new SelectList(ViewBag.FacialHairs, "Id", "Name", Model?.FacialHairId))">
+                            <option value="">-- None --</option>
+                        </select>
+                        <span asp-validation-for="FacialHairId" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary px-4">Save Changes</button>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">Back to Gallery</a>
+                    </div>
+                </form>
             </div>
-        }
-
-        <div class="text-center mt-4">
-            <button type="submit" class="btn btn-primary px-4">
-                <i class="fa-solid fa-save me-2"></i>Save Changes
-            </button>
-            <a asp-action="Index" class="btn btn-outline-secondary px-4 ms-2">
-                <i class="fa-solid fa-arrow-left me-2"></i>Back to Gallery
-            </a>
         </div>
-    </form>
+    </div>
+</div>
+
+<!-- Toasts -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1080">
+    <div id="toastMsg" class="toast align-items-center text-bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toastBody">Updated successfully.</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            const success = '@(TempData["SuccessMessage"] ?? "")';
+            const error = '@(TempData["ErrorMessage"] ?? "")';
+            if (success || error) {
+                const toast = document.getElementById('toastMsg');
+                const body = document.getElementById('toastBody');
+                if (error) {
+                    toast.classList.remove('text-bg-success');
+                    toast.classList.add('text-bg-danger');
+                    body.textContent = error;
+                } else {
+                    toast.classList.remove('text-bg-danger');
+                    toast.classList.add('text-bg-success');
+                    body.textContent = success;
+                }
+                new bootstrap.Toast(toast, { delay: 3000 }).show();
+            }
+        })();
+    </script>
 }

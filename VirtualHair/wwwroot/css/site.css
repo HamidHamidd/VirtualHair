@@ -39,7 +39,7 @@ footer {
 }
 
 /* ===============================
-   NAVBAR / LOGO STYLING
+   NAVBAR
 =============================== */
 .navbar {
     backdrop-filter: blur(10px);
@@ -52,7 +52,29 @@ footer {
 }
 
 /* ===============================
-   MENU ANIMATION (OFFCANVAS)
+   OFFCANVAS FIX (Dark + Light)
+=============================== */
+.custom-offcanvas {
+    background-color: rgba(30, 30, 30, 0.95);
+    color: #f1f1f1;
+}
+
+[data-bs-theme="light"] .custom-offcanvas {
+    background-color: rgba(245, 245, 245, 0.98);
+    color: #222;
+}
+
+    [data-bs-theme="light"] .custom-offcanvas .nav-link {
+        color: #222;
+    }
+
+        [data-bs-theme="light"] .custom-offcanvas .nav-link:hover {
+            background-color: rgba(0, 191, 255, 0.15);
+            color: #007bff;
+        }
+
+/* ===============================
+   MENU LINK ANIMATION
 =============================== */
 .offcanvas-body .nav-item {
     opacity: 0;
@@ -72,7 +94,7 @@ footer {
 }
 
 /* ===============================
-   MENU BUTTON HOVER EFFECT
+   MENU LINK STYLE
 =============================== */
 .offcanvas .nav-link {
     font-weight: 500;
@@ -88,6 +110,70 @@ footer {
         transform: scale(1.05);
         box-shadow: 0 0 8px rgba(0, 191, 255, 0.4);
     }
+
+/* ===============================
+   THEME TOGGLE BUTTON — PREMIUM STYLE
+=============================== */
+#themeToggleBtn {
+    border-radius: 10px;
+    border: 1px solid transparent;
+    transition: all 0.35s ease;
+    padding: 10px 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: linear-gradient(145deg, rgba(0,0,0,0.15), rgba(255,255,255,0.05));
+    position: relative;
+    overflow: hidden;
+}
+
+/* Light mode */
+[data-bs-theme="light"] .custom-offcanvas #themeToggleBtn {
+    color: #111;
+    background: linear-gradient(145deg, #f9f9f9, #e9e9e9);
+    border-color: #ccc;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+    [data-bs-theme="light"] .custom-offcanvas #themeToggleBtn:hover {
+        background: linear-gradient(145deg, #f0f0f0, #dcdcdc);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        transform: translateY(-1px);
+    }
+
+/* Dark mode */
+.custom-offcanvas #themeToggleBtn {
+    color: #f1f1f1;
+    background: linear-gradient(145deg, rgba(40,40,40,0.95), rgba(20,20,20,0.95));
+    border-color: rgba(255,255,255,0.15);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+    .custom-offcanvas #themeToggleBtn:hover {
+        background: linear-gradient(145deg, rgba(60,60,60,1), rgba(30,30,30,1));
+        box-shadow: 0 6px 16px rgba(0,191,255,0.25);
+        transform: translateY(-1px);
+    }
+
+/* Icon & Label animation */
+#themeToggleBtn i {
+    transition: transform 0.5s ease, color 0.3s ease;
+}
+
+#themeToggleBtn:hover i {
+    transform: rotate(25deg);
+}
+
+#themeToggleBtn span {
+    opacity: 0.95;
+    transition: opacity 0.3s ease;
+}
+
+#themeToggleBtn:hover span {
+    opacity: 1;
+}
 
 /* ===============================
    MINI LOADER / SHIMMER
@@ -116,29 +202,6 @@ footer {
 }
 
 /* ===============================
-   THEME TOGGLE BUTTON
-=============================== */
-#themeToggleBtn {
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 10px;
-    transition: all 0.3s ease;
-    padding: 8px;
-}
-
-    #themeToggleBtn:hover {
-        background-color: rgba(0, 191, 255, 0.1);
-        box-shadow: 0 0 10px rgba(0,191,255,0.3);
-    }
-
-    #themeToggleBtn i {
-        transition: transform 0.5s ease;
-    }
-
-    #themeToggleBtn:active i {
-        transform: rotate(360deg);
-    }
-
-/* ===============================
    FORM ELEMENTS
 =============================== */
 form {
@@ -156,7 +219,7 @@ form {
 }
 
 /* ===============================
-   CARD AND SHADOW STYLES
+   CARD AND SHADOWS
 =============================== */
 .card, .shadow-box {
     border-radius: 16px;
@@ -186,7 +249,7 @@ form {
     }
 
 /* ===============================
-   GALLERY GRID STYLING
+   GALLERY CARD STYLE
 =============================== */
 .gallery-card {
     border-radius: 14px;
@@ -222,29 +285,68 @@ form {
     transform: scale(1.05);
 }
 
-.gallery-card .btn-sm {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+/* ===============================
+   LOGO TEXT + ENTRY ANIMATION (RESTORED)
+=============================== */
+.logo-text {
+    font-size: 1.7rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #00bfff, #8a2be2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 10px rgba(0,191,255,0.4);
+    letter-spacing: 1px;
+    display: inline-block;
+    opacity: 0;
+    transform: scale(0.9);
+    animation: logoAppear 1.2s ease-out forwards;
+    transition: all 0.4s ease;
+}
+
+@keyframes logoAppear {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+        filter: blur(6px);
+        text-shadow: 0 0 4px rgba(0,191,255,0.3);
+    }
+
+    60% {
+        opacity: 1;
+        transform: scale(1.05);
+        filter: blur(0);
+        text-shadow: 0 0 15px rgba(0,191,255,0.6);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        text-shadow: 0 0 10px rgba(0,191,255,0.4);
+    }
+}
+
+.logo-text:hover {
+    transform: scale(1.06);
+    text-shadow: 0 0 22px rgba(0,191,255,0.8), 0 0 35px rgba(138,43,226,0.6);
+}
+
+/* ===============================
+   HERO SECTION
+=============================== */
+.hero-section {
+    min-height: 70vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.25s ease;
+    background: linear-gradient(135deg, rgba(0,191,255,0.05), rgba(138,43,226,0.1));
+    border-radius: 20px;
+    animation: fadeInHero 1s ease-in-out;
 }
 
-    .gallery-card .btn-sm:hover {
-        transform: translateY(-2px);
-    }
-
-/* Empty gallery message */
-.text-muted.mt-5 {
-    animation: fadeIn 0.8s ease-in-out;
-}
-
-@keyframes fadeIn {
+@keyframes fadeInHero {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(15px);
     }
 
     to {
@@ -253,48 +355,24 @@ form {
     }
 }
 
-/* ===============================
-   CRUD PAGE FORMS (Create/Edit/Delete/Details)
-=============================== */
-.card .form-label {
+.text-gradient {
+    background: linear-gradient(90deg, #00bfff, #8a2be2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-btn {
+    background: linear-gradient(90deg, #00bfff, #8a2be2);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 24px;
     font-weight: 600;
+    transition: all 0.3s ease;
 }
 
-.card .form-control,
-.card .form-select {
-    border-radius: 10px;
-}
-
-.btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(13,110,253,.25);
-    transition: all .2s ease;
-}
-
-/* ===============================
-   TOASTS
-=============================== */
-.toast {
-    border-radius: 10px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
-    animation: fadeInToast 0.4s ease-in-out;
-}
-
-@keyframes fadeInToast {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
+    .hero-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0,191,255,0.4);
+        color: #fff;
     }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@media (max-width: 576px) {
-    .toast {
-        width: 100%;
-        border-radius: 0;
-    }
-}

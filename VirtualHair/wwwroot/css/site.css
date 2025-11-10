@@ -1,6 +1,4 @@
-﻿/* ===============================
-   BASE STYLES
-=============================== */
+﻿/* =============================== BASE STYLES =============================== */
 html, body {
     height: 100%;
     margin: 0;
@@ -12,9 +10,7 @@ html, body {
     transition: background-color 0.6s ease, color 0.6s ease;
 }
 
-/* ===============================
-   FADE-IN ANIMATION ON PAGE LOAD
-=============================== */
+/* =============================== FADE-IN ANIMATION ON PAGE LOAD =============================== */
 body {
     opacity: 0;
     animation: fadeInPage 0.6s ease-in-out forwards;
@@ -38,9 +34,7 @@ footer {
     font-size: 0.9rem;
 }
 
-/* ===============================
-   NAVBAR
-=============================== */
+/* =============================== NAVBAR =============================== */
 .navbar {
     backdrop-filter: blur(10px);
     background-color: rgba(255, 255, 255, 0.85);
@@ -51,9 +45,7 @@ footer {
     background-color: rgba(20, 20, 20, 0.85);
 }
 
-/* ===============================
-   OFFCANVAS FIX (Dark + Light)
-=============================== */
+/* =============================== OFFCANVAS FIX (Dark + Light) =============================== */
 .custom-offcanvas {
     background-color: rgba(30, 30, 30, 0.95);
     color: #f1f1f1;
@@ -73,9 +65,7 @@ footer {
             color: #007bff;
         }
 
-/* ===============================
-   MENU LINK ANIMATION
-=============================== */
+/* =============================== MENU LINK ANIMATION =============================== */
 .offcanvas-body .nav-item {
     opacity: 0;
     transform: translateX(15px);
@@ -93,9 +83,7 @@ footer {
     }
 }
 
-/* ===============================
-   MENU LINK STYLE
-=============================== */
+/* =============================== MENU LINK STYLE =============================== */
 .offcanvas .nav-link {
     font-weight: 500;
     color: #f1f1f1;
@@ -111,9 +99,7 @@ footer {
         box-shadow: 0 0 8px rgba(0, 191, 255, 0.4);
     }
 
-/* ===============================
-   THEME TOGGLE BUTTON — PREMIUM STYLE
-=============================== */
+/* =============================== THEME TOGGLE BUTTON — PREMIUM STYLE =============================== */
 #themeToggleBtn {
     border-radius: 10px;
     border: 1px solid transparent;
@@ -129,7 +115,6 @@ footer {
     overflow: hidden;
 }
 
-/* Light mode */
 [data-bs-theme="light"] .custom-offcanvas #themeToggleBtn {
     color: #111;
     background: linear-gradient(145deg, #f9f9f9, #e9e9e9);
@@ -143,7 +128,6 @@ footer {
         transform: translateY(-1px);
     }
 
-/* Dark mode */
 .custom-offcanvas #themeToggleBtn {
     color: #f1f1f1;
     background: linear-gradient(145deg, rgba(40,40,40,0.95), rgba(20,20,20,0.95));
@@ -157,7 +141,6 @@ footer {
         transform: translateY(-1px);
     }
 
-/* Icon & Label animation */
 #themeToggleBtn i {
     transition: transform 0.5s ease, color 0.3s ease;
 }
@@ -175,9 +158,7 @@ footer {
     opacity: 1;
 }
 
-/* ===============================
-   MINI LOADER / SHIMMER
-=============================== */
+/* =============================== MINI LOADER / SHIMMER =============================== */
 .page-loader {
     position: fixed;
     top: 0;
@@ -201,9 +182,7 @@ footer {
     }
 }
 
-/* ===============================
-   FORM ELEMENTS
-=============================== */
+/* =============================== FORM ELEMENTS =============================== */
 form {
     max-width: 600px;
     margin: auto;
@@ -218,9 +197,7 @@ form {
     font-weight: 500;
 }
 
-/* ===============================
-   CARD AND SHADOWS
-=============================== */
+/* =============================== CARD AND SHADOWS =============================== */
 .card, .shadow-box {
     border-radius: 16px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -232,9 +209,7 @@ form {
         box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     }
 
-/* ===============================
-   SCROLLBAR
-=============================== */
+/* =============================== SCROLLBAR =============================== */
 ::-webkit-scrollbar {
     width: 8px;
 }
@@ -248,9 +223,7 @@ form {
         background: rgba(80, 200, 255, 0.7);
     }
 
-/* ===============================
-   GALLERY CARD STYLE
-=============================== */
+/* =============================== GALLERY CARD STYLE =============================== */
 .gallery-card {
     border-radius: 14px;
     overflow: hidden;
@@ -285,9 +258,7 @@ form {
     transform: scale(1.05);
 }
 
-/* ===============================
-   LOGO TEXT + ENTRY ANIMATION (RESTORED)
-=============================== */
+/* =============================== LOGO TEXT + ENTRY ANIMATION =============================== */
 .logo-text {
     font-size: 1.7rem;
     font-weight: 700;
@@ -330,9 +301,7 @@ form {
     text-shadow: 0 0 22px rgba(0,191,255,0.8), 0 0 35px rgba(138,43,226,0.6);
 }
 
-/* ===============================
-   HERO SECTION
-=============================== */
+/* =============================== HERO SECTION =============================== */
 .hero-section {
     min-height: 70vh;
     display: flex;
@@ -376,3 +345,56 @@ form {
         box-shadow: 0 8px 24px rgba(0,191,255,0.4);
         color: #fff;
     }
+
+/* =============================== PREVIEW PAGE =============================== */
+canvas#previewCanvas {
+    display: block;
+    max-width: 100%;
+    border-radius: 12px;
+    background-color: #fafafa;
+    object-fit: contain;
+    aspect-ratio: 1 / 1;
+    transition: all 0.3s ease;
+}
+
+[data-bs-theme="dark"] canvas#previewCanvas {
+    background-color: #1a1a1a;
+}
+
+canvas#previewCanvas:hover {
+    box-shadow: 0 0 15px rgba(0,191,255,0.3);
+}
+
+/* =============================== CROP MODAL OVERLAY =============================== */
+.cropper-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 10, 20, 0.95); /* solid darker background */
+    backdrop-filter: blur(6px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 20000;
+}
+
+.cropper-box {
+    background: var(--bs-body-bg);
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 0 35px rgba(0,191,255,0.4);
+    max-width: 90%;
+    width: 500px;
+    text-align: center;
+    position: relative;
+    z-index: 20001;
+}
+
+    .cropper-box img {
+        max-width: 100%;
+        border-radius: 8px;
+    }
+
+[data-bs-theme="dark"] .cropper-box {
+    background: #1c1c1c;
+    color: #eee;
+}

@@ -2,11 +2,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace VirtualHair.Models
 {
-    [Index(nameof(UserId), nameof(Title), IsUnique = true)] // ✅ Не позволява дублиране на име при същия User
     public class UserHairstyle
     {
         [Key]

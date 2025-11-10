@@ -1,0 +1,92 @@
+﻿@{
+    ViewData["Title"] = "Try Hairstyles";
+    var hairstyles = ViewBag.Hairstyles as List<VirtualHair.Models.Hairstyle>;
+    var facialHairs = ViewBag.FacialHairs as List<VirtualHair.Models.FacialHair>;
+}
+
+<div class="container py-4">
+    <h2 class="text-center mb-4 text-gradient fw-bold">Try Your Look</h2>
+
+    <div class="row">
+        <!-- LEFT: Canvas + Controls -->
+        <div class="col-md-7 text-center mb-4">
+            <div class="card shadow-sm p-3">
+                <h5 class="mb-3">Upload your photo</h5>
+                <input type="file" id="imageUpload" accept="image/*" class="form-control mb-3" />
+                <canvas id="previewCanvas" class="border rounded shadow-sm" width="480" height="480"></canvas>
+
+                <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
+                    <button class="btn btn-outline-primary btn-sm" id="moveUp">⬆️</button>
+                    <button class="btn btn-outline-primary btn-sm" id="moveDown">⬇️</button>
+                    <button class="btn btn-outline-primary btn-sm" id="moveLeft">⬅️</button>
+                    <button class="btn btn-outline-primary btn-sm" id="moveRight">➡️</button>
+                    <button class="btn btn-outline-success btn-sm" id="zoomIn">🔍+</button>
+                    <button class="btn btn-outline-success btn-sm" id="zoomOut">🔍−</button>
+                    <button class="btn btn-outline-secondary btn-sm" id="rotateLeft">↩️</button>
+                    <button class="btn btn-outline-secondary btn-sm" id="rotateRight">↪️</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Thumbnails -->
+        <div class="col-md-5">
+            <div class="accordion" id="styleAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#hairstylesCollapse">
+                            Hairstyles
+                        </button>
+                    </h2>
+                    <div id="hairstylesCollapse" class="accordion-collapse collapse show">
+                        <div class="accordion-body d-flex flex-wrap gap-2">
+                            @foreach (var h in hairstyles)
+                            {
+                                <img src="~/@h.ImagePath" alt="@h.Name" class="style-thumb" data-type="hairstyle" data-src="@Url.Content("~/" + h.ImagePath)" />
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#facialCollapse">
+                            Facial Hair
+                        </button>
+                    </h2>
+                    <div id="facialCollapse" class="accordion-collapse collapse">
+                        <div class="accordion-body d-flex flex-wrap gap-2">
+                            @foreach (var f in facialHairs)
+                            {
+                                <img src="~/@f.ImagePath" alt="@f.Name" class="style-thumb" data-type="facial" data-src="@Url.Content("~/" + f.ImagePath)" />
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/preview.js" asp-append-version="true"></script>
+}
+
+<style>
+    .style-thumb {
+        width: 80px;
+        height: 80px;
+        border-radius: 10px;
+        object-fit: cover;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.3s ease;
+    }
+
+        .style-thumb:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 12px rgba(0,191,255,0.6);
+        }
+
+    canvas {
+        max-width: 100%;
+    }
+</style>

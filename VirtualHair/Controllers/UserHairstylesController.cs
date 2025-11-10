@@ -89,7 +89,7 @@ namespace VirtualHair.Controllers
 
             if (duplicate)
             {
-                TempData["ErrorMessage"] = "⚠️ You already have a look with this name. Please choose another one.";
+                TempData["ErrorMessage"] = "⚠️ You already have a look with this name.";
                 ViewBag.Hairstyles = await _context.Hairstyles.ToListAsync();
                 ViewBag.FacialHairs = await _context.FacialHairs.ToListAsync();
                 return View(model);
@@ -198,6 +198,19 @@ namespace VirtualHair.Controllers
 
             TempData["SuccessMessage"] = "🗑️ Look deleted successfully!";
             return RedirectToAction(nameof(Index));
+        }
+
+        // ✅ NEW: PREVIEW PAGE
+        [Authorize]
+        public async Task<IActionResult> Preview()
+        {
+            var hairstyles = await _context.Hairstyles.ToListAsync();
+            var facialHairs = await _context.FacialHairs.ToListAsync();
+
+            ViewBag.Hairstyles = hairstyles;
+            ViewBag.FacialHairs = facialHairs;
+
+            return View();
         }
     }
 }

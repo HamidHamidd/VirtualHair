@@ -2,10 +2,10 @@
 
 #nullable disable
 
-namespace VirtualHair.Data.Migrations
+namespace VirtualHair.Migrations
 {
     /// <inheritdoc />
-    public partial class SyncUserPhotoModel : Migration
+    public partial class MakeHairstyleOptionalInUserHairstyle : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

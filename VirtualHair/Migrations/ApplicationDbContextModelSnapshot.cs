@@ -3,20 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VirtualHair.Data;
 
 #nullable disable
 
-namespace VirtualHair.Data.Migrations
+namespace VirtualHair.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251030222805_FixUserHairstyleUserRelation")]
-    partial class FixUserHairstyleUserRelation
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -366,15 +363,18 @@ namespace VirtualHair.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("UserId1")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("UserPhotoId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -385,6 +385,8 @@ namespace VirtualHair.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.HasIndex("UserId1");
+
+                    b.HasIndex("UserPhotoId");
 
                     b.ToTable("UserHairstyles");
                 });
@@ -397,13 +399,21 @@ namespace VirtualHair.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("StoredPath")
+                    b.Property<string>("FileName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<byte[]>("ImageData")
                         .IsRequired()
-                        .HasMaxLength(260)
-                        .HasColumnType("nvarchar(260)");
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -508,16 +518,32 @@ namespace VirtualHair.Data.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId1");
 
+                    b.HasOne("VirtualHair.Models.UserPhoto", "UserPhoto")
+                        .WithMany()
+                        .HasForeignKey("UserPhotoId");
+
                     b.Navigation("FacialHair");
 
                     b.Navigation("Hairstyle");
+
+                    b.Navigation("User");
+
+                    b.Navigation("UserPhoto");
+                });
+
+            modelBuilder.Entity("VirtualHair.Models.UserPhoto", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });

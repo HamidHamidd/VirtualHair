@@ -16,7 +16,6 @@ namespace VirtualHair.Models
         [ForeignKey(nameof(UserId))]
         public IdentityUser? User { get; set; }
 
-        [Required]
         public int HairstyleId { get; set; }
 
         [ForeignKey(nameof(HairstyleId))]

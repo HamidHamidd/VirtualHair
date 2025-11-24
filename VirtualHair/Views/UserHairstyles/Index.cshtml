@@ -3,70 +3,134 @@
     ViewData["Title"] = "My Gallery";
 }
 
-<div class="container mt-4">
+<div class="container py-4">
+
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-semibold">My Gallery</h2>
-        <a asp-action="Create" class="btn btn-primary">
+        <h2 class="fw-bold mb-0">My Gallery</h2>
+
+        <a asp-action="Create" class="btn btn-primary rounded-pill px-3">
             <i class="fa-solid fa-plus me-2"></i>Add New Look
         </a>
     </div>
 
+    <!-- Alerts -->
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success text-center">@TempData["SuccessMessage"]</div>
+        <div class="alert alert-success text-center rounded-pill shadow-sm">@TempData["SuccessMessage"]</div>
     }
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-danger text-center">@TempData["ErrorMessage"]</div>
+        <div class="alert alert-danger text-center rounded-pill shadow-sm">@TempData["ErrorMessage"]</div>
     }
 
+    <!-- No items -->
     @if (!Model.Any())
     {
         <div class="text-center text-muted mt-5">
-            <i class="fa-regular fa-image fa-3x mb-3"></i>
-            <h5>No looks yet</h5>
+            <i class="fa-regular fa-image fa-4x mb-3"></i>
+            <h5 class="fw-semibold">No looks yet</h5>
             <p class="small">Create your first look to see it here.</p>
         </div>
     }
     else
     {
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+
             @foreach (var item in Model)
             {
                 <div class="col">
-                    <div class="card shadow-sm h-100 gallery-card">
-                        <div class="gallery-img-wrapper">
+                    <div class="gallery-card shadow-sm">
+
+                        <!-- Image -->
+                        <div class="gallery-img-container">
                             <img src="@(item.ImagePath ?? "/images/no-image.png")"
-                                 class="card-img-top gallery-img"
-                                 alt="Hairstyle preview" />
+                                 class="gallery-img"
+                                 alt="@item.Title" />
                         </div>
-                        <div class="card-body">
-                            <h5 class="card-title text-truncate">@item.Title</h5>
-                            <p class="card-text small text-muted mb-2">
+
+                        <!-- Info -->
+                        <div class="gallery-info p-3">
+
+                            <h5 class="fw-semibold text-truncate mb-2">
+                                @item.Title
+                            </h5>
+
+                            <div class="small text-muted mb-2">
                                 <i class="fa-solid fa-scissors me-1"></i>@item.Hairstyle?.Name
                                 @if (item.FacialHair != null)
                                 {
                                     <span> | <i class="fa-solid fa-beard me-1"></i>@item.FacialHair?.Name</span>
                                 }
-                            </p>
-                            <p class="card-text small text-secondary">
-                                <i class="fa-regular fa-calendar me-1"></i>@item.CreatedAt.ToShortDateString()
-                            </p>
-                            <div class="d-flex justify-content-between mt-3">
-                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-info btn-sm">
-                                    <i class="fa-solid fa-eye"></i>
+                            </div>
+
+                            <div class="small text-secondary mb-3">
+                                <i class="fa-regular fa-calendar me-1"></i>
+                                @item.CreatedAt.ToShortDateString()
+                            </div>
+
+                            <!-- Action buttons -->
+                            <div class="d-flex justify-content-between">
+                                <a asp-action="Details" asp-route-id="@item.Id"
+                                   class="btn btn-outline-info btn-sm rounded-pill px-3">
+                                    View
                                 </a>
-                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-warning btn-sm">
-                                    <i class="fa-solid fa-pen"></i>
+
+                                <a asp-action="Edit" asp-route-id="@item.Id"
+                                   class="btn btn-outline-warning btn-sm rounded-pill px-3">
+                                    Edit
                                 </a>
-                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm">
-                                    <i class="fa-solid fa-trash"></i>
+
+                                <a asp-action="Delete" asp-route-id="@item.Id"
+                                   class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                    Delete
                                 </a>
                             </div>
+
                         </div>
                     </div>
                 </div>
             }
+
         </div>
     }
 </div>
+
+<style>
+    /* --- GALLERY CARD --- */
+    .gallery-card {
+        border-radius: 20px;
+        background: var(--bs-body-bg);
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.08);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .gallery-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+        }
+
+    .gallery-img-container {
+        width: 100%;
+        aspect-ratio: 1/1;
+        overflow: hidden;
+        background: #0d0f14;
+    }
+
+    .gallery-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+    }
+
+    .gallery-card:hover .gallery-img {
+        transform: scale(1.05);
+    }
+
+    /* Info box area */
+    .gallery-info {
+        backdrop-filter: blur(10px);
+    }
+</style>

@@ -1,56 +1,127 @@
 ﻿@model VirtualHair.Models.UserHairstyle
 @{
     ViewData["Title"] = "Edit Look";
+    var lookImg = Model.ImagePath ?? "/images/no-image.png";
+    var hairstyleImg = Model.Hairstyle?.ImagePath;
+    var facialImg = Model.FacialHair?.ImagePath;
 }
 
 <div class="container py-4">
-    <div class="mx-auto" style="max-width: 720px;">
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-4">
-                <h3 class="mb-3 fw-semibold">Edit Look</h3>
-                <p class="text-secondary mb-4">Update your saved look details.</p>
+    <div class="mx-auto" style="max-width: 920px;">
 
-                <form asp-action="Edit" method="post" enctype="multipart/form-data" novalidate>
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" asp-for="Id" />
+        <div class="card border-0 shadow-sm edit-card">
+            <div class="row g-0">
 
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
-                    <div class="mb-3">
-                        <label asp-for="Title" class="form-label">Look name</label>
-                        <input asp-for="Title" class="form-control" />
-                        <span asp-validation-for="Title" class="text-danger"></span>
+                <!-- LEFT SIDE: Current Look Preview -->
+                <div class="col-12 col-lg-6 edit-left">
+                    <div class="edit-image-wrap">
+                        <img src="@lookImg" class="edit-image" alt="Look preview" />
                     </div>
 
-                    <div class="mb-3">
-                        <label asp-for="HairstyleId" class="form-label">Hairstyle</label>
-                        <select asp-for="HairstyleId" class="form-select"
-                                asp-items="@(new SelectList(ViewBag.Hairstyles, "Id", "Name", Model?.HairstyleId))">
-                            <option value="">-- Select hairstyle --</option>
-                        </select>
-                        <span asp-validation-for="HairstyleId" class="text-danger"></span>
+                    <div class="pt-3 text-center text-muted small">
+                        Current saved look
                     </div>
+                </div>
 
-                    <div class="mb-4">
-                        <label asp-for="FacialHairId" class="form-label">Facial hair (optional)</label>
-                        <select asp-for="FacialHairId" class="form-select"
-                                asp-items="@(new SelectList(ViewBag.FacialHairs, "Id", "Name", Model?.FacialHairId))">
-                            <option value="">-- None --</option>
-                        </select>
-                        <span asp-validation-for="FacialHairId" class="text-danger"></span>
-                    </div>
+                <!-- RIGHT SIDE: Edit Form -->
+                <div class="col-12 col-lg-6 edit-right">
+                    <div class="p-4 p-lg-5 h-100 d-flex flex-column">
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary px-4">Save Changes</button>
-                        <a asp-action="Index" class="btn btn-outline-secondary px-4">Back to Gallery</a>
+                        <h3 class="fw-semibold mb-3">Edit Look</h3>
+                        <p class="text-secondary mb-4">Modify the details of your saved style.</p>
+
+                        <form asp-action="Edit" method="post" enctype="multipart/form-data" novalidate>
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" asp-for="Id" />
+
+                            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                            <!-- Title -->
+                            <div class="mb-3">
+                                <label asp-for="Title" class="form-label fw-semibold">Look name</label>
+                                <input asp-for="Title" class="form-control" />
+                                <span asp-validation-for="Title" class="text-danger"></span>
+                            </div>
+
+                            <!-- Hairstyle -->
+                            <div class="mb-3">
+                                <label asp-for="HairstyleId" class="form-label fw-semibold">Hairstyle</label>
+                                <select asp-for="HairstyleId"
+                                        class="form-select"
+                                        asp-items="@(new SelectList(ViewBag.Hairstyles, "Id", "Name", Model?.HairstyleId))">
+                                    <option value="">-- Select hairstyle --</option>
+                                </select>
+                                <span asp-validation-for="HairstyleId" class="text-danger"></span>
+                            </div>
+
+                            <!-- Facial Hair -->
+                            <div class="mb-4">
+                                <label asp-for="FacialHairId" class="form-label fw-semibold">Facial hair (optional)</label>
+                                <select asp-for="FacialHairId"
+                                        class="form-select"
+                                        asp-items="@(new SelectList(ViewBag.FacialHairs, "Id", "Name", Model?.FacialHairId))">
+                                    <option value="">-- None --</option>
+                                </select>
+                                <span asp-validation-for="FacialHairId" class="text-danger"></span>
+                            </div>
+
+                            <!-- MINI PREVIEWS -->
+                            <div class="edit-section mb-4">
+                                <div class="mini-title mb-2">Selected assets</div>
+
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <div class="mini-card">
+                                            <div class="mini-label">Hairstyle</div>
+                                            <div class="mini-img-wrap">
+                                                @if (!string.IsNullOrWhiteSpace(hairstyleImg))
+                                                {
+                                                    <img src="@hairstyleImg" class="mini-img" alt="Hairstyle" />
+                                                }
+                                                else
+                                                {
+                                                    <div class="mini-placeholder">None</div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-6">
+                                        <div class="mini-card">
+                                            <div class="mini-label">Facial hair</div>
+                                            <div class="mini-img-wrap">
+                                                @if (!string.IsNullOrWhiteSpace(facialImg))
+                                                {
+                                                    <img src="@facialImg" class="mini-img" alt="Facial hair" />
+                                                }
+                                                else
+                                                {
+                                                    <div class="mini-placeholder">None</div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Buttons -->
+                            <div class="mt-auto d-flex flex-wrap gap-2">
+                                <button type="submit" class="btn btn-primary px-4 rounded-pill">Save Changes</button>
+                                <a asp-action="Index" class="btn btn-outline-secondary px-4 rounded-pill">Back</a>
+                            </div>
+
+                        </form>
+
                     </div>
-                </form>
+                </div>
+
             </div>
         </div>
+
     </div>
 </div>
 
-<!-- Toasts -->
+<!-- Toast -->
 <div class="position-fixed top-0 end-0 p-3" style="z-index: 1080">
     <div id="toastMsg" class="toast align-items-center text-bg-success border-0" role="alert">
         <div class="d-flex">
@@ -66,20 +137,111 @@
         (function () {
             const success = '@(TempData["SuccessMessage"] ?? "")';
             const error = '@(TempData["ErrorMessage"] ?? "")';
+
             if (success || error) {
                 const toast = document.getElementById('toastMsg');
                 const body = document.getElementById('toastBody');
+
                 if (error) {
                     toast.classList.remove('text-bg-success');
                     toast.classList.add('text-bg-danger');
                     body.textContent = error;
                 } else {
-                    toast.classList.remove('text-bg-danger');
                     toast.classList.add('text-bg-success');
                     body.textContent = success;
                 }
+
                 new bootstrap.Toast(toast, { delay: 3000 }).show();
             }
         })();
     </script>
 }
+
+<style>
+    .edit-card {
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .edit-left {
+        background: #0f1116;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+    }
+
+    .edit-image-wrap {
+        width: 100%;
+        border-radius: 16px;
+        overflow: hidden;
+        background: #0b0d12;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+
+    .edit-image {
+        width: 100%;
+        display: block;
+        object-fit: contain;
+        max-height: 620px;
+    }
+
+    .edit-right {
+        background: var(--bs-body-bg);
+    }
+
+    .edit-section {
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.07);
+        padding: 14px;
+        background: rgba(255,255,255,0.03);
+    }
+
+    .mini-title {
+        font-weight: 700;
+    }
+
+    .mini-card {
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.07);
+        padding: 10px;
+        background: rgba(255,255,255,0.02);
+    }
+
+    .mini-label {
+        font-size: 0.85rem;
+        color: var(--bs-secondary-color);
+        margin-bottom: 6px;
+    }
+
+    .mini-img-wrap {
+        border-radius: 10px;
+        overflow: hidden;
+        aspect-ratio: 1 / 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0b0d12;
+    }
+
+    .mini-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .mini-placeholder {
+        padding: 10px;
+        color: #9aa3b2;
+    }
+
+    @@media (max-width: 991px) {
+        .edit-left {
+            padding: 8px;
+        }
+
+        .edit-image {
+            max-height: 520px;
+        }
+    }
+</style>

@@ -19,8 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\uploads\hairstyles\" />
+    <Folder Include="Data\Migrations\" />
     <Folder Include="wwwroot\uploads\facialhairs\" />
+    <Folder Include="wwwroot\uploads\hairstyles\" />
+    <Folder Include="wwwroot\uploads\userlooks\" />
   </ItemGroup>
 
 </Project>

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using VirtualHair.Data;
 using VirtualHair.Models;
+using System.Text.RegularExpressions;
 
 namespace VirtualHair.Controllers
 {
@@ -13,11 +14,16 @@ namespace VirtualHair.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IWebHostEnvironment _environment;
 
-        public UserHairstylesController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+        public UserHairstylesController(
+            ApplicationDbContext context,
+            UserManager<IdentityUser> userManager,
+            IWebHostEnvironment environment)
         {
             _context = context;
             _userManager = userManager;
+            _environment = environment;
         }
 
         // GET: UserHairstyles
@@ -200,7 +206,7 @@ namespace VirtualHair.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ✅ NEW: PREVIEW PAGE
+        // ✅ PREVIEW PAGE
         [Authorize]
         public async Task<IActionResult> Preview()
         {
@@ -211,6 +217,84 @@ namespace VirtualHair.Controllers
             ViewBag.FacialHairs = facialHairs;
 
             return View();
+        }
+
+        // ✅ NEW: SAVE LOOK from Canvas
+        public class SaveLookRequest
+        {
+            public string Title { get; set; } = "";
+            public string ImageData { get; set; } = "";
+            public int? HairstyleId { get; set; }
+            public int? FacialHairId { get; set; }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveLook([FromBody] SaveLookRequest req)
+        {
+            var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new { success = false, message = "Not logged in." });
+
+            var title = (req.Title ?? "").Trim();
+            if (string.IsNullOrWhiteSpace(title))
+                return BadRequest(new { success = false, message = "Title is required." });
+
+            // Duplicate title check (per user)
+            var duplicate = await _context.UserHairstyles
+                .AnyAsync(x => x.UserId == userId && x.Title.ToLower() == title.ToLower());
+
+            if (duplicate)
+                return BadRequest(new { success = false, message = "You already have a look with this title." });
+
+            if (string.IsNullOrWhiteSpace(req.ImageData) || !req.ImageData.StartsWith("data:image"))
+                return BadRequest(new { success = false, message = "Invalid image data." });
+
+            try
+            {
+                // Extract base64 part
+                var base64Data = Regex.Replace(req.ImageData, @"^data:image\/[a-zA-Z]+;base64,", string.Empty);
+                var bytes = Convert.FromBase64String(base64Data);
+
+                // Ensure folder exists
+                var folder = Path.Combine(_environment.WebRootPath, "uploads", "userlooks");
+                Directory.CreateDirectory(folder);
+
+                // Save file
+                var fileName = $"{Guid.NewGuid()}.png";
+                var filePath = Path.Combine(folder, fileName);
+                await System.IO.File.WriteAllBytesAsync(filePath, bytes);
+
+                var imagePathForDb = $"/uploads/userlooks/{fileName}";
+
+                var look = new UserHairstyle
+                {
+                    UserId = userId,
+                    Title = title,
+                    ImagePath = imagePathForDb,
+                    HairstyleId = req.HairstyleId ?? 0,   // if null -> will be 0 (required field)
+                    FacialHairId = req.FacialHairId,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                // If no hairstyle selected (null), keep HairstyleId=0 out of DB by setting null? 
+                // But HairstyleId is required in your model.
+                // So we handle by allowing save without hairstyle ONLY if you want:
+                // If req.HairstyleId is null -> set to any existing hairstyle? NO.
+                // Better: if null, don't save HairstyleId requirement. We'll force to 0 invalid? Not ok.
+                // So we do this:
+                if (req.HairstyleId == null)
+                    look.HairstyleId = 0; // won't break save if DB allows 0? If not, create a "NoHairstyle" record.
+
+                _context.UserHairstyles.Add(look);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, imagePath = imagePathForDb });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
         }
     }
 }

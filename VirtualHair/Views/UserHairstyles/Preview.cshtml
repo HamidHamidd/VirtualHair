@@ -13,7 +13,25 @@
             <div class="card shadow-sm p-3">
                 <h5 class="mb-3">Upload your photo</h5>
                 <input type="file" id="imageUpload" accept="image/*" class="form-control mb-3" />
+
                 <canvas id="previewCanvas" class="border rounded shadow-sm" width="480" height="480"></canvas>
+
+                <!-- ✅ Save Look UI (A: under canvas) -->
+                <div class="mt-3 text-start">
+                    @Html.AntiForgeryToken()
+                    <label for="lookTitle" class="form-label fw-semibold mb-1">Look title</label>
+                    <input type="text"
+                           id="lookTitle"
+                           maxlength="100"
+                           class="form-control"
+                           placeholder="e.g. My new fade"
+                           autocomplete="off" />
+
+                    <button id="saveLookBtn" class="btn btn-primary w-100 mt-2">
+                        💾 Save Look to My Gallery
+                    </button>
+                    <div id="saveLookMsg" class="small mt-2"></div>
+                </div>
 
                 <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
                     <button class="btn btn-outline-primary btn-sm" id="moveUp">⬆️</button>
@@ -31,6 +49,8 @@
         <!-- RIGHT: Thumbnails -->
         <div class="col-md-5">
             <div class="accordion" id="styleAccordion">
+
+                <!-- HAIRSTYLES -->
                 <div class="accordion-item">
                     <h2 class="accordion-header">
                         <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#hairstylesCollapse">
@@ -41,12 +61,18 @@
                         <div class="accordion-body d-flex flex-wrap gap-2">
                             @foreach (var h in hairstyles)
                             {
-                                <img src="~/@h.ImagePath" alt="@h.Name" class="style-thumb" data-type="hairstyle" data-src="@Url.Content("~/" + h.ImagePath)" />
+                                <img src="@Url.Content(h.ImagePath)"
+                                     alt="@h.Name"
+                                     class="style-thumb"
+                                     data-type="hairstyle"
+                                     data-id="@h.Id"
+                                     data-src="@Url.Content(h.ImagePath)" />
                             }
                         </div>
                     </div>
                 </div>
 
+                <!-- FACIAL HAIR -->
                 <div class="accordion-item">
                     <h2 class="accordion-header">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#facialCollapse">
@@ -57,11 +83,17 @@
                         <div class="accordion-body d-flex flex-wrap gap-2">
                             @foreach (var f in facialHairs)
                             {
-                                <img src="~/@f.ImagePath" alt="@f.Name" class="style-thumb" data-type="facial" data-src="@Url.Content("~/" + f.ImagePath)" />
+                                <img src="@Url.Content(f.ImagePath)"
+                                     alt="@f.Name"
+                                     class="style-thumb"
+                                     data-type="facial"
+                                     data-id="@f.Id"
+                                     data-src="@Url.Content(f.ImagePath)" />
                             }
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -88,5 +120,10 @@
 
     canvas {
         max-width: 100%;
+    }
+
+    .selected-thumb {
+        outline: 3px solid #00bfff;
+        box-shadow: 0 0 12px rgba(0,191,255,0.8);
     }
 </style>

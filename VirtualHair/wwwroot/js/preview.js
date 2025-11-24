@@ -4,13 +4,22 @@ const canvas = document.getElementById('previewCanvas');
 const ctx = canvas.getContext('2d');
 const styleThumbs = document.querySelectorAll('.style-thumb');
 
+const saveBtn = document.getElementById("saveLookBtn");
+const titleInput = document.getElementById("lookTitle");
+const saveMsg = document.getElementById("saveLookMsg");
+
+// track selected catalog ids (can be null)
+let selectedHairstyleId = null;
+let selectedFacialHairId = null;
+
 let baseImage = null;
 let overlayImage = null;
 let overlayX = 0, overlayY = 0, overlayScale = 1, overlayRotation = 0;
 let isImageLoaded = false;
 let cropper = null;
+let selectedThumb = null;
 
-// --- Temporary elements for cropping ---
+// --- Cropper Modal ---
 const cropModal = document.createElement('div');
 cropModal.classList.add('cropper-modal');
 cropModal.innerHTML = `
@@ -24,7 +33,7 @@ cropModal.innerHTML = `
 </div>`;
 document.body.appendChild(cropModal);
 
-// --- Upload photo ---
+// --- Upload Photo ---
 uploadInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -50,10 +59,8 @@ uploadInput.addEventListener('change', (e) => {
     reader.readAsDataURL(file);
 });
 
-// --- Confirm / Cancel Crop ---
 document.getElementById('confirmCrop').addEventListener('click', () => {
     const croppedCanvas = cropper.getCroppedCanvas({ width: 480, height: 480 });
-    const croppedDataUrl = croppedCanvas.toDataURL('image/png');
 
     baseImage = new Image();
     baseImage.onload = () => {
@@ -61,53 +68,39 @@ document.getElementById('confirmCrop').addEventListener('click', () => {
         cropModal.style.display = 'none';
         drawCanvas();
     };
-    baseImage.src = croppedDataUrl;
-
-    cropper.destroy();
+    baseImage.src = croppedCanvas.toDataURL('image/png');
 });
 
+// optional cancel
 document.getElementById('cancelCrop').addEventListener('click', () => {
     cropModal.style.display = 'none';
     if (cropper) cropper.destroy();
 });
 
-// --- Draw Canvas ---
-function drawCanvas() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+/* ---------------------- THUMBNAIL → OVERLAY ---------------------- */
 
-    if (baseImage) {
-        const aspect = baseImage.width / baseImage.height;
-        let drawW, drawH, offsetX, offsetY;
-        if (aspect > 1) {
-            drawW = canvas.width;
-            drawH = canvas.width / aspect;
-            offsetX = 0;
-            offsetY = (canvas.height - drawH) / 2;
-        } else {
-            drawH = canvas.height;
-            drawW = canvas.height * aspect;
-            offsetX = (canvas.width - drawW) / 2;
-            offsetY = 0;
-        }
-        ctx.drawImage(baseImage, offsetX, offsetY, drawW, drawH);
-    }
-
-    if (overlayImage) {
-        ctx.save();
-        ctx.translate(canvas.width / 2 + overlayX, canvas.height / 2 + overlayY);
-        ctx.rotate((overlayRotation * Math.PI) / 180);
-        const w = overlayImage.width * overlayScale;
-        const h = overlayImage.height * overlayScale;
-        ctx.drawImage(overlayImage, -w / 2, -h / 2, w, h);
-        ctx.restore();
-    }
-}
-
-// --- Select hairstyle/facial hair ---
-styleThumbs.forEach((img) => {
-    img.addEventListener('click', () => {
+styleThumbs.forEach((thumb) => {
+    thumb.addEventListener('click', () => {
         if (!isImageLoaded) {
             alert("Please upload and crop your photo first!");
+            return;
+        }
+
+        // Remove highlight from previous selection (simple UX)
+        if (selectedThumb) selectedThumb.classList.remove("selected-thumb");
+        selectedThumb = thumb;
+        thumb.classList.add("selected-thumb");
+
+        // Store selected id per type (for saving)
+        const type = thumb.dataset.type;
+        const id = parseInt(thumb.dataset.id);
+        if (type === "hairstyle") selectedHairstyleId = id;
+        if (type === "facial") selectedFacialHairId = id;
+
+        // Load overlay image
+        const src = thumb.dataset.src;
+        if (!src) {
+            console.error("ERROR: Missing data-src for thumbnail");
             return;
         }
 
@@ -119,9 +112,34 @@ styleThumbs.forEach((img) => {
             overlayRotation = 0;
             drawCanvas();
         };
-        overlayImage.src = img.dataset.src;
+        overlayImage.src = src;
     });
 });
+
+/* ------------------------------------------------------------------- */
+
+// --- Draw Canvas ---
+function drawCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw base
+    if (baseImage) {
+        ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+    }
+
+    // Draw overlay
+    if (overlayImage) {
+        ctx.save();
+        ctx.translate(canvas.width / 2 + overlayX, canvas.height / 2 + overlayY);
+        ctx.rotate((overlayRotation * Math.PI) / 180);
+
+        const w = overlayImage.width * overlayScale;
+        const h = overlayImage.height * overlayScale;
+
+        ctx.drawImage(overlayImage, -w / 2, -h / 2, w, h);
+        ctx.restore();
+    }
+}
 
 // --- Controls ---
 const controls = {
@@ -136,23 +154,87 @@ const controls = {
 };
 
 Object.keys(controls).forEach(id => {
-    const btn = document.getElementById(id);
-    if (btn) {
-        btn.addEventListener('click', () => {
-            if (!overlayImage) return alert("Select a hairstyle first!");
-            controls[id]();
-            drawCanvas();
+    document.getElementById(id)?.addEventListener("click", () => {
+        if (!overlayImage) {
+            alert("Select a hairstyle or beard first!");
+            return;
+        }
+        controls[id]();
+        drawCanvas();
+    });
+});
+
+// Prevent background scroll during cropper
+const body = document.body;
+new MutationObserver(() => {
+    body.style.overflow = cropModal.style.display === "flex" ? "hidden" : "";
+}).observe(cropModal, { attributes: true, attributeFilter: ["style"] });
+
+/* ---------------------- SAVE LOOK ---------------------- */
+
+function getAntiForgeryToken() {
+    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+    return tokenInput ? tokenInput.value : "";
+}
+
+saveBtn.addEventListener("click", async () => {
+    if (!isImageLoaded || !baseImage) {
+        alert("Upload and crop a photo first!");
+        return;
+    }
+
+    const title = (titleInput.value || "").trim();
+    if (!title) {
+        alert("Please enter a title for your look.");
+        titleInput.focus();
+        return;
+    }
+
+    // take final canvas as PNG
+    const imageData = canvas.toDataURL("image/png");
+
+    saveBtn.disabled = true;
+    saveMsg.textContent = "Saving...";
+    saveMsg.className = "small text-muted mt-2";
+
+    try {
+        const res = await fetch("/UserHairstyles/SaveLook", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "RequestVerificationToken": getAntiForgeryToken()
+            },
+            body: JSON.stringify({
+                title,
+                imageData,
+                hairstyleId: selectedHairstyleId,
+                facialHairId: selectedFacialHairId
+            })
         });
+
+        if (!res.ok) {
+            const txt = await res.text();
+            throw new Error(txt || "Save failed");
+        }
+
+        const data = await res.json();
+
+        if (data.success) {
+            saveMsg.textContent = "✅ Saved! Redirecting to My Gallery...";
+            saveMsg.className = "small text-success mt-2";
+            window.location.href = "/UserHairstyles";
+        } else {
+            saveMsg.textContent = data.message || "❌ Could not save.";
+            saveMsg.className = "small text-danger mt-2";
+        }
+
+    } catch (err) {
+        console.error(err);
+        saveMsg.textContent = "❌ Error: " + err.message;
+        saveMsg.className = "small text-danger mt-2";
+    } finally {
+        saveBtn.disabled = false;
     }
 });
 
-// --- FIX: prevent background scroll and keep cropper above everything ---
-const body = document.body;
-const observer = new MutationObserver(() => {
-    if (cropModal.style.display === 'flex') {
-        body.style.overflow = 'hidden';
-    } else {
-        body.style.overflow = '';
-    }
-});
-observer.observe(cropModal, { attributes: true, attributeFilter: ['style'] });
+/* ------------------------------------------------------------------- */

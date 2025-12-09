@@ -1,0 +1,118 @@
+﻿@model VirtualHair.Models.Post
+
+@{
+    ViewData["Title"] = "Post Details";
+}
+
+<div class="container mt-4">
+
+    <a asp-action="Index" class="btn btn-secondary mb-3">
+        <i class="fa-solid fa-arrow-left"></i> Back to Feed
+    </a>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <!-- Header -->
+            <div class="d-flex align-items-center mb-3">
+                <i class="fa-solid fa-user-circle fa-2xl me-2"></i>
+                <div>
+                    <strong>@Model.UserId</strong><br />
+                    <small class="text-muted">@Model.CreatedAt.ToLocalTime()</small>
+                </div>
+            </div>
+
+            <!-- Image -->
+            <div class="text-center mb-3">
+                <img src="@Model.ImagePath" class="img-fluid rounded" style="max-height: 600px; object-fit: cover;" />
+            </div>
+
+            <!-- Description -->
+            @if (!string.IsNullOrWhiteSpace(Model.Description))
+            {
+                <p class="lead">@Model.Description</p>
+            }
+
+            <!-- Likes -->
+            <button class="btn btn-primary like-btn mb-3" data-post-id="@Model.Id">
+                <i class="fa-solid fa-thumbs-up"></i> Like
+                <span class="like-count">@Model.Likes.Count()</span>
+            </button>
+
+            <hr />
+
+            <!-- Comments -->
+            <h5 class="fw-bold mb-3">Comments (@Model.Comments.Count())</h5>
+
+            <div id="commentsSection">
+                @foreach (var c in Model.Comments.OrderByDescending(x => x.CreatedAt))
+                {
+                    <div class="border rounded p-2 mb-2">
+                        <strong>@c.UserId</strong>
+                        <small class="text-muted">· @c.CreatedAt.ToLocalTime()</small>
+                        <p class="mb-1">@c.Text</p>
+                    </div>
+                }
+            </div>
+
+            <!-- Add Comment Form -->
+            <div class="input-group mt-3">
+                <input id="commentInput" class="form-control" placeholder="Write a comment..." />
+                <button id="addCommentBtn" class="btn btn-primary">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // LIKE BUTTON
+        const likeBtn = document.querySelector('.like-btn');
+        likeBtn.addEventListener('click', () => {
+            const postId = likeBtn.dataset.postId;
+
+            fetch('/Feed/ToggleLike', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ postId })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    likeBtn.querySelector('.like-count').textContent = data.likes;
+                });
+        });
+
+        // COMMENT SYSTEM
+        const commentInput = document.getElementById('commentInput');
+        const addCommentBtn = document.getElementById('addCommentBtn');
+        const commentsSection = document.getElementById('commentsSection');
+
+        addCommentBtn.addEventListener('click', () => {
+            const text = commentInput.value.trim();
+            if (!text) return;
+
+            fetch('/Feed/AddComment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ postId: @Model.Id, text })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const newComment = document.createElement('div');
+                        newComment.className = "border rounded p-2 mb-2";
+                        newComment.innerHTML =
+                            `<strong>${data.user}</strong>
+                             <small class="text-muted">· just now</small>
+                             <p class="mb-1">${data.text}</p>`;
+
+                        commentsSection.prepend(newComment);
+                        commentInput.value = "";
+                    }
+                });
+        });
+    </script>
+}

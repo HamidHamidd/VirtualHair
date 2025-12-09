@@ -49,24 +49,76 @@
 
         <div class="offcanvas-body">
             <ul class="nav flex-column offcanvas-animated">
-                <li class="nav-item" style="--order:1"><a asp-controller="Home" asp-action="Index" class="nav-link"><i class="fa-solid fa-house me-2"></i>Home</a></li>
-                <li class="nav-item" style="--order:2"><a asp-controller="Hairstyles" asp-action="Index" class="nav-link"><i class="fa-solid fa-scissors me-2"></i>Hairstyles</a></li>
-                <li class="nav-item" style="--order:3"><a asp-controller="FacialHairs" asp-action="Index" class="nav-link"><i class="fa-solid fa-beard me-2"></i>Facial Hair</a></li>
+
+                <li class="nav-item" style="--order:1">
+                    <a asp-controller="Home" asp-action="Index" class="nav-link">
+                        <i class="fa-solid fa-house me-2"></i>Home
+                    </a>
+                </li>
+
+                <li class="nav-item" style="--order:2">
+                    <a asp-controller="Hairstyles" asp-action="Index" class="nav-link">
+                        <i class="fa-solid fa-scissors me-2"></i>Hairstyles
+                    </a>
+                </li>
+
+                <li class="nav-item" style="--order:3">
+                    <a asp-controller="FacialHairs" asp-action="Index" class="nav-link">
+                        <i class="fa-solid fa-beard me-2"></i>Facial Hair
+                    </a>
+                </li>
 
                 @if (isAuthenticated)
                 {
-                    <li class="nav-item" style="--order:4"><a asp-controller="UserHairstyles" asp-action="Index" class="nav-link"><i class="fa-solid fa-images me-2"></i>My Gallery</a></li>
-                    <li class="nav-item" style="--order:5"><a asp-controller="UserHairstyles" asp-action="Preview" class="nav-link"><i class="fa-solid fa-wand-magic-sparkles me-2"></i>Try Now</a></li>
+                    <li class="nav-item" style="--order:4">
+                        <a asp-controller="UserHairstyles" asp-action="Index" class="nav-link">
+                            <i class="fa-solid fa-images me-2"></i>My Gallery
+                        </a>
+                    </li>
+
+                    <li class="nav-item" style="--order:5">
+                        <a asp-controller="UserHairstyles" asp-action="Preview" class="nav-link">
+                            <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Try Now
+                        </a>
+                    </li>
+
+                    <!-- ⭐ CLEAN COMMUNITY SECTION (no dropdown, stable) ⭐ -->
+                    <li class="nav-item mt-3" style="--order:6">
+                        <span class="text-uppercase text-secondary fw-bold small ms-2">Community</span>
+                    </li>
+
+                    <li class="nav-item" style="--order:7">
+                        <a asp-controller="Feed" asp-action="Index" class="nav-link">
+                            <i class="fa-solid fa-newspaper me-2"></i>Feed
+                        </a>
+                    </li>
+
+                    <li class="nav-item" style="--order:8">
+                        <a asp-controller="Messages" asp-action="Index" class="nav-link">
+                            <i class="fa-solid fa-envelope me-2"></i>Messages
+                        </a>
+                    </li>
+
+                    <li class="nav-item" style="--order:9">
+                        <a asp-controller="Friends" asp-action="Index" class="nav-link">
+                            <i class="fa-solid fa-user-group me-2"></i>Friends
+                        </a>
+                    </li>
+
                     @if (isAdmin)
                     {
-                        <li class="nav-item" style="--order:6"><a asp-controller="Admin" asp-action="Index" class="nav-link text-warning"><i class="fa-solid fa-toolbox me-2"></i>Admin Panel</a></li>
+                        <li class="nav-item" style="--order:10">
+                            <a asp-controller="Admin" asp-action="Index" class="nav-link text-warning">
+                                <i class="fa-solid fa-toolbox me-2"></i>Admin Panel
+                            </a>
+                        </li>
                     }
                 }
 
                 <hr class="text-secondary" />
 
                 <!-- Theme Toggle -->
-                <li class="nav-item text-center" style="--order:7">
+                <li class="nav-item text-center" style="--order:11">
                     <button id="themeToggleBtn" class="btn btn-outline-light w-100 d-flex justify-content-center align-items-center gap-2">
                         <i id="themeIcon" class="fa-solid fa-sun"></i>
                         <span id="themeLabel">Light Mode</span>
@@ -77,7 +129,7 @@
 
                 @if (isAuthenticated)
                 {
-                    <li class="nav-item" style="--order:8">
+                    <li class="nav-item" style="--order:12">
                         <form asp-area="Identity" asp-page="/Account/Logout" method="post">
                             <button type="submit" class="btn btn-danger w-100 mt-2">Logout</button>
                         </form>
@@ -85,8 +137,12 @@
                 }
                 else
                 {
-                    <li class="nav-item" style="--order:9"><a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-light w-100 mt-2">Login</a></li>
-                    <li class="nav-item" style="--order:10"><a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary w-100 mt-2">Register</a></li>
+                    <li class="nav-item" style="--order:13">
+                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-light w-100 mt-2">Login</a>
+                    </li>
+                    <li class="nav-item" style="--order:14">
+                        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary w-100 mt-2">Register</a>
+                    </li>
                 }
             </ul>
         </div>

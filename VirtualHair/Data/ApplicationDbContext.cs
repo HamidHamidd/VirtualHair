@@ -21,55 +21,96 @@ namespace VirtualHair.Data
         public DbSet<SavedLook> SavedLooks => Set<SavedLook>();
         public DbSet<UserHairstyle> UserHairstyles => Set<UserHairstyle>();
 
+        // Социални таблици (Feed)
+        public DbSet<Post> Posts => Set<Post>();
+        public DbSet<Like> Likes => Set<Like>();
+        public DbSet<Comment> Comments => Set<Comment>();
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
-            // Индекси за по-бързо търсене на потребителски снимки
+            // ------------------------
+            // ВАШИТЕ СЪЩЕСТВУВАЩИ МОДЕЛИ
+            // ------------------------
+
             builder.Entity<UserPhoto>()
                 .HasIndex(x => new { x.UserId, x.CreatedAt });
 
-            // Връзка между SavedLook и UserPhoto (Cascade delete)
             builder.Entity<SavedLook>()
                 .HasOne(x => x.UserPhoto)
                 .WithMany()
                 .HasForeignKey(x => x.UserPhotoId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Връзка между SavedLook и Hairstyle (SetNull при изтриване)
             builder.Entity<SavedLook>()
                 .HasOne(x => x.Hairstyle)
                 .WithMany()
                 .HasForeignKey(x => x.HairstyleId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // Връзка между SavedLook и FacialHair (SetNull при изтриване)
             builder.Entity<SavedLook>()
                 .HasOne(x => x.FacialHair)
                 .WithMany()
                 .HasForeignKey(x => x.FacialHairId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // Връзка между UserHairstyle и User (FK)
             builder.Entity<UserHairstyle>()
                 .HasOne<IdentityUser>()
                 .WithMany()
                 .HasForeignKey(u => u.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Връзка между UserHairstyle и Hairstyle
             builder.Entity<UserHairstyle>()
                 .HasOne(u => u.Hairstyle)
                 .WithMany()
                 .HasForeignKey(u => u.HairstyleId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Връзка между UserHairstyle и FacialHair (по избор)
             builder.Entity<UserHairstyle>()
                 .HasOne(u => u.FacialHair)
                 .WithMany()
                 .HasForeignKey(u => u.FacialHairId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // ------------------------
+            // ⭐ ДОБАВЕНОТО (FEED SYSTEM) ⭐
+            // ------------------------
+
+            // Post → User
+            builder.Entity<Post>()
+                .HasOne<IdentityUser>()
+                .WithMany()
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Post → Comments
+            builder.Entity<Comment>()
+                .HasOne<Post>()
+                .WithMany(p => p.Comments)
+                .HasForeignKey(c => c.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Comment → User
+            builder.Entity<Comment>()
+                .HasOne<IdentityUser>()
+                .WithMany()
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Post → Likes
+            builder.Entity<Like>()
+                .HasOne<Post>()
+                .WithMany(p => p.Likes)
+                .HasForeignKey(l => l.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Like → User
+            builder.Entity<Like>()
+                .HasOne<IdentityUser>()
+                .WithMany()
+                .HasForeignKey(l => l.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

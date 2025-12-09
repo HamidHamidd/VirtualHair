@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VirtualHair.Data;
 
@@ -11,9 +12,11 @@ using VirtualHair.Data;
 namespace VirtualHair.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251209114554_CreateFeedTables")]
+    partial class CreateFeedTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -238,9 +241,6 @@ namespace VirtualHair.Migrations
                     b.Property<int>("PostId")
                         .HasColumnType("int");
 
-                    b.Property<int>("PostId1")
-                        .HasColumnType("int");
-
                     b.Property<string>("Text")
                         .IsRequired()
                         .HasMaxLength(300)
@@ -248,15 +248,11 @@ namespace VirtualHair.Migrations
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("PostId");
-
-                    b.HasIndex("PostId1");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Comments");
                 });
@@ -344,20 +340,13 @@ namespace VirtualHair.Migrations
                     b.Property<int>("PostId")
                         .HasColumnType("int");
 
-                    b.Property<int>("PostId1")
-                        .HasColumnType("int");
-
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("PostId");
-
-                    b.HasIndex("PostId1");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Likes");
                 });
@@ -382,11 +371,9 @@ namespace VirtualHair.Migrations
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Posts");
                 });
@@ -577,21 +564,9 @@ namespace VirtualHair.Migrations
 
             modelBuilder.Entity("VirtualHair.Models.Comment", b =>
                 {
-                    b.HasOne("VirtualHair.Models.Post", null)
+                    b.HasOne("VirtualHair.Models.Post", "Post")
                         .WithMany("Comments")
                         .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("VirtualHair.Models.Post", "Post")
-                        .WithMany()
-                        .HasForeignKey("PostId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -600,34 +575,13 @@ namespace VirtualHair.Migrations
 
             modelBuilder.Entity("VirtualHair.Models.Like", b =>
                 {
-                    b.HasOne("VirtualHair.Models.Post", null)
+                    b.HasOne("VirtualHair.Models.Post", "Post")
                         .WithMany("Likes")
                         .HasForeignKey("PostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("VirtualHair.Models.Post", "Post")
-                        .WithMany()
-                        .HasForeignKey("PostId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Post");
-                });
-
-            modelBuilder.Entity("VirtualHair.Models.Post", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("VirtualHair.Models.SavedLook", b =>

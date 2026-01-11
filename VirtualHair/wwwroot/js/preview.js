@@ -7,6 +7,7 @@ const styleThumbs = document.querySelectorAll('.style-thumb');
 const saveBtn = document.getElementById("saveLookBtn");
 const titleInput = document.getElementById("lookTitle");
 const saveMsg = document.getElementById("saveLookMsg");
+const resetBtn = document.getElementById("resetOverlay");
 
 // track selected catalog ids (can be null)
 let selectedHairstyleId = null;
@@ -18,6 +19,11 @@ let overlayX = 0, overlayY = 0, overlayScale = 1, overlayRotation = 0;
 let isImageLoaded = false;
 let cropper = null;
 let selectedThumb = null;
+
+// fine steps (UX polish)
+const STEP_MOVE = 5;        // px
+const STEP_ZOOM = 0.05;     // scale
+const STEP_ROTATE = 2;      // degrees
 
 // --- Cropper Modal ---
 const cropModal = document.createElement('div');
@@ -60,7 +66,10 @@ uploadInput.addEventListener('change', (e) => {
 });
 
 document.getElementById('confirmCrop').addEventListener('click', () => {
-    const croppedCanvas = cropper.getCroppedCanvas({ width: 480, height: 480 });
+    if (!cropper) return;
+
+    // ✅ crop exactly to canvas size (320x320)
+    const croppedCanvas = cropper.getCroppedCanvas({ width: canvas.width, height: canvas.height });
 
     baseImage = new Image();
     baseImage.onload = () => {
@@ -79,6 +88,15 @@ document.getElementById('cancelCrop').addEventListener('click', () => {
 
 /* ---------------------- THUMBNAIL → OVERLAY ---------------------- */
 
+function resetOverlayState() {
+    overlayX = 0;
+    // slightly above center fits better for hair/beard
+    overlayY = Math.round(-canvas.height * 0.18); // ~ -58 for 320
+    overlayScale = 0.65;
+    overlayRotation = 0;
+    drawCanvas();
+}
+
 styleThumbs.forEach((thumb) => {
     thumb.addEventListener('click', () => {
         if (!isImageLoaded) {
@@ -86,7 +104,7 @@ styleThumbs.forEach((thumb) => {
             return;
         }
 
-        // Remove highlight from previous selection (simple UX)
+        // Remove highlight from previous selection
         if (selectedThumb) selectedThumb.classList.remove("selected-thumb");
         selectedThumb = thumb;
         thumb.classList.add("selected-thumb");
@@ -106,11 +124,7 @@ styleThumbs.forEach((thumb) => {
 
         overlayImage = new Image();
         overlayImage.onload = () => {
-            overlayX = 0;
-            overlayY = -60;
-            overlayScale = 0.7;
-            overlayRotation = 0;
-            drawCanvas();
+            resetOverlayState();
         };
         overlayImage.src = src;
     });
@@ -143,14 +157,14 @@ function drawCanvas() {
 
 // --- Controls ---
 const controls = {
-    moveUp: () => overlayY -= 10,
-    moveDown: () => overlayY += 10,
-    moveLeft: () => overlayX -= 10,
-    moveRight: () => overlayX += 10,
-    zoomIn: () => overlayScale += 0.1,
-    zoomOut: () => overlayScale = Math.max(0.1, overlayScale - 0.1),
-    rotateLeft: () => overlayRotation -= 5,
-    rotateRight: () => overlayRotation += 5,
+    moveUp: () => overlayY -= STEP_MOVE,
+    moveDown: () => overlayY += STEP_MOVE,
+    moveLeft: () => overlayX -= STEP_MOVE,
+    moveRight: () => overlayX += STEP_MOVE,
+    zoomIn: () => overlayScale += STEP_ZOOM,
+    zoomOut: () => overlayScale = Math.max(0.1, overlayScale - STEP_ZOOM),
+    rotateLeft: () => overlayRotation -= STEP_ROTATE,
+    rotateRight: () => overlayRotation += STEP_ROTATE,
 };
 
 Object.keys(controls).forEach(id => {
@@ -163,6 +177,63 @@ Object.keys(controls).forEach(id => {
         drawCanvas();
     });
 });
+
+// ✅ Reset button
+resetBtn?.addEventListener("click", () => {
+    if (!overlayImage) {
+        alert("Select a hairstyle or beard first!");
+        return;
+    }
+    resetOverlayState();
+});
+
+/* ---------------------- KEYBOARD CONTROLS (UX) ---------------------- */
+
+function isTypingInInput() {
+    const el = document.activeElement;
+    if (!el) return false;
+    const tag = (el.tagName || "").toLowerCase();
+    return tag === "input" || tag === "textarea" || el.isContentEditable;
+}
+
+document.addEventListener("keydown", (e) => {
+    if (!overlayImage) return;
+    if (isTypingInInput()) return;
+
+    // prevent page scroll with arrows
+    const key = e.key.toLowerCase();
+
+    let handled = true;
+
+    switch (key) {
+        case "arrowup": overlayY -= STEP_MOVE; break;
+        case "arrowdown": overlayY += STEP_MOVE; break;
+        case "arrowleft": overlayX -= STEP_MOVE; break;
+        case "arrowright": overlayX += STEP_MOVE; break;
+
+        case "+": // some keyboards
+        case "=": overlayScale += STEP_ZOOM; break;
+
+        case "-":
+        case "_": overlayScale = Math.max(0.1, overlayScale - STEP_ZOOM); break;
+
+        case "q": overlayRotation -= STEP_ROTATE; break;
+        case "e": overlayRotation += STEP_ROTATE; break;
+
+        case "r": resetOverlayState(); break;
+
+        default:
+            handled = false;
+            break;
+    }
+
+    if (handled) {
+        e.preventDefault();
+        drawCanvas();
+    }
+});
+
+/* ------------------------------------------------------------------- */
 
 // Prevent background scroll during cropper
 const body = document.body;
@@ -177,7 +248,7 @@ function getAntiForgeryToken() {
     return tokenInput ? tokenInput.value : "";
 }
 
-saveBtn.addEventListener("click", async () => {
+saveBtn?.addEventListener("click", async () => {
     if (!isImageLoaded || !baseImage) {
         alert("Upload and crop a photo first!");
         return;
@@ -236,5 +307,3 @@ saveBtn.addEventListener("click", async () => {
         saveBtn.disabled = false;
     }
 });
-
-/* ------------------------------------------------------------------- */

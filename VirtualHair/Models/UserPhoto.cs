@@ -14,7 +14,7 @@ namespace VirtualHair.Models
         public string UserId { get; set; } = string.Empty;
 
         [ForeignKey(nameof(UserId))]
-        public IdentityUser? User { get; set; }
+        public IdentityUser User { get; set; } = null!;
 
         [Required]
         public byte[] ImageData { get; set; } = Array.Empty<byte>();

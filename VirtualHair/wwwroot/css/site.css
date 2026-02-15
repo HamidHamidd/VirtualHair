@@ -398,3 +398,24 @@ canvas#previewCanvas:hover {
     background: #1c1c1c;
     color: #eee;
 }
+
+/* Profile Avatar Hover Animation */
+
+.profile-avatar {
+    width: 44px;
+    height: 44px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.25);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    cursor: pointer;
+}
+
+    .profile-avatar:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 12px rgba(0, 123, 255, 0.6);
+    }
+
+    .profile-avatar:active {
+        transform: scale(0.95);
+    }

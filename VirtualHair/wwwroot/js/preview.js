@@ -9,23 +9,30 @@ const titleInput = document.getElementById("lookTitle");
 const saveMsg = document.getElementById("saveLookMsg");
 const resetBtn = document.getElementById("resetOverlay");
 
-// track selected catalog ids (can be null)
 let selectedHairstyleId = null;
 let selectedFacialHairId = null;
 
 let baseImage = null;
-let overlayImage = null;
-let overlayX = 0, overlayY = 0, overlayScale = 1, overlayRotation = 0;
 let isImageLoaded = false;
 let cropper = null;
 let selectedThumb = null;
 
-// fine steps (UX polish)
-const STEP_MOVE = 5;        // px
-const STEP_ZOOM = 0.05;     // scale
-const STEP_ROTATE = 2;      // degrees
+/* ---------------- LAYERS ---------------- */
 
-// --- Cropper Modal ---
+let hairstyleImage = null;
+let facialImage = null;
+
+let hairstyleState = { x: 0, y: 0, scale: 0.65, rotation: 0 };
+let facialState = { x: 0, y: 0, scale: 0.4, rotation: 0 };
+
+let activeLayer = null; // "hair" or "facial"
+
+const STEP_MOVE = 5;
+const STEP_ZOOM = 0.05;
+const STEP_ROTATE = 2;
+
+/* ---------------- CROP MODAL ---------------- */
+
 const cropModal = document.createElement('div');
 cropModal.classList.add('cropper-modal');
 cropModal.innerHTML = `
@@ -39,7 +46,8 @@ cropModal.innerHTML = `
 </div>`;
 document.body.appendChild(cropModal);
 
-// --- Upload Photo ---
+/* ---------------- UPLOAD ---------------- */
+
 uploadInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -68,7 +76,6 @@ uploadInput.addEventListener('change', (e) => {
 document.getElementById('confirmCrop').addEventListener('click', () => {
     if (!cropper) return;
 
-    // ✅ crop exactly to canvas size (320x320)
     const croppedCanvas = cropper.getCroppedCanvas({ width: canvas.width, height: canvas.height });
 
     baseImage = new Image();
@@ -80,22 +87,12 @@ document.getElementById('confirmCrop').addEventListener('click', () => {
     baseImage.src = croppedCanvas.toDataURL('image/png');
 });
 
-// optional cancel
 document.getElementById('cancelCrop').addEventListener('click', () => {
     cropModal.style.display = 'none';
     if (cropper) cropper.destroy();
 });
 
-/* ---------------------- THUMBNAIL → OVERLAY ---------------------- */
-
-function resetOverlayState() {
-    overlayX = 0;
-    // slightly above center fits better for hair/beard
-    overlayY = Math.round(-canvas.height * 0.18); // ~ -58 for 320
-    overlayScale = 0.65;
-    overlayRotation = 0;
-    drawCanvas();
-}
+/* ---------------- THUMBNAILS ---------------- */
 
 styleThumbs.forEach((thumb) => {
     thumb.addEventListener('click', () => {
@@ -104,72 +101,90 @@ styleThumbs.forEach((thumb) => {
             return;
         }
 
-        // Remove highlight from previous selection
         if (selectedThumb) selectedThumb.classList.remove("selected-thumb");
         selectedThumb = thumb;
         thumb.classList.add("selected-thumb");
 
-        // Store selected id per type (for saving)
         const type = thumb.dataset.type;
         const id = parseInt(thumb.dataset.id);
+        const src = thumb.dataset.src;
+
         if (type === "hairstyle") selectedHairstyleId = id;
         if (type === "facial") selectedFacialHairId = id;
 
-        // Load overlay image
-        const src = thumb.dataset.src;
-        if (!src) {
-            console.error("ERROR: Missing data-src for thumbnail");
-            return;
-        }
+        const img = new Image();
+        img.onload = () => {
 
-        overlayImage = new Image();
-        overlayImage.onload = () => {
-            resetOverlayState();
+            if (type === "hairstyle") {
+                hairstyleImage = img;
+                activeLayer = "hair";
+                hairstyleState = { x: 0, y: -canvas.height * 0.18, scale: 0.65, rotation: 0 };
+            }
+
+            if (type === "facial") {
+                facialImage = img;
+                activeLayer = "facial";
+                facialState = { x: 0, y: -canvas.height * 0.05, scale: 0.4, rotation: 0 };
+            }
+
+            drawCanvas();
         };
-        overlayImage.src = src;
+        img.src = src;
     });
 });
 
-/* ------------------------------------------------------------------- */
+/* ---------------- DRAW ---------------- */
 
-// --- Draw Canvas ---
 function drawCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw base
     if (baseImage) {
         ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
     }
 
-    // Draw overlay
-    if (overlayImage) {
+    if (hairstyleImage) {
         ctx.save();
-        ctx.translate(canvas.width / 2 + overlayX, canvas.height / 2 + overlayY);
-        ctx.rotate((overlayRotation * Math.PI) / 180);
+        ctx.translate(canvas.width / 2 + hairstyleState.x, canvas.height / 2 + hairstyleState.y);
+        ctx.rotate((hairstyleState.rotation * Math.PI) / 180);
 
-        const w = overlayImage.width * overlayScale;
-        const h = overlayImage.height * overlayScale;
+        const w = hairstyleImage.width * hairstyleState.scale;
+        const h = hairstyleImage.height * hairstyleState.scale;
 
-        ctx.drawImage(overlayImage, -w / 2, -h / 2, w, h);
+        ctx.drawImage(hairstyleImage, -w / 2, -h / 2, w, h);
+        ctx.restore();
+    }
+
+    if (facialImage) {
+        ctx.save();
+        ctx.translate(canvas.width / 2 + facialState.x, canvas.height / 2 + facialState.y);
+        ctx.rotate((facialState.rotation * Math.PI) / 180);
+
+        const w = facialImage.width * facialState.scale;
+        const h = facialImage.height * facialState.scale;
+
+        ctx.drawImage(facialImage, -w / 2, -h / 2, w, h);
         ctx.restore();
     }
 }
 
-// --- Controls ---
+/* ---------------- CONTROLS ---------------- */
+
 const controls = {
-    moveUp: () => overlayY -= STEP_MOVE,
-    moveDown: () => overlayY += STEP_MOVE,
-    moveLeft: () => overlayX -= STEP_MOVE,
-    moveRight: () => overlayX += STEP_MOVE,
-    zoomIn: () => overlayScale += STEP_ZOOM,
-    zoomOut: () => overlayScale = Math.max(0.1, overlayScale - STEP_ZOOM),
-    rotateLeft: () => overlayRotation -= STEP_ROTATE,
-    rotateRight: () => overlayRotation += STEP_ROTATE,
+    moveUp: () => activeLayer === "hair" ? hairstyleState.y -= STEP_MOVE : facialState.y -= STEP_MOVE,
+    moveDown: () => activeLayer === "hair" ? hairstyleState.y += STEP_MOVE : facialState.y += STEP_MOVE,
+    moveLeft: () => activeLayer === "hair" ? hairstyleState.x -= STEP_MOVE : facialState.x -= STEP_MOVE,
+    moveRight: () => activeLayer === "hair" ? hairstyleState.x += STEP_MOVE : facialState.x += STEP_MOVE,
+    zoomIn: () => activeLayer === "hair" ? hairstyleState.scale += STEP_ZOOM : facialState.scale += STEP_ZOOM,
+    zoomOut: () => activeLayer === "hair"
+        ? hairstyleState.scale = Math.max(0.1, hairstyleState.scale - STEP_ZOOM)
+        : facialState.scale = Math.max(0.1, facialState.scale - STEP_ZOOM),
+    rotateLeft: () => activeLayer === "hair" ? hairstyleState.rotation -= STEP_ROTATE : facialState.rotation -= STEP_ROTATE,
+    rotateRight: () => activeLayer === "hair" ? hairstyleState.rotation += STEP_ROTATE : facialState.rotation += STEP_ROTATE,
 };
 
 Object.keys(controls).forEach(id => {
     document.getElementById(id)?.addEventListener("click", () => {
-        if (!overlayImage) {
+        if (!activeLayer) {
             alert("Select a hairstyle or beard first!");
             return;
         }
@@ -178,70 +193,21 @@ Object.keys(controls).forEach(id => {
     });
 });
 
-// ✅ Reset button
+/* ---------------- RESET ---------------- */
+
 resetBtn?.addEventListener("click", () => {
-    if (!overlayImage) {
-        alert("Select a hairstyle or beard first!");
-        return;
+    if (!activeLayer) return;
+
+    if (activeLayer === "hair") {
+        hairstyleState = { x: 0, y: -canvas.height * 0.18, scale: 0.65, rotation: 0 };
+    } else {
+        facialState = { x: 0, y: -canvas.height * 0.05, scale: 0.4, rotation: 0 };
     }
-    resetOverlayState();
+
+    drawCanvas();
 });
 
-/* ---------------------- KEYBOARD CONTROLS (UX) ---------------------- */
-
-function isTypingInInput() {
-    const el = document.activeElement;
-    if (!el) return false;
-    const tag = (el.tagName || "").toLowerCase();
-    return tag === "input" || tag === "textarea" || el.isContentEditable;
-}
-
-document.addEventListener("keydown", (e) => {
-    if (!overlayImage) return;
-    if (isTypingInInput()) return;
-
-    // prevent page scroll with arrows
-    const key = e.key.toLowerCase();
-
-    let handled = true;
-
-    switch (key) {
-        case "arrowup": overlayY -= STEP_MOVE; break;
-        case "arrowdown": overlayY += STEP_MOVE; break;
-        case "arrowleft": overlayX -= STEP_MOVE; break;
-        case "arrowright": overlayX += STEP_MOVE; break;
-
-        case "+": // some keyboards
-        case "=": overlayScale += STEP_ZOOM; break;
-
-        case "-":
-        case "_": overlayScale = Math.max(0.1, overlayScale - STEP_ZOOM); break;
-
-        case "q": overlayRotation -= STEP_ROTATE; break;
-        case "e": overlayRotation += STEP_ROTATE; break;
-
-        case "r": resetOverlayState(); break;
-
-        default:
-            handled = false;
-            break;
-    }
-
-    if (handled) {
-        e.preventDefault();
-        drawCanvas();
-    }
-});
-
-/* ------------------------------------------------------------------- */
-
-// Prevent background scroll during cropper
-const body = document.body;
-new MutationObserver(() => {
-    body.style.overflow = cropModal.style.display === "flex" ? "hidden" : "";
-}).observe(cropModal, { attributes: true, attributeFilter: ["style"] });
-
-/* ---------------------- SAVE LOOK ---------------------- */
+/* ---------------- SAVE ---------------- */
 
 function getAntiForgeryToken() {
     const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
@@ -249,61 +215,39 @@ function getAntiForgeryToken() {
 }
 
 saveBtn?.addEventListener("click", async () => {
-    if (!isImageLoaded || !baseImage) {
+
+    if (!isImageLoaded) {
         alert("Upload and crop a photo first!");
         return;
     }
 
     const title = (titleInput.value || "").trim();
     if (!title) {
-        alert("Please enter a title for your look.");
-        titleInput.focus();
+        alert("Please enter a title.");
         return;
     }
 
-    // take final canvas as PNG
     const imageData = canvas.toDataURL("image/png");
 
-    saveBtn.disabled = true;
-    saveMsg.textContent = "Saving...";
-    saveMsg.className = "small text-muted mt-2";
+    const res = await fetch("/UserHairstyles/SaveLook", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "RequestVerificationToken": getAntiForgeryToken()
+        },
+        body: JSON.stringify({
+            title,
+            imageData,
+            hairstyleId: selectedHairstyleId,
+            facialHairId: selectedFacialHairId
+        })
+    });
 
-    try {
-        const res = await fetch("/UserHairstyles/SaveLook", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "RequestVerificationToken": getAntiForgeryToken()
-            },
-            body: JSON.stringify({
-                title,
-                imageData,
-                hairstyleId: selectedHairstyleId,
-                facialHairId: selectedFacialHairId
-            })
-        });
+    const data = await res.json();
 
-        if (!res.ok) {
-            const txt = await res.text();
-            throw new Error(txt || "Save failed");
-        }
-
-        const data = await res.json();
-
-        if (data.success) {
-            saveMsg.textContent = "✅ Saved! Redirecting to My Gallery...";
-            saveMsg.className = "small text-success mt-2";
-            window.location.href = "/UserHairstyles";
-        } else {
-            saveMsg.textContent = data.message || "❌ Could not save.";
-            saveMsg.className = "small text-danger mt-2";
-        }
-
-    } catch (err) {
-        console.error(err);
-        saveMsg.textContent = "❌ Error: " + err.message;
-        saveMsg.className = "small text-danger mt-2";
-    } finally {
-        saveBtn.disabled = false;
+    if (data.success) {
+        window.location.href = "/UserHairstyles";
+    } else {
+        alert(data.message || "Save failed.");
     }
 });

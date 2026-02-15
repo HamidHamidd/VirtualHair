@@ -8,14 +8,26 @@
     <div class="row justify-content-center">
         <div class="col-lg-7 col-xl-6">
 
+            @if (TempData["ProfileMsg"] != null)
+            {
+                <div class="alert alert-info shadow-sm">@TempData["ProfileMsg"]</div>
+            }
+
             <div class="card shadow-sm">
                 <div class="card-body p-4">
 
                     <div class="d-flex align-items-center gap-3 mb-4">
                         <div class="rounded-circle overflow-hidden border" style="width:84px;height:84px;">
-                            <img src="https://ui-avatars.com/api/?name=@(Uri.EscapeDataString(Model.UserName))&size=168"
-                                 alt="Profile"
-                                 style="width:100%;height:100%;object-fit:cover;" />
+                            @if (Model.HasPhoto)
+                            {
+                                <img src="/Profile/Photo" alt="Profile" style="width:100%;height:100%;object-fit:cover;" />
+                            }
+                            else
+                            {
+                                <img src="https://ui-avatars.com/api/?name=@(Uri.EscapeDataString(Model.UserName))&size=168"
+                                     alt="Profile"
+                                     style="width:100%;height:100%;object-fit:cover;" />
+                            }
                         </div>
 
                         <div class="flex-grow-1">
@@ -24,24 +36,39 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                    <form asp-action="UpdateUserName" method="post" class="mb-4">
+                        @Html.AntiForgeryToken()
+
                         <label class="form-label fw-semibold">Username</label>
-                        <input class="form-control" value="@Model.UserName" readonly />
-                        <div class="form-text">Username засега е само за показване.</div>
-                    </div>
+                        <div class="input-group">
+                            <input class="form-control" asp-for="NewUserName" autocomplete="username" maxlength="60" />
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fa-solid fa-floppy-disk me-2"></i>Save
+                            </button>
+                        </div>
+                        <span asp-validation-for="NewUserName" class="text-danger"></span>
+                        <div class="form-text">Username must be unique. Nobody else can use the same one.</div>
+                    </form>
 
                     <div class="mb-4">
                         <label class="form-label fw-semibold">Email</label>
                         <input class="form-control" value="@Model.Email" readonly />
                     </div>
 
-                    <div class="d-grid gap-2">
-                        <a class="btn btn-primary"
-                           asp-area="Identity"
-                           asp-page="/Account/Manage/Index">
-                            <i class="fa-solid fa-gear me-2"></i>Manage Account
-                        </a>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Profile photo</label>
+                        <input id="profilePhotoInput" class="form-control" type="file" accept="image/*" />
+                        <div class="form-text">You will crop it before uploading. Max 2MB after crop.</div>
+                    </div>
 
+                    <form id="cropUploadForm" asp-action="UploadPhoto" method="post" class="d-none">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="croppedImageBase64" id="croppedImageBase64" />
+                    </form>
+
+                    <div class="d-grid gap-2">
                         <a class="btn btn-outline-secondary"
                            asp-area="Identity"
                            asp-page="/Account/Manage/ChangePassword">
@@ -55,3 +82,122 @@
         </div>
     </div>
 </div>
+
+<!-- Crop Modal -->
+<div class="modal fade" id="cropModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Crop your profile photo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <!-- SMALLER CROP SQUARE -->
+                <div class="d-flex justify-content-center">
+                    <div style="width: 320px; height: 320px;">
+                        <img id="cropImage" alt="Crop" style="max-width:100%; display:block;" />
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    <button type="button" class="btn btn-outline-secondary" id="zoomInBtn">
+                        <i class="fa-solid fa-magnifying-glass-plus me-1"></i>Zoom In
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" id="zoomOutBtn">
+                        <i class="fa-solid fa-magnifying-glass-minus me-1"></i>Zoom Out
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" id="rotateLeftBtn">
+                        <i class="fa-solid fa-rotate-left me-1"></i>Rotate
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" id="resetBtn">
+                        <i class="fa-solid fa-arrow-rotate-right me-1"></i>Reset
+                    </button>
+                </div>
+
+                <div class="form-text mt-2">Tip: keep the face centered.</div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="cropAndUploadBtn">
+                    <i class="fa-solid fa-scissors me-2"></i>Crop & Upload
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        let cropper = null;
+        const input = document.getElementById('profilePhotoInput');
+        const cropImage = document.getElementById('cropImage');
+        const cropModalEl = document.getElementById('cropModal');
+        const cropModal = new bootstrap.Modal(cropModalEl);
+
+        input.addEventListener('change', () => {
+            const file = input.files && input.files[0];
+            if (!file) return;
+
+            if (!file.type || !file.type.startsWith('image/')) {
+                input.value = '';
+                alert('Please choose a valid image.');
+                return;
+            }
+
+            const url = URL.createObjectURL(file);
+            cropImage.src = url;
+
+            cropModal.show();
+        });
+
+        cropModalEl.addEventListener('shown.bs.modal', () => {
+            if (cropper) cropper.destroy();
+
+            cropper = new Cropper(cropImage, {
+                aspectRatio: 1,
+                viewMode: 1,
+                dragMode: 'move',
+                autoCropArea: 1,
+                responsive: true,
+                background: false
+            });
+        });
+
+        cropModalEl.addEventListener('hidden.bs.modal', () => {
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+            if (cropImage.src && cropImage.src.startsWith('blob:')) {
+                URL.revokeObjectURL(cropImage.src);
+            }
+            cropImage.removeAttribute('src');
+            input.value = '';
+        });
+
+        document.getElementById('zoomInBtn').addEventListener('click', () => cropper && cropper.zoom(0.1));
+        document.getElementById('zoomOutBtn').addEventListener('click', () => cropper && cropper.zoom(-0.1));
+        document.getElementById('rotateLeftBtn').addEventListener('click', () => cropper && cropper.rotate(-90));
+        document.getElementById('resetBtn').addEventListener('click', () => cropper && cropper.reset());
+
+        document.getElementById('cropAndUploadBtn').addEventListener('click', () => {
+            if (!cropper) return;
+
+            const canvas = cropper.getCroppedCanvas({
+                width: 512,
+                height: 512,
+                imageSmoothingEnabled: true
+            });
+
+            const dataUrl = canvas.toDataURL('image/png', 0.92);
+
+            document.getElementById('croppedImageBase64').value = dataUrl;
+            document.getElementById('cropUploadForm').submit();
+        });
+    </script>
+}

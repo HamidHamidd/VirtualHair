@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using VirtualHair.Data;
 using VirtualHair.Models;
@@ -26,15 +25,11 @@ namespace VirtualHair.Controllers
             _environment = environment;
         }
 
-        // GET: UserHairstyles
+        // ================= INDEX =================
+
         public async Task<IActionResult> Index()
         {
             var userId = _userManager.GetUserId(User);
-            if (string.IsNullOrEmpty(userId))
-            {
-                TempData["ErrorMessage"] = "⚠️ You must be logged in to view your gallery.";
-                return RedirectToAction("Index", "Home");
-            }
 
             var looks = await _context.UserHairstyles
                 .Include(x => x.Hairstyle)
@@ -46,28 +41,28 @@ namespace VirtualHair.Controllers
             return View(looks);
         }
 
-        // GET: UserHairstyles/Details/5
+        // ================= DETAILS =================
+
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
                 return NotFound();
 
             var userId = _userManager.GetUserId(User);
+
             var look = await _context.UserHairstyles
                 .Include(x => x.Hairstyle)
                 .Include(x => x.FacialHair)
                 .FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId);
 
             if (look == null)
-            {
-                TempData["ErrorMessage"] = "⚠️ Look not found or access denied.";
-                return RedirectToAction(nameof(Index));
-            }
+                return NotFound();
 
             return View(look);
         }
 
-        // GET: UserHairstyles/Create
+        // ================= CREATE =================
+
         public async Task<IActionResult> Create()
         {
             ViewBag.Hairstyles = await _context.Hairstyles.ToListAsync();
@@ -75,20 +70,11 @@ namespace VirtualHair.Controllers
             return View();
         }
 
-        // POST: UserHairstyles/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(UserHairstyle model)
         {
             var userId = _userManager.GetUserId(User);
-            if (string.IsNullOrEmpty(userId))
-            {
-                TempData["ErrorMessage"] = "⚠️ You must be logged in to create a look.";
-                return RedirectToAction("Index", "Home");
-            }
-
-            if (model.HairstyleId == 0)
-                ModelState.AddModelError("HairstyleId", "Please select a hairstyle.");
 
             var duplicate = await _context.UserHairstyles
                 .AnyAsync(x => x.UserId == userId && x.Title.ToLower() == model.Title.ToLower());
@@ -103,30 +89,22 @@ namespace VirtualHair.Controllers
 
             if (!ModelState.IsValid)
             {
-                TempData["ErrorMessage"] = "❌ Validation failed.";
                 ViewBag.Hairstyles = await _context.Hairstyles.ToListAsync();
                 ViewBag.FacialHairs = await _context.FacialHairs.ToListAsync();
                 return View(model);
             }
 
-            try
-            {
-                model.UserId = userId;
-                model.CreatedAt = DateTime.UtcNow;
-                _context.UserHairstyles.Add(model);
-                await _context.SaveChangesAsync();
+            model.UserId = userId;
+            model.CreatedAt = DateTime.UtcNow;
 
-                TempData["SuccessMessage"] = "✅ Look created successfully!";
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = $"❌ Error while saving: {ex.Message}";
-                return View(model);
-            }
+            _context.UserHairstyles.Add(model);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: UserHairstyles/Edit/5
+        // ================= EDIT (SAFE UPDATE) =================
+
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -138,6 +116,7 @@ namespace VirtualHair.Controllers
 
             ViewBag.Hairstyles = await _context.Hairstyles.ToListAsync();
             ViewBag.FacialHairs = await _context.FacialHairs.ToListAsync();
+
             return View(look);
         }
 
@@ -148,37 +127,41 @@ namespace VirtualHair.Controllers
             if (id != model.Id)
                 return NotFound();
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(model);
-                    await _context.SaveChangesAsync();
+            var userId = _userManager.GetUserId(User);
 
-                    TempData["SuccessMessage"] = "✅ Changes saved successfully!";
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!_context.UserHairstyles.Any(e => e.Id == model.Id))
-                        return NotFound();
-                    else
-                        throw;
-                }
+            var existing = await _context.UserHairstyles
+                .FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId);
+
+            if (existing == null)
+                return NotFound();
+
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Hairstyles = await _context.Hairstyles.ToListAsync();
+                ViewBag.FacialHairs = await _context.FacialHairs.ToListAsync();
+                return View(model);
             }
 
-            ViewBag.Hairstyles = await _context.Hairstyles.ToListAsync();
-            ViewBag.FacialHairs = await _context.FacialHairs.ToListAsync();
-            return View(model);
+            // 🔥 ONLY update editable fields
+            existing.Title = model.Title;
+            existing.HairstyleId = model.HairstyleId;
+            existing.FacialHairId = model.FacialHairId;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "✅ Changes saved successfully!";
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: UserHairstyles/Delete/5
+        // ================= DELETE =================
+
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
                 return NotFound();
 
             var userId = _userManager.GetUserId(User);
+
             var item = await _context.UserHairstyles
                 .Include(x => x.Hairstyle)
                 .Include(x => x.FacialHair)
@@ -190,7 +173,6 @@ namespace VirtualHair.Controllers
             return View(item);
         }
 
-        // POST: UserHairstyles/Delete/5
         [HttpPost, ActionName("DeleteConfirmed")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -202,24 +184,20 @@ namespace VirtualHair.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            TempData["SuccessMessage"] = "🗑️ Look deleted successfully!";
             return RedirectToAction(nameof(Index));
         }
 
-        // ✅ PREVIEW PAGE
-        [Authorize]
+        // ================= PREVIEW =================
+
         public async Task<IActionResult> Preview()
         {
-            var hairstyles = await _context.Hairstyles.ToListAsync();
-            var facialHairs = await _context.FacialHairs.ToListAsync();
-
-            ViewBag.Hairstyles = hairstyles;
-            ViewBag.FacialHairs = facialHairs;
-
+            ViewBag.Hairstyles = await _context.Hairstyles.ToListAsync();
+            ViewBag.FacialHairs = await _context.FacialHairs.ToListAsync();
             return View();
         }
 
-        // ✅ NEW: SAVE LOOK from Canvas
+        // ================= SAVE LOOK =================
+
         public class SaveLookRequest
         {
             public string Title { get; set; } = "";
@@ -233,68 +211,41 @@ namespace VirtualHair.Controllers
         public async Task<IActionResult> SaveLook([FromBody] SaveLookRequest req)
         {
             var userId = _userManager.GetUserId(User);
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized(new { success = false, message = "Not logged in." });
 
             var title = (req.Title ?? "").Trim();
-            if (string.IsNullOrWhiteSpace(title))
-                return BadRequest(new { success = false, message = "Title is required." });
 
-            // Duplicate title check (per user)
             var duplicate = await _context.UserHairstyles
                 .AnyAsync(x => x.UserId == userId && x.Title.ToLower() == title.ToLower());
 
             if (duplicate)
-                return BadRequest(new { success = false, message = "You already have a look with this title." });
+                return BadRequest(new { success = false, message = "Duplicate title." });
 
-            if (string.IsNullOrWhiteSpace(req.ImageData) || !req.ImageData.StartsWith("data:image"))
-                return BadRequest(new { success = false, message = "Invalid image data." });
+            var base64Data = Regex.Replace(req.ImageData, @"^data:image\/[a-zA-Z]+;base64,", string.Empty);
+            var bytes = Convert.FromBase64String(base64Data);
 
-            try
+            var folder = Path.Combine(_environment.WebRootPath, "uploads", "userlooks");
+            Directory.CreateDirectory(folder);
+
+            var fileName = $"{Guid.NewGuid()}.png";
+            var filePath = Path.Combine(folder, fileName);
+            await System.IO.File.WriteAllBytesAsync(filePath, bytes);
+
+            var imagePathForDb = $"/uploads/userlooks/{fileName}";
+
+            var look = new UserHairstyle
             {
-                // Extract base64 part
-                var base64Data = Regex.Replace(req.ImageData, @"^data:image\/[a-zA-Z]+;base64,", string.Empty);
-                var bytes = Convert.FromBase64String(base64Data);
+                UserId = userId,
+                Title = title,
+                ImagePath = imagePathForDb,
+                HairstyleId = req.HairstyleId ?? 0,
+                FacialHairId = req.FacialHairId,
+                CreatedAt = DateTime.UtcNow
+            };
 
-                // Ensure folder exists
-                var folder = Path.Combine(_environment.WebRootPath, "uploads", "userlooks");
-                Directory.CreateDirectory(folder);
+            _context.UserHairstyles.Add(look);
+            await _context.SaveChangesAsync();
 
-                // Save file
-                var fileName = $"{Guid.NewGuid()}.png";
-                var filePath = Path.Combine(folder, fileName);
-                await System.IO.File.WriteAllBytesAsync(filePath, bytes);
-
-                var imagePathForDb = $"/uploads/userlooks/{fileName}";
-
-                var look = new UserHairstyle
-                {
-                    UserId = userId,
-                    Title = title,
-                    ImagePath = imagePathForDb,
-                    HairstyleId = req.HairstyleId ?? 0,   // if null -> will be 0 (required field)
-                    FacialHairId = req.FacialHairId,
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                // If no hairstyle selected (null), keep HairstyleId=0 out of DB by setting null? 
-                // But HairstyleId is required in your model.
-                // So we handle by allowing save without hairstyle ONLY if you want:
-                // If req.HairstyleId is null -> set to any existing hairstyle? NO.
-                // Better: if null, don't save HairstyleId requirement. We'll force to 0 invalid? Not ok.
-                // So we do this:
-                if (req.HairstyleId == null)
-                    look.HairstyleId = 0; // won't break save if DB allows 0? If not, create a "NoHairstyle" record.
-
-                _context.UserHairstyles.Add(look);
-                await _context.SaveChangesAsync();
-
-                return Json(new { success = true, imagePath = imagePathForDb });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { success = false, message = ex.Message });
-            }
+            return Json(new { success = true });
         }
     }
 }

@@ -12,8 +12,8 @@ using VirtualHair.Data;
 namespace VirtualHair.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251209120504_AddFeedRelations")]
-    partial class AddFeedRelations
+    [Migration("20260216131908_InitialClean")]
+    partial class InitialClean
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -241,9 +241,6 @@ namespace VirtualHair.Migrations
                     b.Property<int>("PostId")
                         .HasColumnType("int");
 
-                    b.Property<int>("PostId1")
-                        .HasColumnType("int");
-
                     b.Property<string>("Text")
                         .IsRequired()
                         .HasMaxLength(300)
@@ -256,8 +253,6 @@ namespace VirtualHair.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("PostId");
-
-                    b.HasIndex("PostId1");
 
                     b.HasIndex("UserId");
 
@@ -347,9 +342,6 @@ namespace VirtualHair.Migrations
                     b.Property<int>("PostId")
                         .HasColumnType("int");
 
-                    b.Property<int>("PostId1")
-                        .HasColumnType("int");
-
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -357,8 +349,6 @@ namespace VirtualHair.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("PostId");
-
-                    b.HasIndex("PostId1");
 
                     b.HasIndex("UserId");
 
@@ -580,22 +570,16 @@ namespace VirtualHair.Migrations
 
             modelBuilder.Entity("VirtualHair.Models.Comment", b =>
                 {
-                    b.HasOne("VirtualHair.Models.Post", null)
+                    b.HasOne("VirtualHair.Models.Post", "Post")
                         .WithMany("Comments")
                         .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("VirtualHair.Models.Post", "Post")
-                        .WithMany()
-                        .HasForeignKey("PostId1")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Post");
@@ -603,22 +587,16 @@ namespace VirtualHair.Migrations
 
             modelBuilder.Entity("VirtualHair.Models.Like", b =>
                 {
-                    b.HasOne("VirtualHair.Models.Post", null)
+                    b.HasOne("VirtualHair.Models.Post", "Post")
                         .WithMany("Likes")
                         .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("VirtualHair.Models.Post", "Post")
-                        .WithMany()
-                        .HasForeignKey("PostId1")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Post");
@@ -629,7 +607,7 @@ namespace VirtualHair.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
                 });
 

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using VirtualHair.Data;
 
@@ -10,7 +10,6 @@ namespace VirtualHair
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
@@ -22,21 +21,25 @@ namespace VirtualHair
             // Identity configuration
             builder.Services.AddDefaultIdentity<IdentityUser>(options =>
             {
-                options.SignIn.RequireConfirmedAccount = true;
+                // 🔥 ИЗКЛЮЧВАМЕ email confirmation
+                options.SignIn.RequireConfirmedAccount = false;
+
                 options.Password.RequiredLength = 8;
                 options.Password.RequireUppercase = true;
                 options.Password.RequireLowercase = true;
                 options.Password.RequireDigit = true;
                 options.Password.RequireNonAlphanumeric = true;
+
+                // По желание – изключваме lockout
+                options.Lockout.AllowedForNewUsers = false;
             })
-            .AddRoles<IdentityRole>() // добавяме поддръжка на роли
+            .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseMigrationsEndPoint();
@@ -52,7 +55,7 @@ namespace VirtualHair
 
             app.UseRouting();
 
-            app.UseAuthentication(); // добавяме Authentication middleware
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllerRoute(
@@ -61,7 +64,7 @@ namespace VirtualHair
 
             app.MapRazorPages();
 
-            // --- SEED за роли и админ акаунт ---
+            // Seed роли и админ
             await IdentitySeeder.SeedAsync(app.Services);
 
             app.Run();

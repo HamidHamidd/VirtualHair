@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace VirtualHair.Data
 {
@@ -10,8 +11,10 @@ namespace VirtualHair.Data
 
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
             string[] roles = new[] { "Admin", "User" };
+
             foreach (var role in roles)
             {
                 if (!await roleManager.RoleExistsAsync(role))
@@ -21,7 +24,11 @@ namespace VirtualHair.Data
             }
 
             var adminEmail = "xamid.alii@gmail.com";
-            var admin = await userManager.FindByEmailAsync(adminEmail);
+
+            // 🔥 ВАЖНО: не използваме FindByEmailAsync
+            var admin = await context.Users
+                .Where(u => u.Email == adminEmail)
+                .FirstOrDefaultAsync();
 
             if (admin == null)
             {
@@ -33,6 +40,10 @@ namespace VirtualHair.Data
                 };
 
                 await userManager.CreateAsync(admin, "Admin#12345");
+            }
+
+            if (!await userManager.IsInRoleAsync(admin, "Admin"))
+            {
                 await userManager.AddToRoleAsync(admin, "Admin");
             }
         }

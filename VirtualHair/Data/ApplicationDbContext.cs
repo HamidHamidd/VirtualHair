@@ -31,7 +31,7 @@ namespace VirtualHair.Data
             base.OnModelCreating(builder);
 
             // ------------------------
-            // ВАШИТЕ СЪЩЕСТВУВАЩИ МОДЕЛИ
+            // СЪЩЕСТВУВАЩИ МОДЕЛИ
             // ------------------------
 
             builder.Entity<UserPhoto>()
@@ -74,7 +74,7 @@ namespace VirtualHair.Data
                 .OnDelete(DeleteBehavior.SetNull);
 
             // ------------------------
-            // ⭐ ДОБАВЕНОТО (FEED SYSTEM) ⭐
+            // FEED SYSTEM (ОПРАВЕНО)
             // ------------------------
 
             // Post → User
@@ -82,35 +82,35 @@ namespace VirtualHair.Data
                 .HasOne<IdentityUser>()
                 .WithMany()
                 .HasForeignKey(p => p.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
 
-            // Post → Comments
+            // Comment → Post
             builder.Entity<Comment>()
-                .HasOne<Post>()
+                .HasOne(c => c.Post)
                 .WithMany(p => p.Comments)
                 .HasForeignKey(c => c.PostId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
 
             // Comment → User
             builder.Entity<Comment>()
                 .HasOne<IdentityUser>()
                 .WithMany()
                 .HasForeignKey(c => c.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
 
-            // Post → Likes
+            // Like → Post
             builder.Entity<Like>()
-                .HasOne<Post>()
+                .HasOne(l => l.Post)
                 .WithMany(p => p.Likes)
                 .HasForeignKey(l => l.PostId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
 
             // Like → User
             builder.Entity<Like>()
                 .HasOne<IdentityUser>()
                 .WithMany()
                 .HasForeignKey(l => l.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

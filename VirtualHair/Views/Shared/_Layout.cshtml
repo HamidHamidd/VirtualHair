@@ -72,20 +72,20 @@
                     </a>
                 </li>
 
-                <li class="nav-item" style="--order:3">
-                    <a asp-controller="Hairstyles" asp-action="Index" class="nav-link">
-                        <i class="fa-solid fa-scissors me-2"></i>Hairstyles
-                    </a>
-                </li>
-
-                <li class="nav-item" style="--order:4">
-                    <a asp-controller="FacialHairs" asp-action="Index" class="nav-link">
-                        <i class="fa-solid fa-beard me-2"></i>Facial Hair
-                    </a>
-                </li>
-
                 @if (isAuthenticated)
                 {
+                    <li class="nav-item" style="--order:3">
+                        <a asp-controller="Hairstyles" asp-action="Index" class="nav-link">
+                            <i class="fa-solid fa-scissors me-2"></i>Hairstyles
+                        </a>
+                    </li>
+
+                    <li class="nav-item" style="--order:4">
+                        <a asp-controller="FacialHairs" asp-action="Index" class="nav-link">
+                            <i class="fa-solid fa-beard me-2"></i>Facial Hair
+                        </a>
+                    </li>
+
                     <li class="nav-item" style="--order:5">
                         <a asp-controller="UserHairstyles" asp-action="Index" class="nav-link">
                             <i class="fa-solid fa-images me-2"></i>My Gallery

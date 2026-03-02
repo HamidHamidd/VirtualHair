@@ -74,6 +74,18 @@
 
                 @if (isAuthenticated)
                 {
+                    <li class="nav-item" style="--order:6">
+                        <a asp-controller="UserHairstyles" asp-action="Preview" class="nav-link">
+                            <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Try Now
+                        </a>
+                    </li>
+
+                    <li class="nav-item" style="--order:5">
+                        <a asp-controller="UserHairstyles" asp-action="Index" class="nav-link">
+                            <i class="fa-solid fa-images me-2"></i>My Gallery
+                        </a>
+                    </li>       
+
                     <li class="nav-item" style="--order:3">
                         <a asp-controller="Hairstyles" asp-action="Index" class="nav-link">
                             <i class="fa-solid fa-scissors me-2"></i>Hairstyles
@@ -86,17 +98,6 @@
                         </a>
                     </li>
 
-                    <li class="nav-item" style="--order:5">
-                        <a asp-controller="UserHairstyles" asp-action="Index" class="nav-link">
-                            <i class="fa-solid fa-images me-2"></i>My Gallery
-                        </a>
-                    </li>
-
-                    <li class="nav-item" style="--order:6">
-                        <a asp-controller="UserHairstyles" asp-action="Preview" class="nav-link">
-                            <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Try Now
-                        </a>
-                    </li>
 
                     <!-- ⭐ CLEAN COMMUNITY SECTION (no dropdown, stable) ⭐ -->
                     <li class="nav-item mt-3" style="--order:7">

@@ -23,7 +23,7 @@ namespace VirtualHair.Data
                 }
             }
 
-            var adminEmail = "xamid.alii@gmail.com";
+            var adminEmail = "admin@virtualhair.com";
 
             // 🔥 ВАЖНО: не използваме FindByEmailAsync
             var admin = await context.Users

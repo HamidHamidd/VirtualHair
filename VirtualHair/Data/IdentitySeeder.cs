@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace VirtualHair.Data
@@ -8,43 +8,55 @@ namespace VirtualHair.Data
         public static async Task SeedAsync(IServiceProvider sp)
         {
             using var scope = sp.CreateScope();
-
-            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var context = scope.ServiceProvider.GetRequiredService<VirtualHair.Data.ApplicationDbContext>();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-            string[] roles = new[] { "Admin", "User" };
+            // ☢️ Ядрена опция: Чистим ТАБЛИЦИТЕ СЪС ЗАВИСИМОСТИ ПЪРВО (за да избегнем FK грешки)
+            await context.Database.ExecuteSqlRawAsync(@"
+                DELETE FROM SavedLooks;
+                DELETE FROM UserPhotos;
+                DELETE FROM UserHairstyles;
+                DELETE FROM Likes;
+                DELETE FROM Comments;
+                DELETE FROM Posts;
+                DELETE FROM Friendships;
+                DELETE FROM Messages;
+                DELETE FROM AspNetUserRoles; 
+                DELETE FROM AspNetUserClaims; 
+                DELETE FROM AspNetUserLogins; 
+                DELETE FROM AspNetUserTokens; 
+                DELETE FROM AspNetRoleClaims; 
+                DELETE FROM AspNetRoles; 
+                DELETE FROM AspNetUsers;");
 
+            // 1. Прясно създаване на роли
+            string[] roles = { "Admin", "User" };
             foreach (var role in roles)
             {
-                if (!await roleManager.RoleExistsAsync(role))
-                {
-                    await roleManager.CreateAsync(new IdentityRole(role));
-                }
+                await roleManager.CreateAsync(new IdentityRole(role));
             }
 
+            // 2. Прясно създаване на Админ
             var adminEmail = "admin@virtualhair.com";
+            var adminPassword = "Admin#12345";
 
-            // 🔥 ВАЖНО: не използваме FindByEmailAsync
-            var admin = await context.Users
-                .Where(u => u.Email == adminEmail)
-                .FirstOrDefaultAsync();
-
-            if (admin == null)
+            var admin = new IdentityUser
             {
-                admin = new IdentityUser
-                {
-                    UserName = adminEmail,
-                    Email = adminEmail,
-                    EmailConfirmed = true
-                };
+                UserName = adminEmail,
+                Email = adminEmail,
+                EmailConfirmed = true,
+                LockoutEnabled = false // Никога няма да се заключва
+            };
 
-                await userManager.CreateAsync(admin, "Admin#12345");
-            }
-
-            if (!await userManager.IsInRoleAsync(admin, "Admin"))
+            var result = await userManager.CreateAsync(admin, adminPassword);
+            if (result.Succeeded)
             {
                 await userManager.AddToRoleAsync(admin, "Admin");
+            }
+            else
+            {
+                throw new Exception("CRITICAL ERROR: Failed to create admin after full wipe!");
             }
         }
     }

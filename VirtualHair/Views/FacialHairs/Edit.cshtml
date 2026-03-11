@@ -1,4 +1,4 @@
-﻿@model VirtualHair.Models.FacialHair
+@model VirtualHair.Models.FacialHair
 @{
     ViewData["Title"] = "Edit Facial Hair";
 }
@@ -10,7 +10,6 @@
         <form asp-action="Edit" enctype="multipart/form-data">
             <input type="hidden" asp-for="Id" />
             <input type="hidden" asp-for="CreatedAt" />
-            <input type="hidden" asp-for="ImagePath" />
 
             <div class="mb-3">
                 <label asp-for="Name" class="form-label"></label>
@@ -24,9 +23,9 @@
             </div>
 
             <div class="mb-3 text-center">
-                @if (!string.IsNullOrEmpty(Model.ImagePath))
+                @if (Model.ImageData != null)
                 {
-                    <img src="@Model.ImagePath" alt="preview" style="max-height:160px;" class="img-thumbnail mb-2" />
+                    <img src="/FacialHairs/Image/@Model.Id" alt="preview" style="max-height:160px;" class="img-thumbnail mb-2" />
                 }
                 <input asp-for="ImageFile" class="form-control" type="file" />
             </div>

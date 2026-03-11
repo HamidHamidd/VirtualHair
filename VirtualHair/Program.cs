@@ -32,6 +32,9 @@ namespace VirtualHair
 
                 // По желание – изключваме lockout
                 options.Lockout.AllowedForNewUsers = false;
+
+                // Уверяваме се, че имейлите са уникални
+                options.User.RequireUniqueEmail = true;
             })
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>();

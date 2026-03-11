@@ -1,8 +1,281 @@
-﻿@{
+@{
     ViewData["Title"] = "Friends";
+    var myFriends = ViewBag.Friends as List<Microsoft.AspNetCore.Identity.IdentityUser>;
+    var suggestions = ViewBag.Suggestions as List<Microsoft.AspNetCore.Identity.IdentityUser>;
+    var sentRequests = ViewBag.SentRequests as List<Microsoft.AspNetCore.Identity.IdentityUser>;
+    var receivedRequests = ViewBag.ReceivedRequests as List<Microsoft.AspNetCore.Identity.IdentityUser>;
 }
 
-<div class="text-center mt-5">
-    <h1 class="fw-bold">Friends</h1>
-    <p class="text-secondary">Friend system will be implemented here.</p>
+<div class="container py-4">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <h2 class="fw-bold mb-0 premium-text">Community</h2>
+            <p class="text-muted mb-0">Connect with other people and share your journey.</p>
+        </div>
+        <div class="col-md-6 text-md-end mt-3 mt-md-0">
+            <div class="input-group search-bar shadow-sm">
+                <span class="input-group-text bg-white border-0"><i class="fa-solid fa-search text-muted"></i></span>
+                <input type="text" id="friendSearch" class="form-control border-0" placeholder="Search people...">
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-pills custom-tabs mb-4" id="friendsTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="friends-tab" data-bs-toggle="tab" data-bs-target="#friends" type="button" role="tab">All Friends (@myFriends?.Count)</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="requests-tab" data-bs-toggle="tab" data-bs-target="#requests" type="button" role="tab">
+                Requests 
+                @if(receivedRequests?.Count > 0)
+                {
+                    <span class="badge bg-danger rounded-pill ms-1">@receivedRequests.Count</span>
+                }
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="discover-tab" data-bs-toggle="tab" data-bs-target="#discover" type="button" role="tab">Discover</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="friendsTabContent">
+        <!-- My Friends Tab -->
+        <div class="tab-pane fade show active" id="friends" role="tabpanel">
+            <div class="row g-4 user-grid">
+                @if (myFriends != null && myFriends.Any())
+                {
+                    foreach (var user in myFriends)
+                    {
+                        <div class="col-12 col-md-6 col-lg-4 user-card-item">
+                            <div class="card user-card shadow-sm border-0 h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <img src="/images/no-image.png" class="rounded-circle avatar-lg me-3" alt="Avatar">
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <h6 class="mb-0 fw-bold text-truncate searchable-name">@user.UserName</h6>
+                                        <small class="text-muted">Friend</small>
+                                    </div>
+                                    <div class="ms-2">
+                                        <button onclick="removeFriend('@user.Id')" class="btn btn-outline-danger btn-sm rounded-pill px-3">Remove</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12 text-center py-5">
+                        <img src="/images/no-image.png" class="mb-3 opacity-25" style="width: 80px;" alt="Empty">
+                        <h5 class="text-muted">No friends yet.</h5>
+                        <p class="text-secondary small">Head over to the Discover tab to find new people!</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Requests Tab -->
+        <div class="tab-pane fade" id="requests" role="tabpanel">
+            
+            @if((receivedRequests == null || !receivedRequests.Any()) && (sentRequests == null || !sentRequests.Any()))
+            {
+                <div class="col-12 text-center py-5">
+                    <h5 class="text-muted">No pending requests.</h5>
+                </div>
+            }
+
+            @if (receivedRequests != null && receivedRequests.Any())
+            {
+                <h5 class="fw-bold mb-3 section-title">Received Requests</h5>
+                <div class="row g-4 user-grid mb-5">
+                    @foreach (var user in receivedRequests)
+                    {
+                        <div class="col-12 col-md-6 col-lg-4 user-card-item">
+                            <div class="card user-card shadow-sm border-0 h-100 border-start border-4 border-primary">
+                                <div class="card-body d-flex flex-column justify-content-center">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <img src="/images/no-image.png" class="rounded-circle avatar-lg me-3" alt="Avatar">
+                                        <div class="flex-grow-1 overflow-hidden">
+                                            <h6 class="mb-0 fw-bold text-truncate searchable-name">@user.UserName</h6>
+                                            <small class="text-muted">Wants to be friends</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2 w-100 mt-auto">
+                                        <button onclick="acceptFriend('@user.Id')" class="btn btn-primary flex-grow-1 rounded-pill shadow-sm">Accept</button>
+                                        <button onclick="removeFriend('@user.Id')" class="btn btn-light flex-grow-1 rounded-pill">Decline</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            @if (sentRequests != null && sentRequests.Any())
+            {
+                <h5 class="fw-bold mb-3 section-title mt-4">Sent Requests</h5>
+                <div class="row g-4 user-grid">
+                    @foreach (var user in sentRequests)
+                    {
+                        <div class="col-12 col-md-6 col-lg-4 user-card-item">
+                            <div class="card user-card shadow-sm border-0 h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <img src="/images/no-image.png" class="rounded-circle avatar-lg me-3 opacity-75" alt="Avatar">
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <h6 class="mb-0 fw-bold text-truncate searchable-name text-muted">@user.UserName</h6>
+                                        <small class="text-secondary">Request Sent</small>
+                                    </div>
+                                    <div class="ms-2">
+                                        <button onclick="removeFriend('@user.Id')" class="btn btn-outline-secondary btn-sm rounded-pill px-3">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Discover Tab -->
+        <div class="tab-pane fade" id="discover" role="tabpanel">
+            <div class="row g-4 user-grid">
+                @if (suggestions != null && suggestions.Any())
+                {
+                    foreach (var user in suggestions)
+                    {
+                        <div class="col-12 col-md-6 col-lg-4 user-card-item">
+                            <div class="card user-card shadow-sm border-0 h-100">
+                                <div class="card-body d-flex flex-column align-items-center text-center p-4">
+                                    <img src="/images/no-image.png" class="rounded-circle mb-3 shadow-sm border border-2 border-white" style="width: 80px; height: 80px; object-fit: cover;" alt="Avatar">
+                                    <h5 class="fw-bold mb-1 text-truncate w-100 searchable-name">@user.UserName</h5>
+                                    <small class="text-muted mb-3">Community Member</small>
+                                    
+                                    <button onclick="addFriend('@user.Id')" class="btn btn-primary rounded-pill w-100 shadow-sm mt-auto d-flex align-items-center justify-content-center gap-2">
+                                        <i class="fa-solid fa-user-plus"></i> Add Friend
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12 text-center py-5">
+                        <h5 class="text-muted">No new people found.</h5>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+    .premium-text {
+        background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    .search-bar {
+        border-radius: 30px;
+        overflow: hidden;
+        border: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    .search-bar:focus-within {
+        box-shadow: 0 5px 15px rgba(13, 110, 253, 0.15) !important;
+        border-color: rgba(13, 110, 253, 0.4);
+    }
+    .search-bar input:focus {
+        box-shadow: none;
+    }
+
+    .custom-tabs {
+        border-bottom: 2px solid rgba(0,0,0,0.05);
+        gap: 15px;
+    }
+    .custom-tabs .nav-link {
+        color: #6c757d;
+        border: none;
+        border-bottom: 3px solid transparent;
+        border-radius: 0;
+        padding: 10px 15px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+    .custom-tabs .nav-link:hover {
+        color: #0d6efd;
+    }
+    .custom-tabs .nav-link.active {
+        color: #0d6efd;
+        background: none;
+        border-bottom-color: #0d6efd;
+    }
+
+    .user-card {
+        border-radius: 16px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .user-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+    }
+
+    .avatar-lg {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+    }
+    
+    .section-title {
+        color: #495057;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // Filters
+        document.getElementById('friendSearch').addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            document.querySelectorAll('.user-card-item').forEach(card => {
+                const name = card.querySelector('.searchable-name').textContent.toLowerCase();
+                if (name.includes(query)) {
+                    card.classList.remove('d-none');
+                } else {
+                    card.classList.add('d-none');
+                }
+            });
+        });
+
+        async function addFriend(targetId) {
+            await fetch('/Friends/AddFriend', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `targetId=${targetId}`
+            });
+            location.reload();
+        }
+
+        async function acceptFriend(targetId) {
+            await fetch('/Friends/AcceptFriend', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `targetId=${targetId}`
+            });
+            location.reload();
+        }
+
+        async function removeFriend(targetId) {
+            if(!confirm("Are you sure?")) return;
+            await fetch('/Friends/RemoveFriend', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `targetId=${targetId}`
+            });
+            location.reload();
+        }
+    </script>
+}

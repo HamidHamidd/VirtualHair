@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Try Hairstyles";
     var hairstyles = ViewBag.Hairstyles as List<VirtualHair.Models.Hairstyle>;
     var facialHairs = ViewBag.FacialHairs as List<VirtualHair.Models.FacialHair>;
@@ -36,12 +36,12 @@
                         <div class="accordion-body d-flex flex-wrap gap-2">
                             @foreach (var h in hairstyles)
                             {
-                                <img src="@Url.Content(h.ImagePath)"
+                                <img src="/Hairstyles/Image/@h.Id"
                                      alt="@h.Name"
                                      class="style-thumb"
                                      data-type="hairstyle"
                                      data-id="@h.Id"
-                                     data-src="@Url.Content(h.ImagePath)" />
+                                     data-src="/Hairstyles/Image/@h.Id" />
                             }
                         </div>
                     </div>
@@ -57,12 +57,12 @@
                         <div class="accordion-body d-flex flex-wrap gap-2">
                             @foreach (var f in facialHairs)
                             {
-                                <img src="@Url.Content(f.ImagePath)"
+                                <img src="/FacialHairs/Image/@f.Id"
                                      alt="@f.Name"
                                      class="style-thumb"
                                      data-type="facial"
                                      data-id="@f.Id"
-                                     data-src="@Url.Content(f.ImagePath)" />
+                                     data-src="/FacialHairs/Image/@f.Id" />
                             }
                         </div>
                     </div>

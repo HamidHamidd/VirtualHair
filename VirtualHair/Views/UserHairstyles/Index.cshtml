@@ -1,4 +1,4 @@
-﻿@model IEnumerable<VirtualHair.Models.UserHairstyle>
+@model IEnumerable<VirtualHair.Models.UserHairstyle>
 @{
     ViewData["Title"] = "My Gallery";
 }
@@ -44,7 +44,7 @@
 
                         <!-- Image -->
                         <div class="gallery-img-container">
-                            <img src="@(item.ImagePath ?? "/images/no-image.png")"
+                            <img src="@(item.ImageData != null ? $"/UserHairstyles/Image/{item.Id}" : "/images/no-image.png")"
                                  class="gallery-img"
                                  alt="@item.Title" />
                         </div>

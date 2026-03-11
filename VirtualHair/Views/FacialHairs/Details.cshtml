@@ -1,4 +1,4 @@
-﻿@model VirtualHair.Models.FacialHair
+@model VirtualHair.Models.FacialHair
 @{
     ViewData["Title"] = "Facial Hair Details";
 }
@@ -7,9 +7,9 @@
     <div class="card shadow-sm p-4 text-center" style="max-width:650px; width:100%;">
         <h2 class="mb-4">@Model.Name</h2>
 
-        @if (!string.IsNullOrEmpty(Model.ImagePath))
+        @if (Model.ImageData != null)
         {
-            <img src="@Model.ImagePath" alt="@Model.Name" class="img-fluid rounded mb-3" style="max-height:250px;" />
+            <img src="/FacialHairs/Image/@Model.Id" alt="@Model.Name" class="img-fluid rounded mb-3" style="max-height:250px;" />
         }
 
         <p><strong>Color:</strong> @Model.DefaultColorHex</p>

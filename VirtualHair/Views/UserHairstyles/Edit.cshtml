@@ -1,9 +1,9 @@
-﻿@model VirtualHair.Models.UserHairstyle
+@model VirtualHair.Models.UserHairstyle
 @{
     ViewData["Title"] = "Edit Look";
-    var lookImg = Model.ImagePath ?? "/images/no-image.png";
-    var hairstyleImg = Model.Hairstyle?.ImagePath;
-    var facialImg = Model.FacialHair?.ImagePath;
+    var lookImg = Model.ImageData != null ? $"/UserHairstyles/Image/{Model.Id}" : "/images/no-image.png";
+    var hairstyleImg = Model.Hairstyle?.ImageData != null ? $"/Hairstyles/Image/{Model.Hairstyle.Id}" : null;
+    var facialImg = Model.FacialHair?.ImageData != null ? $"/FacialHairs/Image/{Model.FacialHair.Id}" : null;
 }
 
 <div class="container py-4">

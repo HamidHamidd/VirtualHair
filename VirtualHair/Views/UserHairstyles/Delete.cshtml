@@ -1,4 +1,4 @@
-﻿@model VirtualHair.Models.UserHairstyle
+@model VirtualHair.Models.UserHairstyle
 @{
     ViewData["Title"] = "Delete Look";
 }
@@ -14,7 +14,7 @@
                     <div class="row g-3 align-items-center">
                         <div class="col-12 col-sm-5">
                             <div class="ratio ratio-4x3 bg-light rounded overflow-hidden">
-                                <img src="@(Model.ImagePath ?? "/images/no-image.png")" class="w-100 h-100" style="object-fit: cover;" alt="Preview" />
+                                <img src="@(Model.ImageData != null ? $"/UserHairstyles/Image/{Model.Id}" : "/images/no-image.png")" class="w-100 h-100" style="object-fit: cover;" alt="Preview" />
                             </div>
                         </div>
                         <div class="col-12 col-sm-7">

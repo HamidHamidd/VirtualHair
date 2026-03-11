@@ -1,4 +1,4 @@
-﻿@model VirtualHair.Models.FacialHair
+@model VirtualHair.Models.FacialHair
 @{
     ViewData["Title"] = "Delete Facial Hair";
 }
@@ -11,9 +11,9 @@
             Are you sure you want to delete this facial hair?
         </div>
 
-        @if (!string.IsNullOrEmpty(Model.ImagePath))
+        @if (Model.ImageData != null)
         {
-            <img src="@Model.ImagePath" alt="@Model.Name" class="img-fluid rounded mb-3" style="max-height:250px;" />
+            <img src="/FacialHairs/Image/@Model.Id" alt="@Model.Name" class="img-fluid rounded mb-3" style="max-height:250px;" />
         }
 
         <h4>@Model.Name</h4>

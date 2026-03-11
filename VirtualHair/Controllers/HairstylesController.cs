@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -16,12 +16,9 @@ namespace VirtualHair.Controllers
     public class HairstylesController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly string _uploadFolder = "wwwroot/uploads/hairstyles";
-
         public HairstylesController(ApplicationDbContext context)
         {
             _context = context;
-            Directory.CreateDirectory(_uploadFolder);
         }
 
         // GET: Hairstyles
@@ -62,13 +59,11 @@ namespace VirtualHair.Controllers
 
             if (hairstyle.ImageFile != null && hairstyle.ImageFile.Length > 0)
             {
-                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(hairstyle.ImageFile.FileName)}";
-                var savePath = Path.Combine(_uploadFolder, fileName);
+                using var ms = new MemoryStream();
+                await hairstyle.ImageFile.CopyToAsync(ms);
 
-                using var stream = new FileStream(savePath, FileMode.Create);
-                await hairstyle.ImageFile.CopyToAsync(stream);
-
-                hairstyle.ImagePath = $"/uploads/hairstyles/{fileName}";
+                hairstyle.ImageData = ms.ToArray();
+                hairstyle.ContentType = hairstyle.ImageFile.ContentType;
             }
 
             _context.Add(hairstyle);
@@ -102,17 +97,16 @@ namespace VirtualHair.Controllers
 
             if (hairstyle.ImageFile != null && hairstyle.ImageFile.Length > 0)
             {
-                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(hairstyle.ImageFile.FileName)}";
-                var savePath = Path.Combine(_uploadFolder, fileName);
+                using var ms = new MemoryStream();
+                await hairstyle.ImageFile.CopyToAsync(ms);
 
-                using var stream = new FileStream(savePath, FileMode.Create);
-                await hairstyle.ImageFile.CopyToAsync(stream);
-
-                hairstyle.ImagePath = $"/uploads/hairstyles/{fileName}";
+                hairstyle.ImageData = ms.ToArray();
+                hairstyle.ContentType = hairstyle.ImageFile.ContentType;
             }
             else
             {
-                hairstyle.ImagePath = existing.ImagePath; 
+                hairstyle.ImageData = existing.ImageData;
+                hairstyle.ContentType = existing.ContentType;
             }
 
             _context.Update(hairstyle);
@@ -141,17 +135,19 @@ namespace VirtualHair.Controllers
             var hairstyle = await _context.Hairstyles.FindAsync(id);
             if (hairstyle != null)
             {
-                if (!string.IsNullOrEmpty(hairstyle.ImagePath))
-                {
-                    var fullPath = Path.Combine("wwwroot", hairstyle.ImagePath.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString()));
-                    if (System.IO.File.Exists(fullPath))
-                        System.IO.File.Delete(fullPath);
-                }
-
                 _context.Hairstyles.Remove(hairstyle);
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> Image(int id)
+        {
+            var item = await _context.Hairstyles.FindAsync(id);
+            if (item == null || item.ImageData == null)
+                return NotFound();
+
+            return File(item.ImageData, item.ContentType ?? "image/png");
         }
 
         private bool HairstyleExists(int id) => _context.Hairstyles.Any(e => e.Id == id);

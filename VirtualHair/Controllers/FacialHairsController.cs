@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -16,12 +16,9 @@ namespace VirtualHair.Controllers
     public class FacialHairsController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly string _uploadFolder = "wwwroot/uploads/facialhairs";
-
         public FacialHairsController(ApplicationDbContext context)
         {
             _context = context;
-            Directory.CreateDirectory(_uploadFolder);
         }
 
         // GET: FacialHairs
@@ -62,13 +59,11 @@ namespace VirtualHair.Controllers
 
             if (facialHair.ImageFile != null && facialHair.ImageFile.Length > 0)
             {
-                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(facialHair.ImageFile.FileName)}";
-                var savePath = Path.Combine(_uploadFolder, fileName);
+                using var ms = new MemoryStream();
+                await facialHair.ImageFile.CopyToAsync(ms);
 
-                using var stream = new FileStream(savePath, FileMode.Create);
-                await facialHair.ImageFile.CopyToAsync(stream);
-
-                facialHair.ImagePath = $"/uploads/facialhairs/{fileName}";
+                facialHair.ImageData = ms.ToArray();
+                facialHair.ContentType = facialHair.ImageFile.ContentType;
             }
 
             facialHair.CreatedAt = DateTime.UtcNow;
@@ -103,17 +98,16 @@ namespace VirtualHair.Controllers
 
             if (facialHair.ImageFile != null && facialHair.ImageFile.Length > 0)
             {
-                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(facialHair.ImageFile.FileName)}";
-                var savePath = Path.Combine(_uploadFolder, fileName);
+                using var ms = new MemoryStream();
+                await facialHair.ImageFile.CopyToAsync(ms);
 
-                using var stream = new FileStream(savePath, FileMode.Create);
-                await facialHair.ImageFile.CopyToAsync(stream);
-
-                facialHair.ImagePath = $"/uploads/facialhairs/{fileName}";
+                facialHair.ImageData = ms.ToArray();
+                facialHair.ContentType = facialHair.ImageFile.ContentType;
             }
             else
             {
-                facialHair.ImagePath = existing.ImagePath;
+                facialHair.ImageData = existing.ImageData;
+                facialHair.ContentType = existing.ContentType;
             }
 
             _context.Update(facialHair);
@@ -142,17 +136,19 @@ namespace VirtualHair.Controllers
             var facialHair = await _context.FacialHairs.FindAsync(id);
             if (facialHair != null)
             {
-                if (!string.IsNullOrEmpty(facialHair.ImagePath))
-                {
-                    var fullPath = Path.Combine("wwwroot", facialHair.ImagePath.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString()));
-                    if (System.IO.File.Exists(fullPath))
-                        System.IO.File.Delete(fullPath);
-                }
-
                 _context.FacialHairs.Remove(facialHair);
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> Image(int id)
+        {
+            var item = await _context.FacialHairs.FindAsync(id);
+            if (item == null || item.ImageData == null)
+                return NotFound();
+
+            return File(item.ImageData, item.ContentType ?? "image/png");
         }
 
         private bool FacialHairExists(int id) => _context.FacialHairs.Any(e => e.Id == id);

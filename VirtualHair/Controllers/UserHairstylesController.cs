@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -223,20 +223,14 @@ namespace VirtualHair.Controllers
             var base64Data = Regex.Replace(req.ImageData, @"^data:image\/[a-zA-Z]+;base64,", string.Empty);
             var bytes = Convert.FromBase64String(base64Data);
 
-            var folder = Path.Combine(_environment.WebRootPath, "uploads", "userlooks");
-            Directory.CreateDirectory(folder);
 
-            var fileName = $"{Guid.NewGuid()}.png";
-            var filePath = Path.Combine(folder, fileName);
-            await System.IO.File.WriteAllBytesAsync(filePath, bytes);
-
-            var imagePathForDb = $"/uploads/userlooks/{fileName}";
 
             var look = new UserHairstyle
             {
                 UserId = userId,
                 Title = title,
-                ImagePath = imagePathForDb,
+                ImageData = bytes,
+                ContentType = "image/png",
                 HairstyleId = req.HairstyleId ?? 0,
                 FacialHairId = req.FacialHairId,
                 CreatedAt = DateTime.UtcNow
@@ -246,6 +240,14 @@ namespace VirtualHair.Controllers
             await _context.SaveChangesAsync();
 
             return Json(new { success = true });
+        }
+        public async Task<IActionResult> Image(int id)
+        {
+            var item = await _context.UserHairstyles.FindAsync(id);
+            if (item == null || item.ImageData == null)
+                return NotFound();
+
+            return File(item.ImageData, item.ContentType ?? "image/png");
         }
     }
 }

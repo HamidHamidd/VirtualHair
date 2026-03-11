@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity;
@@ -35,7 +35,9 @@ namespace VirtualHair.Models
         [Required(ErrorMessage = "Please enter a name for your look.")]
         public string Title { get; set; } = string.Empty;
 
-        public string? ImagePath { get; set; }
+        public byte[]? ImageData { get; set; }
+
+        public string? ContentType { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }

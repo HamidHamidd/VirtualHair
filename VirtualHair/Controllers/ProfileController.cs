@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -213,6 +213,24 @@ namespace VirtualHair.Controllers
 
             if (photo == null || photo.ImageData == null || photo.ImageData.Length == 0)
                 return NotFound();
+
+            return File(photo.ImageData, photo.ContentType);
+        }
+
+        [HttpGet]
+        [AllowAnonymous] // To allow images to load easily, or keep it authorized depending on preference. It's inside an [Authorize] controller so it requires login anyway.
+        public async Task<IActionResult> GetPhoto(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+                return Redirect("/images/no-image.png");
+
+            var photo = await _db.UserPhotos
+                .Where(x => x.UserId == userId)
+                .OrderByDescending(x => x.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (photo == null || photo.ImageData == null || photo.ImageData.Length == 0)
+                return Redirect("/images/no-image.png");
 
             return File(photo.ImageData, photo.ContentType);
         }

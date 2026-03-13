@@ -1,66 +1,197 @@
-﻿@model VirtualHair.Controllers.ProfileViewModel
+@model VirtualHair.Controllers.ProfileViewModel
 
 @{
-    ViewData["Title"] = "Profile";
+    ViewData["Title"] = "My Profile";
 }
+
+<style>
+    .profile-header-card {
+        border: none;
+        border-radius: 24px;
+        background: var(--bs-body-bg);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    [data-bs-theme="dark"] .profile-header-card {
+        background: #1e1e1e;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    }
+
+    .profile-cover {
+        height: 160px;
+        background: linear-gradient(135deg, #00bfff, #8a2be2);
+        position: relative;
+    }
+
+    .profile-cover::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 50%;
+        background: linear-gradient(to top, rgba(0,0,0,0.2), transparent);
+    }
+
+    .profile-avatar-wrapper {
+        position: relative;
+        margin-top: -60px;
+        margin-left: 2rem;
+        z-index: 2;
+    }
+
+    .profile-avatar-container {
+        width: 120px;
+        height: 120px;
+        border-radius: 30px;
+        border: 5px solid var(--bs-body-bg);
+        overflow: hidden;
+        background: #eee;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        cursor: pointer;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    [data-bs-theme="dark"] .profile-avatar-container {
+        border-color: #1e1e1e;
+    }
+
+    .profile-avatar-container:hover {
+        transform: scale(1.05) rotate(2deg);
+    }
+
+    .profile-avatar-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .profile-info {
+        padding: 1.5rem 2rem;
+    }
+
+    .settings-section {
+        background: rgba(0, 191, 255, 0.03);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(0, 191, 255, 0.05);
+    }
+
+    [data-bs-theme="dark"] .settings-section {
+        background: rgba(255, 255, 255, 0.02);
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label {
+        color: #00bfff;
+    }
+
+    .btn-gradient {
+        background: linear-gradient(90deg, #00bfff, #8a2be2);
+        color: white;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 191, 255, 0.4);
+        color: white;
+    }
+
+    .photo-upload-zone {
+        border: 2px dashed rgba(0, 191, 255, 0.2);
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .photo-upload-zone:hover {
+        background: rgba(0, 191, 255, 0.05);
+        border-color: #00bfff;
+    }
+</style>
 
 <div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-lg-7 col-xl-6">
+        <div class="col-lg-8 col-xl-7">
 
             @if (TempData["ProfileMsg"] != null)
             {
-                <div class="alert alert-info shadow-sm">@TempData["ProfileMsg"]</div>
+                <div class="alert alert-info alert-dismissible fade show rounded-4 shadow-sm mb-4 border-0 bg-primary bg-opacity-10 text-primary" role="alert">
+                    <i class="fa-solid fa-circle-info me-2"></i>@TempData["ProfileMsg"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
             }
 
-            <div class="card shadow-sm">
-                <div class="card-body p-4">
-
-                    <div class="d-flex align-items-center gap-3 mb-4">
-                        <div class="rounded-circle overflow-hidden border" style="width:84px;height:84px;">
-                            @if (Model.HasPhoto)
-                            {
-                                <img src="/Profile/Photo" alt="Profile" style="width:100%;height:100%;object-fit:cover;" />
-                            }
-                            else
-                            {
-                                <img src="https://ui-avatars.com/api/?name=@(Uri.EscapeDataString(Model.UserName))&size=168"
-                                     alt="Profile"
-                                     style="width:100%;height:100%;object-fit:cover;" />
-                            }
-                        </div>
-
-                        <div class="flex-grow-1">
-                            <h4 class="mb-1 fw-bold">@Model.UserName</h4>
-                            <div class="text-secondary">@Model.Email</div>
+            <div class="profile-header-card">
+                <div class="profile-cover"></div>
+                
+                <div class="profile-avatar-wrapper d-flex align-items-end gap-3">
+                    <div class="profile-avatar-container" onclick="document.getElementById('profilePhotoInput').click()">
+                        @if (Model.HasPhoto)
+                        {
+                            <img src="/Profile/Photo" alt="Profile" />
+                        }
+                        else
+                        {
+                            <img src="https://ui-avatars.com/api/?name=@(Uri.EscapeDataString(Model.UserName))&size=256&background=random" alt="Profile" />
+                        }
+                        <div class="avatar-overlay">
+                            <i class="fa-solid fa-camera"></i>
                         </div>
                     </div>
+                    <div class="mb-3">
+                        <h3 class="fw-bold mb-0">@Model.UserName</h3>
+                        <p class="text-muted mb-0"><i class="fa-solid fa-envelope me-2 small"></i>@Model.Email</p>
+                    </div>
+                </div>
 
-                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
-
+                <div class="profile-info">
                     <form asp-action="UpdateUserName" method="post" class="mb-4">
                         @Html.AntiForgeryToken()
+                        <div class="settings-section">
+                            <h5 class="fw-bold mb-3 d-flex align-items-center">
+                                <i class="fa-solid fa-user-tag me-2 text-primary"></i> Personal Identity
+                            </h5>
+                            
+                            <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+                            
+                            <div class="form-floating mb-3">
+                                <input class="form-control bg-transparent border-0 border-bottom rounded-0 px-0" 
+                                       asp-for="NewUserName" placeholder="Username" autocomplete="username" maxlength="60" />
+                                <label class="px-0">Display Name</label>
+                                <span asp-validation-for="NewUserName" class="text-danger small"></span>
+                            </div>
+                            
+                            <p class="text-muted small mb-3">
+                                <i class="fa-solid fa-circle-exclamation me-1"></i> Unique username for the community feed.
+                            </p>
 
-                        <label class="form-label fw-semibold">Username</label>
-                        <div class="input-group">
-                            <input class="form-control" asp-for="NewUserName" autocomplete="username" maxlength="60" />
-                            <button class="btn btn-primary" type="submit">
-                                <i class="fa-solid fa-floppy-disk me-2"></i>Save
+                            <button class="btn btn-gradient rounded-pill px-4" type="submit">
+                                <i class="fa-solid fa-check me-2"></i>Apply Changes
                             </button>
                         </div>
-                        <span asp-validation-for="NewUserName" class="text-danger"></span>
-                        <div class="form-text">Username must be unique. Nobody else can use the same one.</div>
                     </form>
 
-                    <div class="mb-4">
-                        <label class="form-label fw-semibold">Email</label>
-                        <input class="form-control" value="@Model.Email" readonly />
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label fw-semibold">Profile photo</label>
-                        <input id="profilePhotoInput" class="form-control" type="file" accept="image/*" />
-                        <div class="form-text">You will crop it before uploading. Max 2MB after crop.</div>
+                    <div class="settings-section">
+                        <h5 class="fw-bold mb-3 d-flex align-items-center">
+                            <i class="fa-solid fa-camera-retro me-2 text-primary"></i> Visuals
+                        </h5>
+                        <p class="text-muted small mb-3">Update your profile picture. It will be seen by your friends and in the feed.</p>
+                        
+                        <div class="photo-upload-zone" onclick="document.getElementById('profilePhotoInput').click()">
+                            <i class="fa-solid fa-cloud-arrow-up fs-1 text-primary mb-2 opacity-50"></i>
+                            <div class="fw-bold">Click to upload or drop a new photo</div>
+                            <div class="text-muted small">Supports JPG, PNG (Max 2MB after crop)</div>
+                        </div>
+                        <input id="profilePhotoInput" class="d-none" type="file" accept="image/*" />
                     </div>
 
                     <form id="cropUploadForm" asp-action="UploadPhoto" method="post" class="d-none">
@@ -68,17 +199,24 @@
                         <input type="hidden" name="croppedImageBase64" id="croppedImageBase64" />
                     </form>
 
-                    <div class="d-grid gap-2">
-                        <a class="btn btn-outline-secondary"
-                           asp-area="Identity"
-                           asp-page="/Account/Manage/ChangePassword">
-                            <i class="fa-solid fa-key me-2"></i>Change Password
-                        </a>
+                    <div class="settings-section mb-0">
+                        <h5 class="fw-bold mb-3 d-flex align-items-center">
+                            <i class="fa-solid fa-shield-halved me-2 text-primary"></i> Security
+                        </h5>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="fw-bold">Password</div>
+                                <div class="text-muted small">Update your account security</div>
+                            </div>
+                            <a class="btn btn-outline-secondary rounded-pill px-4"
+                               asp-area="Identity"
+                               asp-page="/Account/Manage/ChangePassword">
+                                <i class="fa-solid fa-key me-2"></i>Change
+                            </a>
+                        </div>
                     </div>
-
                 </div>
             </div>
-
         </div>
     </div>
 </div>

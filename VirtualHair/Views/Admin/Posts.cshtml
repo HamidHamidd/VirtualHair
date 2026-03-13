@@ -1,0 +1,94 @@
+@model IEnumerable<VirtualHair.Models.Post>
+@{
+    ViewData["Title"] = "Post Moderation";
+}
+
+<style>
+    .admin-card {
+        border: none;
+        border-radius: 20px;
+        background: var(--bs-body-bg);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    [data-bs-theme="dark"] .admin-card {
+        background: #1e1e1e;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .post-thumb {
+        width: 80px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Posts</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold mb-0">Post Moderation</h2>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary rounded-pill">
+            <i class="fa-solid fa-arrow-left me-2"></i>Back
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-4" role="alert">
+            <i class="fa-solid fa-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="admin-card">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Image</th>
+                        <th>User</th>
+                        <th>Description</th>
+                        <th>Date</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var post in Model)
+                    {
+                        <tr>
+                            <td>
+                                <img src="@post.ImagePath" class="post-thumb" alt="Post" />
+                            </td>
+                            <td>
+                                <div class="fw-bold">@post.UserId</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate" style="max-width: 200px;">
+                                    @(string.IsNullOrEmpty(post.Description) ? "No description" : post.Description)
+                                </div>
+                            </td>
+                            <td>@post.CreatedAt.ToString("g")</td>
+                            <td class="text-end">
+                                <form asp-action="DeletePost" asp-route-id="@post.Id" method="post" onsubmit="return confirm('Delete this post?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                        <i class="fa-solid fa-trash-can me-1"></i> Remove
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

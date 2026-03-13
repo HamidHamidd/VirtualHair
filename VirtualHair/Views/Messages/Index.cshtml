@@ -31,7 +31,7 @@
                     {
                         <div class="chat-item d-flex align-items-center p-3 mt-1" data-userid="@user.Id" data-username="@user.UserName">
                             <div class="position-relative">
-                                <img src="/images/no-image.png" class="rounded-circle chat-avatar shadow-sm object-fit-cover" alt="User avatar">
+                                <img src="/Profile/GetPhoto?userId=@user.Id" class="rounded-circle chat-avatar shadow-sm object-fit-cover" alt="User avatar">
                             </div>
                             <div class="ms-3 flex-grow-1 overflow-hidden">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
@@ -62,7 +62,7 @@
                         <i class="fa-solid fa-chevron-left fa-lg"></i>
                     </button>
                     <div class="position-relative">
-                        <img src="/images/no-image.png" class="rounded-circle header-avatar shadow-sm object-fit-cover" alt="Elena">
+                        <img src="/images/no-image.png" id="chatHeaderAvatar" class="rounded-circle header-avatar shadow-sm object-fit-cover" alt="Avatar">
                         <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-2 border-white rounded-circle indicator"></span>
                     </div>
                     <div class="ms-3">
@@ -396,6 +396,7 @@
                 
                 // Update Header
                 document.getElementById('chatHeaderName').textContent = currentUserName;
+                document.getElementById('chatHeaderAvatar').src = `/Profile/GetPhoto?userId=${currentUserId}`;
                 document.getElementById('chatHeaderStatus').classList.remove('d-none');
                 
                 // Load conversation using active user id
@@ -452,7 +453,7 @@
                     </div>`;
             } else {
                 wrapper.innerHTML = `
-                    <img src="/images/no-image.png" class="rounded-circle message-avatar me-2 align-self-end shadow-sm border">
+                    <img src="/Profile/GetPhoto?userId=${currentUserId}" class="rounded-circle message-avatar me-2 align-self-end shadow-sm border">
                     <div>
                         <div class="message-bubble received p-3 rounded-4 shadow-sm mb-1 px-4">${content}</div>
                         <small class="text-muted small ms-2 message-time opacity-75">${timeStr}</small>

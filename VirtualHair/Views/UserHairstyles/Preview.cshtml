@@ -4,138 +4,520 @@
     var facialHairs = ViewBag.FacialHairs as List<VirtualHair.Models.FacialHair>;
 }
 
-<div class="container py-4">
-    <h2 class="text-center mb-4 text-gradient fw-bold">Try Your Look</h2>
+@section Styles {
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+}
 
-    <div class="row">
-        <!-- LEFT: Canvas + Upload -->
-        <div class="col-md-7 text-center mb-4">
-            <div class="card shadow-sm p-3">
-                <h5 class="mb-3">Upload your photo</h5>
-                <input type="file" id="imageUpload" accept="image/*" class="form-control mb-3" />
-
-                <!-- 🔽 FINAL SMALL CANVAS -->
-                <canvas id="previewCanvas"
-                        class="border rounded shadow-sm"
-                        width="320"
-                        height="320"></canvas>
-            </div>
+<div class="try-container py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold text-gradient mb-2">Try Your New Look</h1>
+            <p class="text-secondary lead">Upload your photo and experiment with different styles in real-time.</p>
         </div>
 
-        <!-- RIGHT: Thumbnails + Controls -->
-        <div class="col-md-5">
-            <div class="accordion" id="styleAccordion">
-
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#hairstylesCollapse">
-                            Hairstyles
-                        </button>
-                    </h2>
-                    <div id="hairstylesCollapse" class="accordion-collapse collapse show">
-                        <div class="accordion-body d-flex flex-wrap gap-2">
-                            @foreach (var h in hairstyles)
-                            {
-                                <img src="/Hairstyles/Image/@h.Id"
-                                     alt="@h.Name"
-                                     class="style-thumb"
-                                     data-type="hairstyle"
-                                     data-id="@h.Id"
-                                     data-src="/Hairstyles/Image/@h.Id" />
-                            }
-                        </div>
+        <div class="row g-4">
+            <!-- LEFT: Canvas + Upload -->
+            <div class="col-lg-7">
+                <div class="glass-card main-canvas-container">
+                    <div class="upload-section mb-4">
+                        <label for="imageUpload" class="upload-label">
+                            <i class="fas fa-cloud-upload-alt mb-2"></i>
+                            <span>Choose a clear face photo</span>
+                            <input type="file" id="imageUpload" accept="image/*" class="d-none" />
+                        </label>
                     </div>
-                </div>
 
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#facialCollapse">
-                            Facial Hair
-                        </button>
-                    </h2>
-                    <div id="facialCollapse" class="accordion-collapse collapse">
-                        <div class="accordion-body d-flex flex-wrap gap-2">
-                            @foreach (var f in facialHairs)
-                            {
-                                <img src="/FacialHairs/Image/@f.Id"
-                                     alt="@f.Name"
-                                     class="style-thumb"
-                                     data-type="facial"
-                                     data-id="@f.Id"
-                                     data-src="/FacialHairs/Image/@f.Id" />
-                            }
+                    <div class="canvas-wrapper">
+                        <canvas id="previewCanvas" width="500" height="500"></canvas>
+                        <div id="activeLayerIndicator" class="active-badge">Editing: Hairstyle</div>
+                        <div id="aiDetectorStatus" class="ai-status-badge d-none">
+                            <i class="fas fa-robot fa-spin me-2"></i>AI Анализира...
                         </div>
+                        <div id="aiSuccessStatus" class="ai-success-badge d-none">
+                            <i class="fas fa-check-circle me-1"></i> Лицето е Разпознато!
+                        </div>
+                        <button id="reScanFace" class="btn btn-sm btn-dark position-absolute bottom-0 start-0 m-2 opacity-50" style="z-index: 5; font-size: 0.6rem;">
+                            <i class="fas fa-search me-1"></i> Re-scan Face
+                        </button>
                     </div>
-                </div>
-
-            </div>
-
-            <div class="card shadow-sm p-3 mt-3">
-                <h5 class="mb-3">Adjust & Save</h5>
-
-                @Html.AntiForgeryToken()
-                <label for="lookTitle" class="form-label fw-semibold mb-1">Look title</label>
-                <input type="text"
-                       id="lookTitle"
-                       maxlength="100"
-                       class="form-control"
-                       placeholder="e.g. My new fade" />
-
-                <button id="saveLookBtn" class="btn btn-primary w-100 mt-2">
-                    💾 Save Look to My Gallery
-                </button>
-                <div id="saveLookMsg" class="small mt-2"></div>
-
-                <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
-                    <button class="btn btn-outline-primary btn-sm" id="moveUp">⬆️</button>
-                    <button class="btn btn-outline-primary btn-sm" id="moveDown">⬇️</button>
-                    <button class="btn btn-outline-primary btn-sm" id="moveLeft">⬅️</button>
-                    <button class="btn btn-outline-primary btn-sm" id="moveRight">➡️</button>
-
-                    <button class="btn btn-outline-success btn-sm" id="zoomIn">🔍+</button>
-                    <button class="btn btn-outline-success btn-sm" id="zoomOut">🔍−</button>
-
-                    <button class="btn btn-outline-secondary btn-sm" id="rotateLeft">↩️</button>
-                    <button class="btn btn-outline-secondary btn-sm" id="rotateRight">↪️</button>
-
-                    <!-- ✅ NEW: RESET -->
-                    <button class="btn btn-outline-danger btn-sm" id="resetOverlay">⟲ Reset</button>
-                </div>
-
-                <div class="small text-muted mt-2">
-                    Keyboard: Arrows = move, +/− = zoom, Q/E = rotate, R = reset
                 </div>
             </div>
 
+            <!-- RIGHT: Thumbnails + Controls -->
+            <div class="col-lg-5">
+                <div class="glass-card p-4">
+                    <div class="custom-accordion" id="styleAccordion">
+                        <div class="style-group mb-4">
+                            <h5 class="section-title">
+                                <i class="fas fa-cut me-2"></i>Hairstyles
+                            </h5>
+                            <div class="thumb-grid">
+                                <div class="thumb-wrapper" onclick="selectNone('hairstyle')">
+                                    <div class="style-thumb-none">
+                                        <i class="fas fa-ban"></i>
+                                    </div>
+                                    <span class="thumb-name">Без прическа</span>
+                                </div>
+                                @foreach (var h in hairstyles)
+                                {
+                                    <div class="thumb-wrapper">
+                                        <img src="/Hairstyles/Image/@h.Id"
+                                             alt="@h.Name"
+                                             class="style-thumb"
+                                             data-type="hairstyle"
+                                             data-id="@h.Id"
+                                             data-src="/Hairstyles/Image/@h.Id" />
+                                        <span class="thumb-name">@h.Name</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="style-group mb-4">
+                            <h5 class="section-title">
+                                <i class="fas fa-user-tie me-2"></i>Facial Hair
+                            </h5>
+                            <div class="thumb-grid">
+                                <div class="thumb-wrapper" onclick="selectNone('facial')">
+                                    <div class="style-thumb-none">
+                                        <i class="fas fa-ban"></i>
+                                    </div>
+                                    <span class="thumb-name">Без брада</span>
+                                </div>
+                                @foreach (var f in facialHairs)
+                                {
+                                    <div class="thumb-wrapper">
+                                        <img src="/FacialHairs/Image/@f.Id"
+                                             alt="@f.Name"
+                                             class="style-thumb"
+                                             data-type="facial"
+                                             data-id="@f.Id"
+                                             data-src="/FacialHairs/Image/@f.Id" />
+                                        <span class="thumb-name">@f.Name</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="controls-panel mt-4 pt-4 border-top">
+                        <h6 class="text-uppercase fw-bold small text-muted mb-3">Фино напасване</h6>
+                        <div class="control-grid mb-4">
+                            <button class="btn btn-ctrl" id="moveUp" title="Нагоре"><i class="fas fa-chevron-up"></i></button>
+                            <button class="btn btn-ctrl" id="moveDown" title="Надолу"><i class="fas fa-chevron-down"></i></button>
+                            <button class="btn btn-ctrl" id="moveLeft" title="Наляво"><i class="fas fa-chevron-left"></i></button>
+                            <button class="btn btn-ctrl" id="moveRight" title="Надясно"><i class="fas fa-chevron-right"></i></button>
+                            
+                            <button class="btn btn-ctrl btn-zoom" id="zoomIn" title="Увеличи"><i class="fas fa-plus"></i></button>
+                            <button class="btn btn-ctrl btn-zoom" id="zoomOut" title="Намали"><i class="fas fa-minus"></i></button>
+                            
+                            <button class="btn btn-ctrl btn-rotate" id="rotateLeft" title="Завърти наляво"><i class="fas fa-undo"></i></button>
+                            <button class="btn btn-ctrl btn-rotate" id="rotateRight" title="Завърти надясно"><i class="fas fa-redo"></i></button>
+                            
+                            <button class="btn btn-ctrl btn-danger-soft" id="resetOverlay" title="Нулирай текущия слой">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+
+                            <button class="btn btn-ctrl btn-brush" id="toggleBrush" title="Инструмент за ретуширане">
+                                <i class="fas fa-paint-brush"></i>
+                            </button>
+                        </div>
+
+                        <!-- Brush Controls (Hidden by default) -->
+                        <div id="brushOptions" class="mt-3 p-3 rounded-4 bg-light d-none">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="small fw-bold mb-0">Настройки на Ретуша</h6>
+                                <button id="aiAutoHide" class="btn btn-sm btn-premium-gradient py-1 px-2" style="font-size: 0.7rem; height: auto;">
+                                    <i class="fas fa-magic me-1"></i> AI Auto-Hide
+                                </button>
+                            </div>
+                            <div class="d-flex align-items-center gap-3 mb-2">
+                                <input type="color" id="brushColor" class="form-control form-control-color border-0 bg-transparent" value="#ffffff" title="Цвят на кожа/фон">
+                                <div class="flex-grow-1">
+                                    <label class="small text-muted mb-0">Размер: <span id="brushSizeVal">20</span>px</label>
+                                    <input type="range" class="form-range" id="brushSize" min="5" max="100" value="20">
+                                </div>
+                                <div class="d-flex gap-1">
+                                    <button id="undoBrush" class="btn btn-ctrl btn-sm" title="Стъпка назад">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
+                                    <button id="clearBrush" class="btn btn-ctrl btn-sm btn-danger-soft" title="Изчисти всичко">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="small text-muted mt-2"><i class="fas fa-info-circle me-1"></i> Съвет: Използвайте избора на цвят, за да съвпадне с кожата или фона ви.</div>
+                        </div>
+
+                        <div class="save-section">
+                            <div class="form-floating mb-3">
+                                <input type="text" id="lookTitle" class="form-control custom-input" placeholder="Моята нова визия" maxlength="100">
+                                <label for="lookTitle">Дайте име на вашата визия</label>
+                            </div>
+                            <button id="saveLookBtn" class="btn btn-premium-gradient w-100 py-3">
+                                <i class="fas fa-save me-2"></i>Запази в Моята Галерия
+                            </button>
+                            <div id="saveLookMsg" class="text-center mt-2 small"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script src="~/js/preview.js" asp-append-version="true"></script>
 }
 
 <style>
-    .style-thumb {
-        width: 72px;
-        height: 72px;
-        border-radius: 10px;
-        object-fit: cover;
-        cursor: pointer;
-        transition: transform 0.2s ease, box-shadow 0.3s ease;
+    :root {
+        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        --glass-bg: rgba(255, 255, 255, 0.7);
+        --glass-border: rgba(255, 255, 255, 0.4);
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
     }
 
-        .style-thumb:hover {
-            transform: scale(1.08);
-            box-shadow: 0 0 12px rgba(0,191,255,0.6);
-        }
+    body {
+        font-family: 'Outfit', sans-serif;
+        background: radial-gradient(circle at top right, #f8fafc, #f1f5f9);
+        color: var(--text-dark);
+    }
 
-    canvas {
+    .text-gradient {
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .glass-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        height: 100%;
+        padding: 2rem;
+    }
+
+    .upload-label {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 0.75rem 1.5rem;
+        border: 2px dashed #cbd5e1;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: var(--text-muted);
+        width: fit-content;
+        margin: 0 auto;
+        font-size: 0.9rem;
+    }
+
+    .upload-label:hover {
+        border-color: #6366f1;
+        background: rgba(99, 102, 241, 0.05);
+        color: #6366f1;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+    }
+
+    .upload-label:active {
+        transform: translateY(0);
+        background: rgba(99, 102, 241, 0.1);
+    }
+
+    .canvas-wrapper {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: transparent;
+        border-radius: 16px;
+        overflow: hidden;
+        min-height: auto;
+        padding: 10px;
+    }
+
+    #previewCanvas {
         max-width: 100%;
+        height: auto;
+        display: block;
+        border-radius: 12px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+        background: #fff;
+    }
+
+    .active-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        backdrop-filter: blur(4px);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .canvas-wrapper:hover .active-badge {
+        opacity: 1;
+    }
+
+    .section-title {
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 1.25rem;
+        color: var(--text-dark);
+    }
+
+    .thumb-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 1rem;
+    }
+
+    .thumb-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .style-thumb {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #f8fafc;
+        border: 2px solid transparent;
+    }
+
+    .style-thumb-none {
+        width: 100%;
+        aspect-ratio: 1;
+        background: #f1f5f9;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #94a3b8;
+        border: 2px dashed #cbd5e1;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .thumb-wrapper:hover .style-thumb-none {
+        background: #e2e8f0;
+        color: #64748b;
+        border-color: #94a3b8;
+    }
+
+    .thumb-wrapper.selected-thumb .style-thumb-none {
+        border-color: #6366f1;
+        background: #eef2ff;
+        color: #6366f1;
+        border-style: solid;
+    }
+
+    .style-thumb:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
 
     .selected-thumb {
-        outline: 3px solid #00bfff;
-        box-shadow: 0 0 12px rgba(0,191,255,0.8);
+        border-color: #a855f7 !important;
+        box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.2) !important;
+    }
+
+    .active-editing {
+        border-color: #6366f1 !important;
+        transform: scale(1.05);
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.3) !important;
+    }
+
+    .thumb-name {
+        font-size: 0.7rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        text-align: center;
+    }
+
+    .control-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0.5rem;
+    }
+
+    .btn-ctrl {
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        color: var(--text-dark);
+        transition: all 0.2s ease;
+    }
+
+    .btn-ctrl:hover {
+        background: #e2e8f0;
+        transform: scale(1.05);
+    }
+
+    .btn-zoom {
+        background: #f0fdf4;
+        color: #166534;
+        border-color: #dcfce7;
+    }
+
+    .btn-rotate {
+        background: #eff6ff;
+        color: #1e40af;
+        border-color: #dbeafe;
+    }
+
+    .btn-danger-soft {
+        background: #fef2f2;
+        color: #991b1b;
+        border-color: #fee2e2;
+    }
+
+    .btn-brush {
+        background: #fdf2f8;
+        color: #be185d;
+        border-color: #fce7f3;
+    }
+
+    .btn-brush.active {
+        background: #be185d;
+        color: white;
+        border-color: #be185d;
+    }
+
+    .btn-ctrl:active {
+        transform: scale(0.95);
+    }
+
+    .custom-input {
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        background: rgba(255, 255, 255, 0.5);
+    }
+
+    .custom-input:focus {
+        background: #fff;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+
+    .btn-premium-gradient {
+        background: var(--primary-gradient);
+        border: none;
+        color: white;
+        font-weight: 600;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+    }
+
+    .btn-premium-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(168, 85, 247, 0.4);
+        filter: brightness(1.1);
+    }
+
+    /* ... rest of the existing styles ... */
+
+    .cropper-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.9) !important;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 999999 !important;
+        backdrop-filter: blur(5px);
+    }
+
+    .cropper-content-box {
+        background: #ffffff !important;
+        opacity: 1 !important;
+        padding: 2.5rem;
+        border-radius: 28px;
+        max-width: 95%;
+        width: 550px;
+        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5);
+        position: relative;
+        z-index: 1000000 !important;
+    }
+
+    .cropper-img-container {
+        border-radius: 16px;
+        overflow: hidden;
+        background: transparent;
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+    }
+    .ai-success-badge {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+        z-index: 10;
+        animation: fadeInDown 0.5s ease-out;
+    }
+
+    @@keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .ai-status-badge {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: linear-gradient(135deg, #3b82f6 0%, #2dd4bf 100%);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        z-index: 10;
+        animation: pulseAI 2s infinite;
+    }
+
+    @@keyframes pulseAI {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
     }
 </style>

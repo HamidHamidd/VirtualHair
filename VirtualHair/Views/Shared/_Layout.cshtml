@@ -32,6 +32,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
     <!-- Site CSS -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @RenderSection("Styles", required: false)
 </head>
 
 <body class="bg-body text-body" style="position: relative; z-index: 0;">
@@ -57,13 +58,14 @@
             @if (isAuthenticated)
             {
                 <a asp-controller="Profile" asp-action="Index"
-                   class="d-inline-flex align-items-center text-decoration-none"
+                   class="d-inline-flex align-items-center text-decoration-none gap-3"
                    aria-label="Profile"
                    title="Profile">
                     <img src="/Profile/Photo"
                          alt="Profile"
                          class="profile-avatar"
                          onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=@(Uri.EscapeDataString(User?.Identity?.Name ?? "User"))&size=88';" />
+                    <span class="fw-bold text-body">@User.Identity?.Name</span>
                 </a>
             }
             else

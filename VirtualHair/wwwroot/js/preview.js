@@ -1,8 +1,9 @@
-﻿// --- Elements ---
+// --- Elements ---
 const uploadInput = document.getElementById('imageUpload');
 const canvas = document.getElementById('previewCanvas');
 const ctx = canvas.getContext('2d');
 const styleThumbs = document.querySelectorAll('.style-thumb');
+const activeLayerIndicator = document.getElementById('activeLayerIndicator');
 
 const saveBtn = document.getElementById("saveLookBtn");
 const titleInput = document.getElementById("lookTitle");
@@ -15,7 +16,6 @@ let selectedFacialHairId = null;
 let baseImage = null;
 let isImageLoaded = false;
 let cropper = null;
-let selectedThumb = null;
 
 /* ---------------- LAYERS ---------------- */
 
@@ -31,17 +31,73 @@ const STEP_MOVE = 5;
 const STEP_ZOOM = 0.05;
 const STEP_ROTATE = 2;
 
+/* ---------------- AI / FACE DETECTION STATE ---------------- */
+let detectedFace = null;
+let modelsLoaded = false;
+
+// Load Models from CDN
+async function loadAIModels() {
+    try {
+        const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models/';
+        // Use SsdMobilenetv1 for higher precision
+        await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+        modelsLoaded = true;
+        console.log("AI Models Loaded Successfully");
+    } catch (e) {
+        console.error("AI Models failed to load", e);
+    }
+}
+loadAIModels();
+
+async function detectFace() {
+    if (!modelsLoaded || !baseImage) return;
+    
+    const status = document.getElementById('aiDetectorStatus');
+    const success = document.getElementById('aiSuccessStatus');
+    
+    status.classList.remove('d-none');
+    success.classList.add('d-none');
+
+    try {
+        // High quality detection
+        const detection = await faceapi.detectSingleFace(canvas).withFaceLandmarks();
+        
+        if (detection) {
+            detectedFace = detection;
+            console.log("AI Detected Face:", detectedFace);
+            
+            // Show success badge for 3 seconds
+            success.classList.remove('d-none');
+            setTimeout(() => success.classList.add('d-none'), 3000);
+        } else {
+            console.warn("AI could not find a face.");
+        }
+    } catch (e) {
+        console.error("Detection error:", e);
+    } finally {
+        status.classList.add('d-none');
+    }
+}
+
+document.getElementById('reScanFace')?.addEventListener('click', () => {
+    detectFace();
+});
+
 /* ---------------- CROP MODAL ---------------- */
 
 const cropModal = document.createElement('div');
-cropModal.classList.add('cropper-modal');
+cropModal.className = 'cropper-modal-overlay';
 cropModal.innerHTML = `
-<div class="cropper-box">
-  <h5 class="mb-2">Adjust your photo</h5>
-  <img id="cropperImage" style="max-width:100%; display:block; border-radius:8px;">
-  <div class="d-flex justify-content-center gap-3 mt-3">
-    <button id="confirmCrop" class="btn btn-primary px-3">Confirm</button>
-    <button id="cancelCrop" class="btn btn-outline-secondary px-3">Cancel</button>
+<div class="cropper-content-box">
+  <h4 class="fw-bold mb-3" style="color: #1e293b;">Напасване на снимката</h4>
+  <p class="text-secondary small mb-3">Центрирайте лицето си за най-добри резултати.</p>
+  <div class="cropper-img-container">
+    <img id="cropperImage" style="max-width:100%; display:block;">
+  </div>
+  <div class="d-flex justify-content-end gap-2 mt-4">
+    <button id="cancelCrop" class="btn btn-outline-secondary px-4 rounded-3">Отказ</button>
+    <button id="confirmCrop" class="btn btn-primary px-4 rounded-3" style="background: var(--primary-gradient); color: white; border: none; font-weight: 600;">Потвърди</button>
   </div>
 </div>`;
 document.body.appendChild(cropModal);
@@ -62,11 +118,17 @@ uploadInput.addEventListener('change', (e) => {
             if (cropper) cropper.destroy();
             cropper = new Cropper(cropperImg, {
                 aspectRatio: 1,
-                viewMode: 2,
+                viewMode: 1,
+                dragMode: 'move',
                 movable: true,
                 zoomable: true,
                 background: false,
-                guides: false
+                guides: false,
+                center: true,
+                highlight: false,
+                cropBoxMovable: true,
+                cropBoxResizable: true,
+                toggleDragModeOnDblclick: false
             });
         };
     };
@@ -76,13 +138,17 @@ uploadInput.addEventListener('change', (e) => {
 document.getElementById('confirmCrop').addEventListener('click', () => {
     if (!cropper) return;
 
-    const croppedCanvas = cropper.getCroppedCanvas({ width: canvas.width, height: canvas.height });
+    const croppedCanvas = cropper.getCroppedCanvas({ width: 500, height: 500 });
 
     baseImage = new Image();
     baseImage.onload = () => {
         isImageLoaded = true;
+        maskCanvas.width = 500;
+        maskCanvas.height = 500;
+        maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
         cropModal.style.display = 'none';
         drawCanvas();
+        detectFace(); // Trigger AI analysis
     };
     baseImage.src = croppedCanvas.toDataURL('image/png');
 });
@@ -94,52 +160,299 @@ document.getElementById('cancelCrop').addEventListener('click', () => {
 
 /* ---------------- THUMBNAILS ---------------- */
 
+let selectedHairThumb = null;
+let selectedFacialThumb = null;
+
+function selectNone(type) {
+    if (type === 'hairstyle') {
+        if (selectedHairThumb) selectedHairThumb.classList.remove("selected-thumb");
+        selectedHairstyleId = null;
+        hairstyleImage = null;
+        selectedHairThumb = null;
+        activeLayer = "hair";
+    } else {
+        if (selectedFacialThumb) selectedFacialThumb.classList.remove("selected-thumb");
+        selectedFacialHairId = null;
+        facialImage = null;
+        selectedFacialThumb = null;
+        activeLayer = "facial";
+    }
+    updateActiveUI();
+    drawCanvas();
+}
+
 styleThumbs.forEach((thumb) => {
     thumb.addEventListener('click', () => {
         if (!isImageLoaded) {
-            alert("Please upload and crop your photo first!");
+            alert("Моля, първо качете и изрежете своята снимка!");
             return;
         }
-
-        if (selectedThumb) selectedThumb.classList.remove("selected-thumb");
-        selectedThumb = thumb;
-        thumb.classList.add("selected-thumb");
 
         const type = thumb.dataset.type;
         const id = parseInt(thumb.dataset.id);
         const src = thumb.dataset.src;
 
-        if (type === "hairstyle") selectedHairstyleId = id;
-        if (type === "facial") selectedFacialHairId = id;
+        if (type === "hairstyle") {
+            if (selectedHairThumb) selectedHairThumb.classList.remove("selected-thumb");
+            selectedHairThumb = thumb.closest('.thumb-wrapper');
+            selectedHairThumb.classList.add("selected-thumb");
+            activeLayer = "hair";
 
-        const img = new Image();
-        img.onload = () => {
+            if (selectedHairstyleId !== id) {
+                selectedHairstyleId = id;
+                const img = new Image();
+                img.onload = () => {
+                    hairstyleImage = img;
+                    
+                    // --- AI MAGIC ---
+                    if (detectedFace) {
+                        const landmarks = detectedFace.landmarks.positions;
+                        // Point 27 is the bridge of the nose. We want the center of the hair slightly above that.
+                        // Point 8 is the chin (for vertical reference)
+                        const noseBridge = landmarks[27];
+                        const chin = landmarks[8];
+                        const eyeLevel = (landmarks[36].y + landmarks[45].y) / 2;
+                        
+                        // Estimation for head top
+                        const faceHeight = chin.y - eyeLevel;
+                        const headTopY = eyeLevel - faceHeight * 0.4; // Approximating forehead
 
-            if (type === "hairstyle") {
-                hairstyleImage = img;
-                activeLayer = "hair";
-                hairstyleState = { x: 0, y: -canvas.height * 0.18, scale: 0.65, rotation: 0 };
+                        hairstyleState.x = noseBridge.x - canvas.width / 2;
+                        hairstyleState.y = (eyeLevel - faceHeight * 0.7) - canvas.height / 2;
+                        
+                        // Scale based on face width (Points 0 to 16)
+                        const faceWidth = Math.abs(landmarks[16].x - landmarks[0].x);
+                        hairstyleState.scale = (faceWidth / hairstyleImage.width) * 1.55;
+                        
+                        // Rotation based on eyes
+                        const leftEye = landmarks[36];
+                        const rightEye = landmarks[45];
+                        hairstyleState.rotation = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x) * (180 / Math.PI);
+                    } else {
+                        // Default position
+                        hairstyleState.x = 0;
+                        hairstyleState.y = -canvas.height * 0.18;
+                        hairstyleState.scale = 0.65;
+                        hairstyleState.rotation = 0;
+                    }
+                    drawCanvas();
+                };
+                img.src = src;
+            } else {
+                drawCanvas();
             }
+        }
 
-            if (type === "facial") {
-                facialImage = img;
-                activeLayer = "facial";
-                facialState = { x: 0, y: -canvas.height * 0.05, scale: 0.4, rotation: 0 };
+        if (type === "facial") {
+            if (selectedFacialThumb) selectedFacialThumb.classList.remove("selected-thumb");
+            selectedFacialThumb = thumb.closest('.thumb-wrapper');
+            selectedFacialThumb.classList.add("selected-thumb");
+            activeLayer = "facial";
+
+            if (selectedFacialHairId !== id) {
+                selectedFacialHairId = id;
+                const img = new Image();
+                img.onload = () => {
+                    facialImage = img;
+                    
+                    // --- AI MAGIC ---
+                    if (detectedFace) {
+                        const landmarks = detectedFace.landmarks.positions;
+                        // Point 8 is the chin.
+                        const chin = landmarks[8];
+                        const mouthTop = landmarks[33]; // Bottom of nose
+                        
+                        const centerX = (landmarks[16].x + landmarks[0].x) / 2;
+                        const centerY = (chin.y + mouthTop.y) / 2;
+
+                        facialState.x = chin.x - canvas.width / 2;
+                        facialState.y = (chin.y - (chin.y - mouthTop.y) * 1.2) - canvas.height / 2;
+
+                        const faceWidth = Math.abs(landmarks[16].x - landmarks[0].x);
+                        facialState.scale = (faceWidth / facialImage.width) * 0.85;
+                        
+                        const leftEye = landmarks[36];
+                        const rightEye = landmarks[45];
+                        facialState.rotation = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x) * (180 / Math.PI);
+                    } else {
+                        facialState.x = 0;
+                        facialState.y = canvas.height * 0.15;
+                        facialState.scale = 0.45;
+                        facialState.rotation = 0;
+                    }
+                    drawCanvas();
+                };
+                img.src = src;
+            } else {
+                drawCanvas();
             }
-
-            drawCanvas();
-        };
-        img.src = src;
+        }
+        
+        updateActiveUI();
     });
 });
 
+function updateActiveUI() {
+    styleThumbs.forEach(t => t.classList.remove("active-editing"));
+    
+    if (activeLayer === "hair" && selectedHairThumb) {
+        selectedHairThumb.classList.add("active-editing");
+        if (activeLayerIndicator) {
+            activeLayerIndicator.textContent = "Editing: Hairstyle";
+            activeLayerIndicator.style.background = "rgba(99, 102, 241, 0.8)";
+        }
+    } else if (activeLayer === "facial" && selectedFacialThumb) {
+        selectedFacialThumb.classList.add("active-editing");
+        if (activeLayerIndicator) {
+            activeLayerIndicator.textContent = "Editing: Facial Hair";
+            activeLayerIndicator.style.background = "rgba(168, 85, 247, 0.8)";
+        }
+    }
+}
+
 /* ---------------- DRAW ---------------- */
+
+/* ---------------- BRUSH / RETOUCH TOOL ---------------- */
+
+let isDrawing = false;
+let brushEnabled = false;
+const maskCanvas = document.createElement('canvas');
+const maskCtx = maskCanvas.getContext('2d');
+let maskHistory = [];
+const MAX_HISTORY = 20;
+
+function saveMaskState() {
+    maskHistory.push(maskCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height));
+    if (maskHistory.length > MAX_HISTORY) maskHistory.shift();
+}
+
+const toggleBrushBtn = document.getElementById('toggleBrush');
+const brushOptions = document.getElementById('brushOptions');
+const brushSizeInput = document.getElementById('brushSize');
+const brushSizeVal = document.getElementById('brushSizeVal');
+const brushColorInput = document.getElementById('brushColor');
+
+toggleBrushBtn.addEventListener('click', () => {
+    brushEnabled = !brushEnabled;
+    toggleBrushBtn.classList.toggle('active', brushEnabled);
+    brushOptions.classList.toggle('d-none', !brushEnabled);
+    
+    // Update indicator
+    const indicator = document.getElementById('activeLayerIndicator');
+    if (brushEnabled) {
+        indicator.innerText = "Режим: Ретуширане";
+        indicator.style.background = "#be185d";
+    } else {
+        updateActiveUI();
+    }
+});
+
+brushSizeInput.addEventListener('input', () => {
+    brushSizeVal.innerText = brushSizeInput.value;
+});
+
+canvas.addEventListener('mousedown', (e) => {
+    if (!brushEnabled || !baseImage) return;
+    saveMaskState(); // Save before drawing
+    isDrawing = true;
+    paint(e);
+});
+
+window.addEventListener('mousemove', (e) => {
+    if (isDrawing) paint(e);
+});
+
+window.addEventListener('mouseup', () => {
+    isDrawing = false;
+});
+
+function paint(e) {
+    const rect = canvas.getBoundingClientRect();
+    // Calculate scale factor in case CSS resized the canvas
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+
+    maskCtx.fillStyle = brushColorInput.value;
+    maskCtx.beginPath();
+    maskCtx.arc(x, y, brushSizeInput.value / 2, 0, Math.PI * 2);
+    maskCtx.fill();
+    drawCanvas();
+}
+
+/* ---------------- BRUSH ACTIONS ---------------- */
+
+document.getElementById('aiAutoHide')?.addEventListener('click', () => {
+    if (!detectedFace || !baseImage) {
+        alert("AI все още сканира или няма снимка!");
+        return;
+    }
+
+    saveMaskState();
+    
+    const landmarks = detectedFace.landmarks.positions;
+    // Points 17-26 are eyebrows. Point 27 is nose bridge.
+    // Let's sample skin color near the center of the forehead
+    const sampleX = Math.round(landmarks[27].x);
+    const sampleY = Math.round(landmarks[27].y - (landmarks[8].y - landmarks[27].y) * 0.1);
+
+    // Sample color from canvas
+    const p = ctx.getImageData(sampleX, sampleY, 1, 1).data;
+    const hexColor = "#" + ((1 << 24) + (p[0] << 16) + (p[1] << 8) + p[2]).toString(16).slice(1);
+    
+    brushColorInput.value = hexColor;
+    maskCtx.fillStyle = hexColor;
+
+    // Create a large "cap" mask
+    const faceWidth = Math.abs(landmarks[16].x - landmarks[0].x);
+    const topY = landmarks[19].y; // Left eyebrow top
+    
+    maskCtx.beginPath();
+    // Start from left ear area
+    maskCtx.moveTo(landmarks[0].x - 20, landmarks[0].y);
+    // Go up and around the head
+    maskCtx.bezierCurveTo(
+        landmarks[0].x - 50, landmarks[0].y - faceWidth,
+        landmarks[16].x + 50, landmarks[16].y - faceWidth,
+        landmarks[16].x + 20, landmarks[16].y
+    );
+    // Close through the forehead line
+    maskCtx.lineTo(landmarks[16].x + 20, topY);
+    maskCtx.lineTo(landmarks[0].x - 20, topY);
+    maskCtx.closePath();
+    
+    maskCtx.fill();
+    drawCanvas();
+    
+    alert("AI автоматично прикри част от косата. Можете да довършите с четката!");
+});
+
+document.getElementById('undoBrush')?.addEventListener('click', () => {
+    if (maskHistory.length > 0) {
+        const lastState = maskHistory.pop();
+        maskCtx.putImageData(lastState, 0, 0);
+        drawCanvas();
+    }
+});
+
+document.getElementById('clearBrush')?.addEventListener('click', () => {
+    if (confirm("Сигурни ли сте, че искате да изтриете целия ретуш?")) {
+        maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
+        maskHistory = [];
+        drawCanvas();
+    }
+});
 
 function drawCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+    
     if (baseImage) {
         ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+        
+        // Draw the retouches (the mask) over the photo
+        ctx.drawImage(maskCanvas, 0, 0);
     }
 
     if (hairstyleImage) {
@@ -185,7 +498,7 @@ const controls = {
 Object.keys(controls).forEach(id => {
     document.getElementById(id)?.addEventListener("click", () => {
         if (!activeLayer) {
-            alert("Select a hairstyle or beard first!");
+            alert("Изберете стил от менюто вдясно!");
             return;
         }
         controls[id]();
@@ -207,6 +520,31 @@ resetBtn?.addEventListener("click", () => {
     drawCanvas();
 });
 
+/* ---------------- KEYBOARD ---------------- */
+
+window.addEventListener('keydown', (e) => {
+    if (!activeLayer || document.activeElement.tagName === 'INPUT') return;
+
+    let handled = true;
+    switch (e.key) {
+        case 'ArrowUp': controls.moveUp(); break;
+        case 'ArrowDown': controls.moveDown(); break;
+        case 'ArrowLeft': controls.moveLeft(); break;
+        case 'ArrowRight': controls.moveRight(); break;
+        case '+': case '=': controls.zoomIn(); break;
+        case '-': case '_': controls.zoomOut(); break;
+        case 'q': case 'Q': controls.rotateLeft(); break;
+        case 'e': case 'E': controls.rotateRight(); break;
+        case 'r': case 'R': resetBtn.click(); break;
+        default: handled = false;
+    }
+
+    if (handled) {
+        e.preventDefault();
+        drawCanvas();
+    }
+});
+
 /* ---------------- SAVE ---------------- */
 
 function getAntiForgeryToken() {
@@ -217,37 +555,48 @@ function getAntiForgeryToken() {
 saveBtn?.addEventListener("click", async () => {
 
     if (!isImageLoaded) {
-        alert("Upload and crop a photo first!");
+        alert("Първо качете и изрежете снимка!");
         return;
     }
 
     const title = (titleInput.value || "").trim();
     if (!title) {
-        alert("Please enter a title.");
+        alert("Моля, въведете име за вашата визия.");
         return;
     }
 
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Запазване...';
+
     const imageData = canvas.toDataURL("image/png");
 
-    const res = await fetch("/UserHairstyles/SaveLook", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "RequestVerificationToken": getAntiForgeryToken()
-        },
-        body: JSON.stringify({
-            title,
-            imageData,
-            hairstyleId: selectedHairstyleId,
-            facialHairId: selectedFacialHairId
-        })
-    });
+    try {
+        const res = await fetch("/UserHairstyles/SaveLook", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "RequestVerificationToken": getAntiForgeryToken()
+            },
+            body: JSON.stringify({
+                title,
+                imageData,
+                hairstyleId: selectedHairstyleId,
+                facialHairId: selectedFacialHairId
+            })
+        });
 
-    const data = await res.json();
+        const data = await res.json();
 
-    if (data.success) {
-        window.location.href = "/UserHairstyles";
-    } else {
-        alert(data.message || "Save failed.");
+        if (data.success) {
+            window.location.href = "/UserHairstyles";
+        } else {
+            alert(data.message || "Грешка при запазването.");
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Запази в Галерия';
+        }
+    } catch (e) {
+        alert("Възникна грешка при запазването.");
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Запази в Галерия';
     }
 });

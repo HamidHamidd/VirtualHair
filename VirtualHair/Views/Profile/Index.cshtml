@@ -180,19 +180,7 @@
                         </div>
                     </form>
 
-                    <div class="settings-section">
-                        <h5 class="fw-bold mb-3 d-flex align-items-center">
-                            <i class="fa-solid fa-camera-retro me-2 text-primary"></i> Visuals
-                        </h5>
-                        <p class="text-muted small mb-3">Update your profile picture. It will be seen by your friends and in the feed.</p>
-                        
-                        <div class="photo-upload-zone" onclick="document.getElementById('profilePhotoInput').click()">
-                            <i class="fa-solid fa-cloud-arrow-up fs-1 text-primary mb-2 opacity-50"></i>
-                            <div class="fw-bold">Click to upload or drop a new photo</div>
-                            <div class="text-muted small">Supports JPG, PNG (Max 2MB after crop)</div>
-                        </div>
-                        <input id="profilePhotoInput" class="d-none" type="file" accept="image/*" />
-                    </div>
+                    <input id="profilePhotoInput" class="d-none" type="file" accept="image/*" />
 
                     <form id="cropUploadForm" asp-action="UploadPhoto" method="post" class="d-none">
                         @Html.AntiForgeryToken()

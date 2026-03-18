@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
 
 namespace VirtualHair.Data
 {
@@ -11,6 +12,32 @@ namespace VirtualHair.Data
             var context = scope.ServiceProvider.GetRequiredService<VirtualHair.Data.ApplicationDbContext>();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var env = scope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
+
+            // 0. Еднократно изтриване на всички потребители и техни данни
+            string flagPath = Path.Combine(env.ContentRootPath, "delete_users.flag");
+            if (File.Exists(flagPath))
+            {
+                // За да избегнем FK проблеми, първо трием свързаните данни
+                context.UserPhotos.RemoveRange(context.UserPhotos);
+                context.SavedLooks.RemoveRange(context.SavedLooks);
+                context.UserHairstyles.RemoveRange(context.UserHairstyles);
+                context.Posts.RemoveRange(context.Posts);
+                context.Likes.RemoveRange(context.Likes);
+                context.Comments.RemoveRange(context.Comments);
+                context.Messages.RemoveRange(context.Messages);
+                context.Friendships.RemoveRange(context.Friendships);
+                await context.SaveChangesAsync();
+
+                var allUsers = await userManager.Users.ToListAsync();
+                foreach (var user in allUsers)
+                {
+                    await userManager.DeleteAsync(user);
+                }
+                
+                // Премахваме флага, за да запазим потребителите занапред
+                try { File.Delete(flagPath); } catch {}
+            }
 
             // 1. Прясно създаване на роли
             string[] roles = { "Admin", "User" };

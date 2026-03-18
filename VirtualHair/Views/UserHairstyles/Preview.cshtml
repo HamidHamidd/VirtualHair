@@ -1,5 +1,5 @@
 @{
-    ViewData["Title"] = "Try Hairstyles";
+    ViewData["Title"] = "VirtualHair";
     var hairstyles = ViewBag.Hairstyles as List<VirtualHair.Models.Hairstyle>;
     var facialHairs = ViewBag.FacialHairs as List<VirtualHair.Models.FacialHair>;
 }
@@ -10,7 +10,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
 }
 
-<div class="try-container py-5">
+<section class="hero-section text-center py-5">
+    <div class="container py-5">
+        <h1 class="display-4 fw-bold mb-3 text-gradient">VirtualHair</h1>
+        <p class="lead mb-4">
+            Upload your photo, try different hairstyles and facial styles, and discover your perfect look — all powered by AI and creativity.
+        </p>
+        <a href="#preview-tool" class="btn btn-lg hero-btn shadow-sm btn-premium-gradient px-5 py-3 rounded-pill mt-3 text-white" style="text-decoration:none;">
+            Try Now <i class="fas fa-arrow-down ms-2"></i>
+        </a>
+    </div>
+</section>
+
+<div id="preview-tool" class="try-container py-5">
     <div class="container">
         <div class="text-center mb-5">
             <h1 class="display-4 fw-bold text-gradient mb-2">Try Your New Look</h1>

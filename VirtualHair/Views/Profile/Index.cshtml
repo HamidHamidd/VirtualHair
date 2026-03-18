@@ -7,59 +7,48 @@
 <style>
     .profile-header-card {
         border: none;
-        border-radius: 24px;
+        border-radius: 28px;
         background: var(--bs-body-bg);
-        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
         overflow: hidden;
         margin-bottom: 2rem;
     }
 
     [data-bs-theme="dark"] .profile-header-card {
-        background: #1e1e1e;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        background: #1c1c1e;
+        box-shadow: 0 10px 40px -10px rgba(0,0,0,0.4);
     }
 
-    .profile-cover {
-        height: 160px;
-        background: linear-gradient(135deg, #00bfff, #8a2be2);
-        position: relative;
-    }
-
-    .profile-cover::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 50%;
-        background: linear-gradient(to top, rgba(0,0,0,0.2), transparent);
-    }
 
     .profile-avatar-wrapper {
         position: relative;
-        margin-top: -60px;
-        margin-left: 2rem;
+        padding-top: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
         z-index: 2;
     }
 
     .profile-avatar-container {
-        width: 120px;
-        height: 120px;
-        border-radius: 30px;
-        border: 5px solid var(--bs-body-bg);
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        border: 6px solid var(--bs-body-bg);
         overflow: hidden;
         background: #eee;
         box-shadow: 0 8px 16px rgba(0,0,0,0.1);
         cursor: pointer;
-        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transition: transform 0.3s ease;
+        position: relative;
     }
 
     [data-bs-theme="dark"] .profile-avatar-container {
-        border-color: #1e1e1e;
+        border-color: #1c1c1e;
     }
 
     .profile-avatar-container:hover {
-        transform: scale(1.05) rotate(2deg);
+        transform: scale(1.05);
     }
 
     .profile-avatar-container img {
@@ -68,30 +57,75 @@
         object-fit: cover;
     }
 
+    .avatar-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.4);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 1.5rem;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .profile-avatar-container:hover .avatar-overlay {
+        opacity: 1;
+    }
+
     .profile-info {
-        padding: 1.5rem 2rem;
+        padding: 2rem 2.5rem;
     }
 
     .settings-section {
-        background: rgba(0, 191, 255, 0.03);
-        border-radius: 16px;
-        padding: 1.5rem;
+        background: rgba(99, 102, 241, 0.03);
+        border-radius: 20px;
+        padding: 2rem;
         margin-bottom: 1.5rem;
-        border: 1px solid rgba(0, 191, 255, 0.05);
+        border: 1px solid rgba(99, 102, 241, 0.08);
+        transition: all 0.3s ease;
     }
 
     [data-bs-theme="dark"] .settings-section {
         background: rgba(255, 255, 255, 0.02);
         border-color: rgba(255, 255, 255, 0.05);
     }
+    
+    .settings-section:hover {
+        background: rgba(99, 102, 241, 0.05);
+        border-color: rgba(99, 102, 241, 0.15);
+    }
 
     .form-floating > .form-control:focus ~ label,
     .form-floating > .form-control:not(:placeholder-shown) ~ label {
-        color: #00bfff;
+        color: #6366f1;
+    }
+
+    .custom-profile-input {
+        border-radius: 12px !important;
+        border: 1px solid #e2e8f0 !important;
+        background: rgba(255,255,255,0.7) !important;
+        transition: all 0.3s ease;
+    }
+    
+    [data-bs-theme="dark"] .custom-profile-input {
+        background: rgba(0,0,0,0.2) !important;
+        border-color: #333 !important;
+    }
+
+    .custom-profile-input:focus {
+        background: #fff !important;
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1) !important;
+    }
+
+    [data-bs-theme="dark"] .custom-profile-input:focus {
+        background: #2a2a2a !important;
     }
 
     .btn-gradient {
-        background: linear-gradient(90deg, #00bfff, #8a2be2);
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
         color: white;
         border: none;
         transition: all 0.3s ease;
@@ -99,22 +133,8 @@
 
     .btn-gradient:hover {
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0, 191, 255, 0.4);
+        box-shadow: 0 8px 25px rgba(168, 85, 247, 0.4);
         color: white;
-    }
-
-    .photo-upload-zone {
-        border: 2px dashed rgba(0, 191, 255, 0.2);
-        border-radius: 16px;
-        padding: 2rem;
-        text-align: center;
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-
-    .photo-upload-zone:hover {
-        background: rgba(0, 191, 255, 0.05);
-        border-color: #00bfff;
     }
 </style>
 
@@ -131,10 +151,8 @@
             }
 
             <div class="profile-header-card">
-                <div class="profile-cover"></div>
-                
-                <div class="profile-avatar-wrapper d-flex align-items-end gap-3">
-                    <div class="profile-avatar-container" onclick="document.getElementById('profilePhotoInput').click()">
+                <div class="profile-avatar-wrapper">
+                    <div class="profile-avatar-container mb-3" onclick="document.getElementById('profilePhotoInput').click()">
                         @if (Model.HasPhoto)
                         {
                             <img src="/Profile/Photo" alt="Profile" />
@@ -147,8 +165,8 @@
                             <i class="fa-solid fa-camera"></i>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <h3 class="fw-bold mb-0">@Model.UserName</h3>
+                    <div class="mb-2">
+                        <h3 class="fw-bold mb-1">@Model.UserName</h3>
                         <p class="text-muted mb-0"><i class="fa-solid fa-envelope me-2 small"></i>@Model.Email</p>
                     </div>
                 </div>
@@ -164,10 +182,10 @@
                             <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
                             
                             <div class="form-floating mb-3">
-                                <input class="form-control bg-transparent border-0 border-bottom rounded-0 px-0" 
+                                <input class="form-control custom-profile-input px-3" 
                                        asp-for="NewUserName" placeholder="Username" autocomplete="username" maxlength="60" />
-                                <label class="px-0">Display Name</label>
-                                <span asp-validation-for="NewUserName" class="text-danger small"></span>
+                                <label class="px-3">Display Name</label>
+                                <span asp-validation-for="NewUserName" class="text-danger small ms-2"></span>
                             </div>
                             
                             <p class="text-muted small mb-3">

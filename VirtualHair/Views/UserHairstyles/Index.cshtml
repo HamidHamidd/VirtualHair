@@ -7,9 +7,9 @@
 
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold mb-0">My Gallery</h2>
+        <h2 class="fw-bold mb-0"><i class="fa-solid fa-images me-2" style="color: #a855f7;"></i>My Gallery</h2>
 
-        <a asp-action="Create" class="btn btn-primary rounded-pill px-3">
+        <a asp-action="Create" class="btn btn-premium-gradient text-white rounded-pill px-4 shadow-sm" style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); border:none;">
             <i class="fa-solid fa-plus me-2"></i>Add New Look
         </a>
     </div>
@@ -43,7 +43,7 @@
                     <div class="gallery-card shadow-sm">
 
                         <!-- Image -->
-                        <div class="gallery-img-container">
+                        <div class="gallery-img-wrapper">
                             <img src="@(item.ImageData != null ? $"/UserHairstyles/Image/{item.Id}" : "/images/no-image.png")"
                                  class="gallery-img"
                                  alt="@item.Title" />
@@ -95,42 +95,3 @@
         </div>
     }
 </div>
-
-<style>
-    /* --- GALLERY CARD --- */
-    .gallery-card {
-        border-radius: 20px;
-        background: var(--bs-body-bg);
-        overflow: hidden;
-        border: 1px solid rgba(255,255,255,0.08);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-    }
-
-        .gallery-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
-        }
-
-    .gallery-img-container {
-        width: 100%;
-        aspect-ratio: 1/1;
-        overflow: hidden;
-        background: #0d0f14;
-    }
-
-    .gallery-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.4s ease;
-    }
-
-    .gallery-card:hover .gallery-img {
-        transform: scale(1.05);
-    }
-
-    /* Info box area */
-    .gallery-info {
-        backdrop-filter: blur(10px);
-    }
-</style>

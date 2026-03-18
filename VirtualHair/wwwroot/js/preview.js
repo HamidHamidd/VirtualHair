@@ -293,18 +293,18 @@ styleThumbs.forEach((thumb) => {
 });
 
 function updateActiveUI() {
-    styleThumbs.forEach(t => t.classList.remove("active-editing"));
+    document.querySelectorAll('.thumb-wrapper').forEach(w => w.classList.remove("active-editing"));
     
     if (activeLayer === "hair" && selectedHairThumb) {
         selectedHairThumb.classList.add("active-editing");
         if (activeLayerIndicator) {
-            activeLayerIndicator.textContent = "Editing: Hairstyle";
+            activeLayerIndicator.textContent = "Редактиране: Прическа";
             activeLayerIndicator.style.background = "rgba(99, 102, 241, 0.8)";
         }
     } else if (activeLayer === "facial" && selectedFacialThumb) {
         selectedFacialThumb.classList.add("active-editing");
         if (activeLayerIndicator) {
-            activeLayerIndicator.textContent = "Editing: Facial Hair";
+            activeLayerIndicator.textContent = "Редактиране: Брада";
             activeLayerIndicator.style.background = "rgba(168, 85, 247, 0.8)";
         }
     }

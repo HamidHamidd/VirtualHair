@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using VirtualHair.Data;
+using VirtualHair.Services;
+using Microsoft.Extensions.Localization;
 
 namespace VirtualHair
 {
@@ -39,9 +41,23 @@ namespace VirtualHair
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
-            builder.Services.AddControllersWithViews();
+            // builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+            builder.Services.AddSingleton<IStringLocalizerFactory, JsonStringLocalizerFactory>();
+
+            builder.Services.AddControllersWithViews()
+                .AddViewLocalization()
+                .AddDataAnnotationsLocalization();
 
             var app = builder.Build();
+
+            // Handle Localization
+            var supportedCultures = new[] { "en", "bg" };
+            var localizationOptions = new RequestLocalizationOptions()
+                .SetDefaultCulture(supportedCultures[0])
+                .AddSupportedCultures(supportedCultures)
+                .AddSupportedUICultures(supportedCultures);
+
+            app.UseRequestLocalization(localizationOptions);
 
             if (app.Environment.IsDevelopment())
             {

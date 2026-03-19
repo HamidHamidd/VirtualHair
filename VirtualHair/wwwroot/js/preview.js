@@ -90,14 +90,14 @@ const cropModal = document.createElement('div');
 cropModal.className = 'cropper-modal-overlay';
 cropModal.innerHTML = `
 <div class="cropper-content-box">
-  <h4 class="fw-bold mb-3" style="color: #1e293b;">Напасване на снимката</h4>
-  <p class="text-secondary small mb-3">Центрирайте лицето си за най-добри резултати.</p>
+  <h4 class="fw-bold mb-3" style="color: #1e293b;">Adjust Photo</h4>
+  <p class="text-secondary small mb-3">Center your face for best results.</p>
   <div class="cropper-img-container">
     <img id="cropperImage" style="max-width:100%; display:block;">
   </div>
   <div class="d-flex justify-content-end gap-2 mt-4">
-    <button id="cancelCrop" class="btn btn-outline-secondary px-4 rounded-3">Отказ</button>
-    <button id="confirmCrop" class="btn btn-primary px-4 rounded-3" style="background: var(--primary-gradient); color: white; border: none; font-weight: 600;">Потвърди</button>
+    <button id="cancelCrop" class="btn btn-outline-secondary px-4 rounded-3">Cancel</button>
+    <button id="confirmCrop" class="btn btn-primary px-4 rounded-3" style="background: var(--primary-gradient); color: white; border: none; font-weight: 600;">Confirm</button>
   </div>
 </div>`;
 document.body.appendChild(cropModal);
@@ -184,7 +184,7 @@ function selectNone(type) {
 styleThumbs.forEach((thumb) => {
     thumb.addEventListener('click', () => {
         if (!isImageLoaded) {
-            alert("Моля, първо качете и изрежете своята снимка!");
+            alert("Please upload and crop your photo first!");
             return;
         }
 
@@ -298,13 +298,13 @@ function updateActiveUI() {
     if (activeLayer === "hair" && selectedHairThumb) {
         selectedHairThumb.classList.add("active-editing");
         if (activeLayerIndicator) {
-            activeLayerIndicator.textContent = "Редактиране: Прическа";
+            activeLayerIndicator.textContent = "Editing: Hairstyle";
             activeLayerIndicator.style.background = "rgba(99, 102, 241, 0.8)";
         }
     } else if (activeLayer === "facial" && selectedFacialThumb) {
         selectedFacialThumb.classList.add("active-editing");
         if (activeLayerIndicator) {
-            activeLayerIndicator.textContent = "Редактиране: Брада";
+            activeLayerIndicator.textContent = "Editing: Facial Hair";
             activeLayerIndicator.style.background = "rgba(168, 85, 247, 0.8)";
         }
     }
@@ -340,7 +340,7 @@ toggleBrushBtn.addEventListener('click', () => {
     // Update indicator
     const indicator = document.getElementById('activeLayerIndicator');
     if (brushEnabled) {
-        indicator.innerText = "Режим: Ретуширане";
+        indicator.innerText = "Mode: Retouching";
         indicator.style.background = "#be185d";
     } else {
         updateActiveUI();
@@ -386,7 +386,7 @@ function paint(e) {
 
 document.getElementById('aiAutoHide')?.addEventListener('click', () => {
     if (!detectedFace || !baseImage) {
-        alert("AI все още сканира или няма снимка!");
+        alert("AI is still scanning or no photo provided!");
         return;
     }
 
@@ -426,7 +426,7 @@ document.getElementById('aiAutoHide')?.addEventListener('click', () => {
     maskCtx.fill();
     drawCanvas();
     
-    alert("AI автоматично прикри част от косата. Можете да довършите с четката!");
+    alert("AI automatically masked part of the hair. You can finish with the brush!");
 });
 
 document.getElementById('undoBrush')?.addEventListener('click', () => {
@@ -438,7 +438,7 @@ document.getElementById('undoBrush')?.addEventListener('click', () => {
 });
 
 document.getElementById('clearBrush')?.addEventListener('click', () => {
-    if (confirm("Сигурни ли сте, че искате да изтриете целия ретуш?")) {
+    if (confirm("Are you sure you want to clear all retouching?")) {
         maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
         maskHistory = [];
         drawCanvas();
@@ -498,7 +498,7 @@ const controls = {
 Object.keys(controls).forEach(id => {
     document.getElementById(id)?.addEventListener("click", () => {
         if (!activeLayer) {
-            alert("Изберете стил от менюто вдясно!");
+            alert("Select a style from the menu on the right!");
             return;
         }
         controls[id]();
@@ -555,18 +555,18 @@ function getAntiForgeryToken() {
 saveBtn?.addEventListener("click", async () => {
 
     if (!isImageLoaded) {
-        alert("Първо качете и изрежете снимка!");
+        alert("Upload and crop a photo first!");
         return;
     }
 
     const title = (titleInput.value || "").trim();
     if (!title) {
-        alert("Моля, въведете име за вашата визия.");
+        alert("Please enter a name for your look.");
         return;
     }
 
     saveBtn.disabled = true;
-    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Запазване...';
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
 
     const imageData = canvas.toDataURL("image/png");
 
@@ -590,13 +590,13 @@ saveBtn?.addEventListener("click", async () => {
         if (data.success) {
             window.location.href = "/UserHairstyles";
         } else {
-            alert(data.message || "Грешка при запазването.");
+            alert(data.message || "Error saving.");
             saveBtn.disabled = false;
-            saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Запази в Галерия';
+            saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Save to Gallery';
         }
     } catch (e) {
-        alert("Възникна грешка при запазването.");
+        alert("An error occurred while saving.");
         saveBtn.disabled = false;
-        saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Запази в Галерия';
+        saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Save to Gallery';
     }
 });

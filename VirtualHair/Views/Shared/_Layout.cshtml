@@ -1,5 +1,7 @@
 @using Microsoft.AspNetCore.Identity
 @using VirtualHair.Data
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 @inject ApplicationDbContext DbContext
@@ -15,6 +17,9 @@
             unreadMessagesCount = DbContext.Messages.Count(m => m.ReceiverId == currentUser.Id && !m.IsRead);
         }
     }
+
+    var requestCulture = Context.Features.Get<Microsoft.AspNetCore.Localization.IRequestCultureFeature>();
+    var currentCulture = requestCulture?.RequestCulture.UICulture.TwoLetterISOLanguageName ?? "en";
 }
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
@@ -67,9 +72,78 @@
                     [data-bs-theme="dark"] .navbar-home-btn:hover {
                         background: rgba(168, 85, 247, 0.15);
                     }
+
+                    .theme-toggle-btn {
+                        border: 1px solid var(--bs-border-color);
+                        background: rgba(120, 120, 120, 0.05);
+                        backdrop-filter: blur(10px);
+                        color: var(--bs-body-color);
+                        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                        overflow: hidden;
+                        position: relative;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+                    }
+
+                    .theme-toggle-btn:hover {
+                        background: rgba(120, 120, 120, 0.1);
+                        transform: translateY(-3px) scale(1.02);
+                        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+                    }
+                    
+                    .theme-toggle-btn:active {
+                        transform: translateY(0) scale(0.95);
+                    }
+
+                    .theme-toggle-btn i {
+                         transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+                         font-size: 1.1rem;
+                    }
+                    .theme-toggle-btn:hover i {
+                         transform: rotate(360deg) scale(1.2);
+                    }
+
+                    [data-bs-theme="dark"] .theme-toggle-btn {
+                        background: rgba(255,255,255,0.05);
+                        border-color: rgba(255,255,255,0.1);
+                    }
+                    [data-bs-theme="dark"] .theme-toggle-btn:hover {
+                        background: rgba(255,255,255,0.1);
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                    }
+
+                    .lang-toggle-btn {
+                        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+                        color: #6366f1;
+                        border: 1px solid rgba(99, 102, 241, 0.2);
+                        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                        font-weight: 700;
+                    }
+
+                    [data-bs-theme="dark"] .lang-toggle-btn {
+                        color: #a855f7;
+                        border-color: rgba(168, 85, 247, 0.3);
+                        background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+                    }
+
+                    .lang-toggle-btn:hover {
+                        transform: translateY(-3px) scale(1.05);
+                        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.15);
+                        filter: brightness(1.1);
+                    }
+                    .lang-toggle-btn:active {
+                        transform: translateY(0) scale(0.95);
+                    }
+
+                    /* Smooth Global Theme Transition */
+                    html.theme-transition * {
+                        transition: background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1), 
+                                    color 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+                                    border-color 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+                                    box-shadow 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+                    }
                 </style>
                 <a asp-controller="Home" asp-action="Index" class="nav-link px-4 py-2 rounded-pill fw-bold navbar-home-btn">
-                    <i class="fa-solid fa-house me-2"></i>Home
+                    <i class="fa-solid fa-house me-2"></i><span data-localize="Home">@Localizer["Home"]</span>
                 </a>
             </div>
 
@@ -110,7 +184,7 @@
                 <!-- Merged Home/Try Now link -->
                 <li class="nav-item" style="--order:2">
                     <a asp-controller="Home" asp-action="Index" class="nav-link">
-                        <i class="fa-solid fa-house me-2"></i>Home
+                        <i class="fa-solid fa-house me-2"></i>@Localizer["Home"]
                     </a>
                 </li>
 
@@ -119,37 +193,37 @@
 
                     <li class="nav-item" style="--order:5">
                         <a asp-controller="UserHairstyles" asp-action="Index" class="nav-link">
-                            <i class="fa-solid fa-images me-2"></i>My Gallery
+                            <i class="fa-solid fa-images me-2"></i>@Localizer["MyGallery"]
                         </a>
                     </li>       
 
                     <li class="nav-item" style="--order:3">
                         <a asp-controller="Hairstyles" asp-action="Index" class="nav-link">
-                            Hairstyles
+                            <span data-localize="Hairstyles">@Localizer["Hairstyles"]</span>
                         </a>
                     </li>
 
                     <li class="nav-item" style="--order:4">
                         <a asp-controller="FacialHairs" asp-action="Index" class="nav-link">
-                            Facial Hair
+                            <span data-localize="FacialHair">@Localizer["FacialHair"]</span>
                         </a>
                     </li>
 
 
                     <!-- ⭐ CLEAN COMMUNITY SECTION (no dropdown, stable) ⭐ -->
                     <li class="nav-item mt-3" style="--order:7">
-                        <span class="text-uppercase text-secondary fw-bold small ms-2">Community</span>
+                        <span class="text-uppercase text-secondary fw-bold small ms-2">@Localizer["Community"]</span>
                     </li>
 
                     <li class="nav-item" style="--order:8">
                         <a asp-controller="Feed" asp-action="Index" class="nav-link">
-                            <i class="fa-solid fa-newspaper me-2"></i>Feed
+                            <i class="fa-solid fa-newspaper me-2"></i><span data-localize="Feed">@Localizer["Feed"]</span>
                         </a>
                     </li>
 
                     <li class="nav-item" style="--order:9">
                         <a asp-controller="Messages" asp-action="Index" class="nav-link d-flex align-items-center justify-content-between">
-                            <div><i class="fa-solid fa-envelope me-2"></i>Messages</div>
+                            <div><i class="fa-solid fa-envelope me-2"></i><span data-localize="Messages">@Localizer["Messages"]</span></div>
                             @if (unreadMessagesCount > 0)
                             {
                                 <span class="badge bg-danger rounded-pill">@unreadMessagesCount</span>
@@ -159,7 +233,7 @@
 
                     <li class="nav-item" style="--order:10">
                         <a asp-controller="Friends" asp-action="Index" class="nav-link">
-                            <i class="fa-solid fa-user-group me-2"></i>Friends
+                            <i class="fa-solid fa-user-group me-2"></i><span data-localize="Friends">@Localizer["Friends"]</span>
                         </a>
                     </li>
 
@@ -167,7 +241,7 @@
                     {
                         <li class="nav-item" style="--order:11">
                             <a asp-controller="Admin" asp-action="Index" class="nav-link text-warning">
-                                <i class="fa-solid fa-toolbox me-2"></i>Admin Panel
+                                <i class="fa-solid fa-toolbox me-2"></i>@Localizer["AdminPanel"]
                             </a>
                         </li>
                     }
@@ -175,12 +249,26 @@
 
                 <hr class="text-secondary" />
 
-                <!-- Theme Toggle -->
-                <li class="nav-item text-center" style="--order:12">
-                    <button id="themeToggleBtn" class="btn btn-outline-light w-100 d-flex justify-content-center align-items-center gap-2">
-                        <i id="themeIcon" class="fa-solid fa-sun"></i>
-                        <span id="themeLabel">Light Mode</span>
-                    </button>
+                <!-- Theme & Language Toggle -->
+                <li class="nav-item" style="--order:12">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-8">
+                            <button id="themeToggleBtn" class="btn w-100 d-flex justify-content-center align-items-center gap-2 rounded-pill theme-toggle-btn py-2">
+                                <i id="themeIcon" class="fa-solid fa-sun text-warning"></i>
+                                <span id="themeLabel" class="small fw-bold">Light</span>
+                            </button>
+                        </div>
+                        <div class="col-4">
+                            <form asp-controller="Culture" asp-action="SetLanguage" method="post" id="cultureForm">
+                                <input type="hidden" name="returnUrl" value="@($"{Context.Request.Path}{Context.Request.QueryString}")" />
+                                <input type="hidden" name="culture" value="@(currentCulture == "en" ? "bg" : "en")" />
+                                <button type="submit" class="btn w-100 d-flex justify-content-center align-items-center gap-2 rounded-pill lang-toggle-btn py-2">
+                                    <i class="fa-solid fa-globe"></i>
+                                    <span class="small fw-bold">@(currentCulture == "en" ? "BG" : "EN")</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </li>
 
                 <hr class="text-secondary" />
@@ -189,17 +277,17 @@
                 {
                     <li class="nav-item" style="--order:13">
                         <form asp-area="Identity" asp-page="/Account/Logout" method="post">
-                            <button type="submit" class="btn btn-danger w-100 mt-2">Logout</button>
+                            <button type="submit" class="btn btn-danger w-100 mt-2">@Localizer["Logout"]</button>
                         </form>
                     </li>
                 }
                 else
                 {
                     <li class="nav-item" style="--order:14">
-                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-light w-100 mt-2">Login</a>
+                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-secondary w-100 mt-2">@Localizer["Login"]</a>
                     </li>
                     <li class="nav-item" style="--order:15">
-                        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary w-100 mt-2">Register</a>
+                        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary w-100 mt-2">@Localizer["Register"]</a>
                     </li>
                 }
             </ul>
@@ -211,7 +299,7 @@
     </div>
 
     <footer class="text-center py-4 border-top mt-auto">
-        <p class="text-secondary mb-0">© @DateTime.Now.Year VirtualHair — Created by Hamid</p>
+        <p class="text-secondary mb-0">@(Localizer["FooterInfo", DateTime.Now.Year])</p>
     </footer>
 
     <!-- Scripts -->
@@ -229,20 +317,72 @@
             themeLabel.textContent = 'Dark Mode';
         }
 
-        themeBtn.addEventListener('click', () => {
-            html.classList.add('theme-transition');
-            if (html.getAttribute('data-bs-theme') === 'dark') {
-                html.setAttribute('data-bs-theme', 'light');
-                localStorage.setItem('theme', 'light');
-                themeIcon.classList.replace('fa-moon', 'fa-sun');
-                themeLabel.textContent = 'Light Mode';
-            } else {
-                html.setAttribute('data-bs-theme', 'dark');
-                localStorage.setItem('theme', 'dark');
+        function updateThemeElements(theme) {
+            html.setAttribute('data-bs-theme', theme);
+            localStorage.setItem('theme', theme);
+            if (theme === 'dark') {
                 themeIcon.classList.replace('fa-sun', 'fa-moon');
                 themeLabel.textContent = 'Dark Mode';
+            } else {
+                themeIcon.classList.replace('fa-moon', 'fa-sun');
+                themeLabel.textContent = 'Light Mode';
             }
-            setTimeout(() => html.classList.remove('theme-transition'), 500);
+        }
+
+        themeBtn.addEventListener('click', () => {
+            html.classList.add('theme-transition');
+            const isDark = html.getAttribute('data-bs-theme') === 'dark';
+            const nextTheme = isDark ? 'light' : 'dark';
+            
+            updateThemeElements(nextTheme);
+
+            setTimeout(() => {
+                html.classList.remove('theme-transition');
+            }, 850);
+        });
+
+        // Smooth Language Switch
+        document.getElementById('cultureForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const form = this;
+            const targetCulture = form.querySelector('input[name="culture"]').value;
+            
+            // 1. Fetch translations for the next language
+            try {
+                const res = await fetch(`/Culture/GetTranslations?culture=${targetCulture}`);
+                const translations = await res.json();
+                
+                // 2. Animate out current labels
+                const locElements = document.querySelectorAll('[data-localize]');
+                locElements.forEach(el => {
+                    el.style.opacity = '0';
+                    el.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                    el.style.transform = 'translateY(8px) scale(0.95)';
+                    el.style.filter = 'blur(2px)';
+                });
+                
+                // 3. Swap text and animate in
+                setTimeout(() => {
+                    locElements.forEach(el => {
+                        const key = el.getAttribute('data-localize');
+                        if (translations[key]) el.textContent = translations[key];
+                        el.style.opacity = '1';
+                        el.style.transform = 'translateY(0) scale(1)';
+                        el.style.filter = 'blur(0)';
+                    });
+                    
+                    // 4. Subtle body fade out for the final redirect
+                    setTimeout(() => {
+                        document.body.style.transition = 'opacity 0.5s ease';
+                        document.body.style.opacity = '0';
+                        setTimeout(() => form.submit(), 300);
+                    }, 600);
+                }, 400);
+
+            } catch (err) {
+                // Fallback to normal submit if something fails
+                form.submit();
+            }
         });
     </script>
 

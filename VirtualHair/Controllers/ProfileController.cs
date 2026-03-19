@@ -108,7 +108,7 @@ namespace VirtualHair.Controllers
         }
 
         // POST: /Profile/UploadPhoto
-        // Приема вече изрязаната снимка като dataURL (base64)
+        // Receives the cropped image as dataURL (base64)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UploadPhoto(string croppedImageBase64)
@@ -122,7 +122,7 @@ namespace VirtualHair.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // Очакваме: data:image/png;base64,....
+            // Expecting: data:image/png;base64,....
             const string prefixPng = "data:image/png;base64,";
             const string prefixJpg = "data:image/jpeg;base64,";
             const string prefixJpg2 = "data:image/jpg;base64,";
@@ -162,7 +162,7 @@ namespace VirtualHair.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // лимит 2MB
+            // limit 2MB
             const int maxBytes = 2 * 1024 * 1024;
             if (bytes.Length > maxBytes)
             {
@@ -170,7 +170,7 @@ namespace VirtualHair.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // Upsert + трием старите
+            // Upsert + delete old ones
             var existing = await _db.UserPhotos
                 .Where(x => x.UserId == user.Id)
                 .OrderByDescending(x => x.CreatedAt)

@@ -1,3 +1,5 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
 @{
     ViewData["Title"] = "VirtualHair";
     var hairstyles = ViewBag.Hairstyles as List<VirtualHair.Models.Hairstyle>;
@@ -14,10 +16,10 @@
     <div class="container py-5">
         <h1 class="display-4 fw-bold mb-3 text-gradient">VirtualHair</h1>
         <p class="lead mb-4">
-            Upload your photo, try different hairstyles and facial styles, and discover your perfect look — all powered by AI and creativity.
+            @Localizer["UploadDescription"]
         </p>
         <a href="#preview-tool" class="btn btn-lg hero-btn shadow-sm btn-premium-gradient px-5 py-3 rounded-pill mt-3 text-white" style="text-decoration:none;">
-            Try Now <i class="fas fa-arrow-down ms-2"></i>
+            @Localizer["TryNow"] <i class="fas fa-arrow-down ms-2"></i>
         </a>
     </div>
 </section>
@@ -45,10 +47,10 @@
                         <canvas id="previewCanvas" width="500" height="500"></canvas>
                         <div id="activeLayerIndicator" class="active-badge">Editing: Hairstyle</div>
                         <div id="aiDetectorStatus" class="ai-status-badge d-none">
-                            <i class="fas fa-robot fa-spin me-2"></i>AI Анализира...
+                            <i class="fas fa-robot fa-spin me-2"></i>@Localizer["Analyzing"]
                         </div>
                         <div id="aiSuccessStatus" class="ai-success-badge d-none">
-                            <i class="fas fa-check-circle me-1"></i> Лицето е Разпознато!
+                            <i class="fas fa-check-circle me-1"></i> @Localizer["FaceDetected"]
                         </div>
                         <button id="reScanFace" class="btn btn-sm btn-dark position-absolute bottom-0 start-0 m-2 opacity-50" style="z-index: 5; font-size: 0.6rem;">
                             <i class="fas fa-search me-1"></i> Re-scan Face
@@ -70,7 +72,7 @@
                                     <div class="style-thumb-none">
                                         <i class="fas fa-ban"></i>
                                     </div>
-                                    <span class="thumb-name">Без прическа</span>
+                                    <span class="thumb-name">@Localizer["NoHairstyle"]</span>
                                 </div>
                                 @foreach (var h in hairstyles)
                                 {
@@ -96,7 +98,7 @@
                                     <div class="style-thumb-none">
                                         <i class="fas fa-ban"></i>
                                     </div>
-                                    <span class="thumb-name">Без брада</span>
+                                    <span class="thumb-name">@Localizer["NoBeard"]</span>
                                 </div>
                                 @foreach (var f in facialHairs)
                                 {
@@ -115,24 +117,24 @@
                     </div>
 
                     <div class="controls-panel mt-4 pt-4 border-top">
-                        <h6 class="text-uppercase fw-bold small text-muted mb-3">Фино напасване</h6>
+                        <h6 class="text-uppercase fw-bold small text-muted mb-3">@Localizer["FineTuning"]</h6>
                         <div class="control-grid mb-4">
-                            <button class="btn btn-ctrl" id="moveUp" title="Нагоре"><i class="fas fa-chevron-up"></i></button>
-                            <button class="btn btn-ctrl" id="moveDown" title="Надолу"><i class="fas fa-chevron-down"></i></button>
-                            <button class="btn btn-ctrl" id="moveLeft" title="Наляво"><i class="fas fa-chevron-left"></i></button>
-                            <button class="btn btn-ctrl" id="moveRight" title="Надясно"><i class="fas fa-chevron-right"></i></button>
+                            <button class="btn btn-ctrl" id="moveUp" title="Up"><i class="fas fa-chevron-up"></i></button>
+                            <button class="btn btn-ctrl" id="moveDown" title="Down"><i class="fas fa-chevron-down"></i></button>
+                            <button class="btn btn-ctrl" id="moveLeft" title="Left"><i class="fas fa-chevron-left"></i></button>
+                            <button class="btn btn-ctrl" id="moveRight" title="Right"><i class="fas fa-chevron-right"></i></button>
                             
-                            <button class="btn btn-ctrl btn-zoom" id="zoomIn" title="Увеличи"><i class="fas fa-plus"></i></button>
-                            <button class="btn btn-ctrl btn-zoom" id="zoomOut" title="Намали"><i class="fas fa-minus"></i></button>
+                            <button class="btn btn-ctrl btn-zoom" id="zoomIn" title="Zoom In"><i class="fas fa-plus"></i></button>
+                            <button class="btn btn-ctrl btn-zoom" id="zoomOut" title="Zoom Out"><i class="fas fa-minus"></i></button>
                             
-                            <button class="btn btn-ctrl btn-rotate" id="rotateLeft" title="Завърти наляво"><i class="fas fa-undo"></i></button>
-                            <button class="btn btn-ctrl btn-rotate" id="rotateRight" title="Завърти надясно"><i class="fas fa-redo"></i></button>
+                            <button class="btn btn-ctrl btn-rotate" id="rotateLeft" title="Rotate Left"><i class="fas fa-undo"></i></button>
+                            <button class="btn btn-ctrl btn-rotate" id="rotateRight" title="Rotate Right"><i class="fas fa-redo"></i></button>
                             
-                            <button class="btn btn-ctrl btn-danger-soft" id="resetOverlay" title="Нулирай текущия слой">
+                            <button class="btn btn-ctrl btn-danger-soft" id="resetOverlay" title="Reset current layer">
                                 <i class="fas fa-sync-alt"></i>
                             </button>
 
-                            <button class="btn btn-ctrl btn-brush" id="toggleBrush" title="Инструмент за ретуширане">
+                            <button class="btn btn-ctrl btn-brush" id="toggleBrush" title="Retouch tool">
                                 <i class="fas fa-paint-brush"></i>
                             </button>
                         </div>
@@ -140,36 +142,36 @@
                         <!-- Brush Controls (Hidden by default) -->
                         <div id="brushOptions" class="mt-3 p-3 rounded-4 bg-light d-none">
                             <div class="d-flex align-items-center justify-content-between mb-2">
-                                <h6 class="small fw-bold mb-0">Настройки на Ретуша</h6>
+                                <h6 class="small fw-bold mb-0">Retouch Settings</h6>
                                 <button id="aiAutoHide" class="btn btn-sm btn-premium-gradient py-1 px-2" style="font-size: 0.7rem; height: auto;">
                                     <i class="fas fa-magic me-1"></i> AI Auto-Hide
                                 </button>
                             </div>
                             <div class="d-flex align-items-center gap-3 mb-2">
-                                <input type="color" id="brushColor" class="form-control form-control-color border-0 bg-transparent" value="#ffffff" title="Цвят на кожа/фон">
+                                <input type="color" id="brushColor" class="form-control form-control-color border-0 bg-transparent" value="#ffffff" title="Skin/background color">
                                 <div class="flex-grow-1">
-                                    <label class="small text-muted mb-0">Размер: <span id="brushSizeVal">20</span>px</label>
+                                    <label class="small text-muted mb-0">Size: <span id="brushSizeVal">20</span>px</label>
                                     <input type="range" class="form-range" id="brushSize" min="5" max="100" value="20">
                                 </div>
                                 <div class="d-flex gap-1">
-                                    <button id="undoBrush" class="btn btn-ctrl btn-sm" title="Стъпка назад">
+                                    <button id="undoBrush" class="btn btn-ctrl btn-sm" title="Undo">
                                         <i class="fas fa-undo"></i>
                                     </button>
-                                    <button id="clearBrush" class="btn btn-ctrl btn-sm btn-danger-soft" title="Изчисти всичко">
+                                    <button id="clearBrush" class="btn btn-ctrl btn-sm btn-danger-soft" title="Clear all">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </div>
                             </div>
-                            <div class="small text-muted mt-2"><i class="fas fa-info-circle me-1"></i> Съвет: Използвайте избора на цвят, за да съвпадне с кожата или фона ви.</div>
+                            <div class="small text-muted mt-2"><i class="fas fa-info-circle me-1"></i> Tip: Use the color picker to match your skin or background.</div>
                         </div>
 
                         <div class="save-section">
                             <div class="form-floating mb-3">
-                                <input type="text" id="lookTitle" class="form-control custom-input" placeholder="Моята нова визия" maxlength="100">
-                                <label for="lookTitle">Дайте име на вашата визия</label>
+                                <input type="text" id="lookTitle" class="form-control custom-input" placeholder="@Localizer["NameYourLook"]" maxlength="100">
+                                <label for="lookTitle">@Localizer["NameYourLook"]</label>
                             </div>
                             <button id="saveLookBtn" class="btn btn-premium-gradient w-100 py-3">
-                                <i class="fas fa-save me-2"></i>Запази в Моята Галерия
+                                <i class="fas fa-save me-2"></i>@Localizer["SaveToGallery"]
                             </button>
                             <div id="saveLookMsg" class="text-center mt-2 small"></div>
                         </div>

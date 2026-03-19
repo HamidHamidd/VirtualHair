@@ -1,10 +1,12 @@
 @model VirtualHair.Controllers.ProfileViewModel
-
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
 @{
-    ViewData["Title"] = "My Profile";
+    ViewData["Title"] = Localizer["MyProfile"];
 }
 
 <style>
+    /* ... style remains the same ... */
     .profile-header-card {
         border: none;
         border-radius: 28px;
@@ -145,7 +147,7 @@
             @if (TempData["ProfileMsg"] != null)
             {
                 <div class="alert alert-info alert-dismissible fade show rounded-4 shadow-sm mb-4 border-0 bg-primary bg-opacity-10 text-primary" role="alert">
-                    <i class="fa-solid fa-circle-info me-2"></i>@TempData["ProfileMsg"]
+                    <i class="fa-solid fa-circle-info me-2"></i>@(Localizer[TempData["ProfileMsg"]?.ToString() ?? ""])
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             }
@@ -176,7 +178,7 @@
                         @Html.AntiForgeryToken()
                         <div class="settings-section">
                             <h5 class="fw-bold mb-3 d-flex align-items-center">
-                                <i class="fa-solid fa-user-tag me-2 text-primary"></i> Personal Identity
+                                <i class="fa-solid fa-user-tag me-2 text-primary"></i> @Localizer["PersonalIdentity"]
                             </h5>
                             
                             <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
@@ -184,16 +186,16 @@
                             <div class="form-floating mb-3">
                                 <input class="form-control custom-profile-input px-3" 
                                        asp-for="NewUserName" placeholder="Username" autocomplete="username" maxlength="60" />
-                                <label class="px-3">Display Name</label>
+                                <label class="px-3">@Localizer["DisplayName"]</label>
                                 <span asp-validation-for="NewUserName" class="text-danger small ms-2"></span>
                             </div>
                             
                             <p class="text-muted small mb-3">
-                                <i class="fa-solid fa-circle-exclamation me-1"></i> Unique username for the community feed.
+                                <i class="fa-solid fa-circle-exclamation me-1"></i> @Localizer["UniqueUsernameNote"]
                             </p>
 
                             <button class="btn btn-gradient rounded-pill px-4" type="submit">
-                                <i class="fa-solid fa-check me-2"></i>Apply Changes
+                                <i class="fa-solid fa-check me-2"></i>@Localizer["ApplyChanges"]
                             </button>
                         </div>
                     </form>
@@ -207,17 +209,17 @@
 
                     <div class="settings-section mb-0">
                         <h5 class="fw-bold mb-3 d-flex align-items-center">
-                            <i class="fa-solid fa-shield-halved me-2 text-primary"></i> Security
+                            <i class="fa-solid fa-shield-halved me-2 text-primary"></i> @Localizer["Security"]
                         </h5>
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
-                                <div class="fw-bold">Password</div>
-                                <div class="text-muted small">Update your account security</div>
+                                <div class="fw-bold">@Localizer["Password"]</div>
+                                <div class="text-muted small">@Localizer["ChangePassword"]</div>
                             </div>
                             <a class="btn btn-outline-secondary rounded-pill px-4"
                                asp-area="Identity"
                                asp-page="/Account/Manage/ChangePassword">
-                                <i class="fa-solid fa-key me-2"></i>Change
+                                <i class="fa-solid fa-key me-2"></i>@Localizer["Change"]
                             </a>
                         </div>
                     </div>
@@ -232,7 +234,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Crop your profile photo</h5>
+                <h5 class="modal-title">@Localizer["CropPhoto"]</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
@@ -247,26 +249,26 @@
 
                 <div class="d-flex flex-wrap gap-2 mt-3">
                     <button type="button" class="btn btn-outline-secondary" id="zoomInBtn">
-                        <i class="fa-solid fa-magnifying-glass-plus me-1"></i>Zoom In
+                        <i class="fa-solid fa-magnifying-glass-plus me-1"></i>@Localizer["ZoomIn"]
                     </button>
                     <button type="button" class="btn btn-outline-secondary" id="zoomOutBtn">
-                        <i class="fa-solid fa-magnifying-glass-minus me-1"></i>Zoom Out
+                        <i class="fa-solid fa-magnifying-glass-minus me-1"></i>@Localizer["ZoomOut"]
                     </button>
                     <button type="button" class="btn btn-outline-secondary" id="rotateLeftBtn">
-                        <i class="fa-solid fa-rotate-left me-1"></i>Rotate
+                        <i class="fa-solid fa-rotate-left me-1"></i>@Localizer["Rotate"]
                     </button>
                     <button type="button" class="btn btn-outline-secondary" id="resetBtn">
-                        <i class="fa-solid fa-arrow-rotate-right me-1"></i>Reset
+                        <i class="fa-solid fa-arrow-rotate-right me-1"></i>@Localizer["Reset"]
                     </button>
                 </div>
 
-                <div class="form-text mt-2">Tip: keep the face centered.</div>
+                <div class="form-text mt-2">@Localizer["TipCenterFace"]</div>
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">@Localizer["Cancel"]</button>
                 <button type="button" class="btn btn-primary" id="cropAndUploadBtn">
-                    <i class="fa-solid fa-scissors me-2"></i>Crop & Upload
+                    <i class="fa-solid fa-scissors me-2"></i>@Localizer["CropAndUpload"]
                 </button>
             </div>
         </div>

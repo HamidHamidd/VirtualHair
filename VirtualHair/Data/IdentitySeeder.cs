@@ -72,6 +72,25 @@ namespace VirtualHair.Data
             }
             else
             {
+                adminUser.LockoutEnabled = false;
+                adminUser.LockoutEnd = null;
+                adminUser.EmailConfirmed = true;
+                await userManager.UpdateSecurityStampAsync(adminUser);
+                await userManager.UpdateAsync(adminUser);
+
+                // Уверяваме се, че админската парола винаги е правилна
+                if (!await userManager.CheckPasswordAsync(adminUser, adminPassword))
+                {
+                    var token = await userManager.GeneratePasswordResetTokenAsync(adminUser);
+                    var resetResult = await userManager.ResetPasswordAsync(adminUser, token, adminPassword);
+                    if (!resetResult.Succeeded)
+                    {
+                        // Ако по някаква причина не успее, премахваме и добавяме ръчно (fallback)
+                        await userManager.RemovePasswordAsync(adminUser);
+                        await userManager.AddPasswordAsync(adminUser, adminPassword);
+                    }
+                }
+
                 // Уверяваме се, че ако админът съществува, той все още е в "Admin" ролята
                 if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
                 {

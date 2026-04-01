@@ -3,21 +3,75 @@
     ViewData["Title"] = "Facial Hair Details";
 }
 
-<div class="d-flex justify-content-center align-items-center mt-4">
-    <div class="card shadow-sm p-4 text-center" style="max-width:650px; width:100%;">
-        <h2 class="mb-4">@Model.Name</h2>
+<div class="container py-5 fade-up">
+    <!-- Breadcrumb & Header -->
+    <div class="d-flex align-items-center justify-content-between mb-5 border-bottom border-light border-opacity-10 pb-4">
+        <div>
+            <h2 class="display-6 brand-font fw-bold text-white mb-2">Structure Details</h2>
+            <p class="text-secondary text-uppercase ls-1 small mb-0">Dictionary Entry Info</p>
+        </div>
+        <a asp-action="Index" class="btn btn-ghost px-4 py-2 border border-secondary border-opacity-25 rounded-0 text-uppercase ls-1" style="font-size: 0.75rem;">
+            <i class="fa-solid fa-arrow-left me-2"></i> Dictionary
+        </a>
+    </div>
 
-        @if (Model.ImageData != null)
-        {
-            <img src="/FacialHairs/Image/@Model.Id" alt="@Model.Name" class="img-fluid rounded mb-3" style="max-height:250px;" />
-        }
+    <div class="row g-4 mb-5">
+        <!-- LEFT: Image Preview -->
+        <div class="col-lg-6">
+            <div class="bg-surface border border-secondary border-opacity-25 p-0 rounded-0 position-relative h-100 d-flex align-items-center justify-content-center bg-black">
+                @if (Model.ImageData != null)
+                {
+                    <img src="/FacialHairs/Image/@Model.Id" alt="@Model.Name" class="w-100 h-100 object-fit-cover" />
+                }
+                else
+                {
+                    <div class="p-5 text-center text-muted">
+                        <i class="fa-solid fa-image fa-3x opacity-25 mb-3"></i>
+                        <div class="text-uppercase small ls-1">No Image Available</div>
+                    </div>
+                }
+            </div>
+        </div>
 
-        <p><strong>Color:</strong> @Model.DefaultColorHex</p>
-        <p><strong>Created:</strong> @Model.CreatedAt.ToLocalTime()</p>
+        <!-- RIGHT: Information -->
+        <div class="col-lg-6">
+            <div class="bg-surface border border-secondary border-opacity-25 p-5 rounded-0 h-100 d-flex flex-column">
+                
+                <!-- Title -->
+                <div class="mb-5 pb-4 border-bottom border-secondary border-opacity-25">
+                    <h3 class="fw-bold brand-font text-white mb-2" style="font-size: 2rem; line-height: 1.2;">@Model.Name</h3>
+                    <div class="text-secondary text-uppercase ls-1" style="font-size: 0.65rem;">
+                        <i class="fa-regular fa-clock me-1"></i> Recorded on @Model.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy")
+                    </div>
+                </div>
 
-        <div class="mt-3">
-            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary me-2 px-4">Edit</a>
-            <a asp-action="Index" class="btn btn-secondary px-4">Back</a>
+                <!-- Info list -->
+                <h6 class="fw-bold mb-4 text-uppercase ls-1 text-white border-start border-3 px-3" style="border-color: var(--accent-color) !important; font-size: 0.8rem;">
+                    Properties
+                </h6>
+                <div class="d-flex flex-column gap-3 mb-5">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-secondary text-uppercase ls-1" style="font-size: 0.7rem;">Default Hex Value</span>
+                        <span class="fw-bold text-white text-end">
+                            <span class="d-inline-block rounded-circle me-2 border border-secondary border-opacity-50" style="width: 12px; height: 12px; background-color: @Model.DefaultColorHex;"></span>
+                            @Model.DefaultColorHex
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                @if (User.IsInRole("Admin"))
+                {
+                    <div class="mt-auto pt-4 border-top border-secondary border-opacity-25 d-flex gap-2">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-secondary flex-grow-1 rounded-0 py-3 text-uppercase ls-1" style="font-size: 0.75rem;">
+                            <i class="fa-solid fa-pen-to-square me-2"></i> Update Settings
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-ghost border-danger border-opacity-50 text-danger rounded-0 py-3 text-uppercase ls-1 px-4" style="font-size: 0.75rem; background: rgba(220, 53, 69, 0.05);">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </a>
+                    </div>
+                }
+            </div>
         </div>
     </div>
 </div>

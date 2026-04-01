@@ -3,95 +3,94 @@
     ViewData["Title"] = "My Gallery";
 }
 
-<div class="container py-4">
-
+<div class="container py-5 fade-up">
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold mb-0"><i class="fa-solid fa-images me-2" style="color: #a855f7;"></i>My Gallery</h2>
-
-        <a asp-action="Create" class="btn btn-premium-gradient text-white rounded-pill px-4 shadow-sm" style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); border:none;">
-            <i class="fa-solid fa-plus me-2"></i>Add New Look
+    <div class="d-flex justify-content-between align-items-center mb-5 border-bottom border-light border-opacity-10 pb-4">
+        <h2 class="display-5 brand-font fw-bold mb-0 text-white">
+            <i class="fa-solid fa-images" style="color: var(--accent-color); margin-right: 0.75rem;"></i>My Gallery
+        </h2>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-luxury d-flex align-items-center gap-2">
+            <i class="fa-solid fa-plus"></i> <span class="d-none d-sm-inline">New Look</span>
         </a>
     </div>
 
     <!-- Alerts -->
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success text-center rounded-pill shadow-sm">@TempData["SuccessMessage"]</div>
+        <div class="alert text-center py-3 mb-4 rounded-0" style="background: rgba(212, 175, 55, 0.1); border: 1px solid var(--accent-color); color: var(--accent-color); font-weight: 500; font-family: var(--font-sans); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;">
+            <i class="fa-solid fa-check me-2"></i> @TempData["SuccessMessage"]
+        </div>
     }
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-danger text-center rounded-pill shadow-sm">@TempData["ErrorMessage"]</div>
+        <div class="alert text-center py-3 mb-4 rounded-0" style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; font-weight: 500; font-family: var(--font-sans); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i> @TempData["ErrorMessage"]
+        </div>
     }
 
     <!-- No items -->
     @if (!Model.Any())
     {
-        <div class="text-center text-muted mt-5">
-            <i class="fa-regular fa-image fa-4x mb-3"></i>
-            <h5 class="fw-semibold">No looks yet</h5>
-            <p class="small">Create your first look to see it here.</p>
+        <div class="editorial-card text-center py-5">
+            <div class="badge-editorial d-inline-block mb-4">
+                <i class="fa-regular fa-image fa-2x"></i>
+            </div>
+            <h4 class="fw-bold brand-font mb-3">Your gallery is empty</h4>
+            <p class="text-secondary small letter-spacing-1 text-uppercase mb-4">Create your first AI-powered styling to start building your collection.</p>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-ghost px-5 py-2">Create Now</a>
         </div>
     }
     else
     {
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4 border border-secondary border-opacity-25" style="border-right: none; border-bottom: none;">
             @foreach (var item in Model)
             {
-                <div class="col">
-                    <div class="gallery-card shadow-sm">
-
+                <div class="col m-0 p-0 border-end border-bottom border-secondary border-opacity-25" style="animation: fadeUp 0.5s ease forwards; animation-delay: @(0.1 + Array.IndexOf(Model.ToArray(), item) * 0.05)s; opacity: 0;">
+                    <div class="gallery-card h-100 d-flex flex-column p-4">
                         <!-- Image -->
-                        <div class="gallery-img-wrapper">
+                        <div class="gallery-img-wrapper mb-4 border border-secondary border-opacity-25" style="aspect-ratio: 4/5; background: var(--bg-surface);">
                             <img src="@(item.ImageData != null ? $"/UserHairstyles/Image/{item.Id}" : "/images/no-image.png")"
-                                 class="gallery-img"
+                                 class="gallery-img w-100 h-100 object-fit-cover"
                                  alt="@item.Title" />
                         </div>
 
                         <!-- Info -->
-                        <div class="gallery-info p-3">
-
-                            <h5 class="fw-semibold text-truncate mb-2">
-                                @item.Title
+                        <div class="d-flex flex-column flex-grow-1">
+                            <h5 class="fw-bold brand-font text-truncate mb-3 fs-5">
+                                @(string.IsNullOrWhiteSpace(item.Title) ? "Untitled Look" : item.Title)
                             </h5>
 
-                            <div class="small text-muted mb-2">
-                                <i class="fa-solid fa-scissors me-1"></i>@item.Hairstyle?.Name
-                                @if (item.FacialHair != null)
-                                {
-                                    <span> | <i class="fa-solid fa-beard me-1"></i>@item.FacialHair?.Name</span>
-                                }
-                            </div>
-
-                            <div class="small text-secondary mb-3">
-                                <i class="fa-regular fa-calendar me-1"></i>
-                                @item.CreatedAt.ToShortDateString()
+                            <div class="d-flex flex-column gap-2 small text-secondary mb-4 flex-grow-1" style="font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;">
+                                <div class="d-flex align-items-center gap-2 border-bottom border-secondary border-opacity-25 pb-2">
+                                    <i class="fa-solid fa-scissors opacity-50" style="width: 16px;"></i> 
+                                    <span class="text-truncate fw-bold text-white">@(item.Hairstyle?.Name ?? "Original Hair")</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 border-bottom border-secondary border-opacity-25 pb-2">
+                                    <i class="fa-solid fa-user-ninja opacity-50" style="width: 16px;"></i>
+                                    <span class="text-truncate fw-bold text-white">@(item.FacialHair?.Name ?? "No additions")</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 pt-1">
+                                    <i class="fa-regular fa-clock opacity-50" style="width: 16px;"></i>
+                                    <span>@item.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                </div>
                             </div>
 
                             <!-- Action buttons -->
-                            <div class="d-flex justify-content-between">
-                                <a asp-action="Details" asp-route-id="@item.Id"
-                                   class="btn btn-outline-info btn-sm rounded-pill px-3">
-                                    View
+                            <div class="d-flex gap-2 mt-auto pt-3 border-top border-secondary border-opacity-25">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-ghost flex-grow-1 py-2 px-0" title="View Details">
+                                    <i class="fa-solid fa-expand"></i>
                                 </a>
-
-                                <a asp-action="Edit" asp-route-id="@item.Id"
-                                   class="btn btn-outline-warning btn-sm rounded-pill px-3">
-                                    Edit
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-ghost text-warning flex-grow-1 py-2 px-0" title="Edit Info">
+                                    <i class="fa-solid fa-pen-to-square"></i>
                                 </a>
-
-                                <a asp-action="Delete" asp-route-id="@item.Id"
-                                   class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                                    Delete
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-ghost text-danger flex-grow-1 py-2 px-0" title="Delete">
+                                    <i class="fa-solid fa-trash-can"></i>
                                 </a>
                             </div>
-
                         </div>
                     </div>
                 </div>
             }
-
         </div>
     }
 </div>

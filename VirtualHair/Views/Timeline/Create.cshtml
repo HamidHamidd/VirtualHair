@@ -1,0 +1,42 @@
+@{
+    ViewData["Title"] = "Create Post";
+}
+
+<div class="container py-5 mt-4" style="max-width: 600px;">
+    <h3 class="fw-bold mb-4 brand-font text-white letter-spacing-1 text-uppercase text-center">New Publication</h3>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert bg-danger border-0 text-white rounded-0 p-3 mb-4 text-center mx-auto" style="max-width: 400px;">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i> @TempData["Error"]
+        </div>
+    }
+
+    <div class="editorial-card text-white">
+        <form asp-action="Create" enctype="multipart/form-data" method="post">
+
+            <div class="mb-5 position-relative">
+                <label class="form-label text-uppercase ls-1 small fw-bold text-muted mb-3 d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-image"></i> Primary Output
+                </label>
+                <div class="border border-secondary border-opacity-25" style="border-style: dashed !important;">
+                    <input type="file" name="imageFile" class="form-control bg-transparent border-0 text-white rounded-0 py-4 shadow-none" accept="image/*" required />
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label text-uppercase ls-1 small fw-bold text-muted mb-3">Author Caption</label>
+                <textarea name="description" class="form-control bg-transparent border-0 border-bottom border-secondary border-opacity-25 rounded-0 px-2 py-2 text-white shadow-none focus-border-accent" rows="3" placeholder="Describe the style..."></textarea>
+            </div>
+
+            <div class="mb-5">
+                <label class="form-label text-uppercase ls-1 small fw-bold text-muted mb-3">Style Tags</label>
+                <input type="text" name="tags" class="form-control bg-transparent border-0 border-bottom border-secondary border-opacity-25 rounded-0 px-2 py-2 text-white shadow-none focus-border-accent" placeholder="E.g. #fade, #buzz (comma separated)" />
+            </div>
+
+            <button type="submit" class="btn btn-luxury w-100 py-3 rounded-0 fw-bold letter-spacing-1 text-uppercase">
+                Publish Look
+            </button>
+        </form>
+    </div>
+</div>

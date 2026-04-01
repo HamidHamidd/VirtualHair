@@ -6,65 +6,69 @@
     var facialHairs = ViewBag.FacialHairs as List<VirtualHair.Models.FacialHair>;
 }
 
-@section Styles {
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-}
-
-<section class="hero-section d-flex flex-column justify-content-center align-items-center text-center">
-    <div class="container reveal active">
-        <h1 class="display-3 fw-bold mb-4 text-gradient">VirtualHair</h1>
-        <p class="lead mb-5 mx-auto text-secondary" style="max-width: 700px; font-size: 1.25rem;">
-            @Localizer["UploadDescription"]
+<section class="d-flex flex-column justify-content-center align-items-center text-center fade-up" style="min-height: 85vh;">
+    <div class="container" style="max-width: 900px;">
+        <span class="badge-editorial mb-4">The New Standard</span>
+        <h1 class="display-1 brand-font mb-4 text-gradient" style="letter-spacing: -0.03em;">
+            Liquid Obsidian
+        </h1>
+        <p class="lead mb-5 mx-auto" style="color: var(--text-secondary); font-size: 1.15rem; max-width: 600px; font-weight: 300;">
+            @Localizer["UploadDescription"] Experience a world-class AI transformation engine wrapped in stunningly minimal design.
         </p>
+        
         @if (User.Identity != null && User.Identity.IsAuthenticated)
         {
-            <a href="#preview-tool" class="btn btn-lg hero-btn shadow-sm btn-premium-gradient px-5 py-3 rounded-pill text-white mt-2" style="font-size: 1.1rem; text-decoration:none;">
-                @Localizer["TryNow"] <i class="fas fa-arrow-down ms-2"></i>
+            <a href="#preview-tool" class="btn btn-luxury px-5">
+                @Localizer["TryNow"]
             </a>
         }
         else
         {
-            <a href="/Identity/Account/Login" class="btn btn-lg hero-btn shadow-sm btn-premium-gradient px-5 py-3 rounded-pill text-white mt-2" style="font-size: 1.1rem; text-decoration:none;">
-                @Localizer["LogInToTry"] <i class="fas fa-sign-in-alt ms-2"></i>
-            </a>
+             <div class="d-flex justify-content-center gap-4">
+                 <a href="/Identity/Account/Login" class="btn btn-ghost px-5">
+                     @Localizer["LogInToTry"]
+                 </a>
+                 <a href="/Identity/Account/Register" class="btn btn-luxury px-5">
+                     Discover <i class="fa-solid fa-arrow-right ms-2 position-relative" style="top: 1px;"></i>
+                 </a>
+             </div>
         }
     </div>
 </section>
 
 @if (User.Identity != null && User.Identity.IsAuthenticated)
 {
-<div id="preview-tool" class="try-container py-5">
-    <div class="container reveal">
-        <div class="text-center mb-5">
-            <h1 class="display-4 fw-bold text-gradient mb-2">@Localizer["TryYourLook"]</h1>
-            <p class="text-secondary lead">@Localizer["UploadDescription"]</p>
+<div id="preview-tool" class="py-5 bg-black">
+    <div class="container fade-up" style="animation-delay: 0.2s; max-width: 1400px;">
+        <div class="text-center mb-5 pb-3">
+            <h2 class="display-4 brand-font mb-3">@Localizer["TryYourLook"]</h2>
+            <p class="text-uppercase letter-spacing-1 small" style="color: var(--text-secondary);">@Localizer["UploadDescription"]</p>
         </div>
 
-        <div class="row g-4">
+        <div class="row g-0 border border-secondary border-opacity-25">
             <!-- LEFT: Canvas + Upload -->
-            <div class="col-lg-7">
-                <div class="glass-card main-canvas-container">
-                    <div class="upload-section mb-4">
-                        <label for="imageUpload" class="upload-label">
-                            <i class="fas fa-cloud-upload-alt mb-2"></i>
-                            <span>@Localizer["UploadFacePhoto"]</span>
+            <div class="col-lg-7 border-end border-secondary border-opacity-25 bg-surface">
+                <div class="d-flex flex-column h-100 position-relative p-4">
+                    <div class="mb-4">
+                        <label for="imageUpload" class="d-flex flex-column align-items-center justify-content-center py-5 w-100" style="border: 1px dashed var(--border-focus); cursor: pointer; transition: all 0.3s ease;">
+                            <span class="text-uppercase letter-spacing-1 small" style="color: var(--accent-color);">@Localizer["UploadFacePhoto"]</span>
                             <input type="file" id="imageUpload" accept="image/*" class="d-none" />
                         </label>
                     </div>
 
-                    <div class="canvas-wrapper">
-                        <canvas id="previewCanvas" width="500" height="500"></canvas>
-                        <div id="activeLayerIndicator" class="active-badge">Editing: Hairstyle</div>
-                         <div id="aiDetectorStatus" class="ai-status-badge d-none">
-                            <i class="fas fa-robot fa-spin me-2"></i>@Localizer["Analyzing"]
+                    <div class="position-relative flex-grow-1 d-flex align-items-center justify-content-center overflow-hidden bg-black" style="min-height: 500px; border: 1px solid var(--border-subtle);">
+                        <canvas id="previewCanvas" class="w-100 h-100 object-fit-contain"></canvas>
+                        
+                        <div id="aiDetectorStatus" class="position-absolute top-0 start-0 m-3 px-3 py-2 small fw-bold text-black bg-white" style="opacity: 0.9; font-size: 0.75rem; text-transform: uppercase;">
+                            <i class="fa-solid fa-robot fa-spin me-2"></i>@Localizer["Analyzing"]
                         </div>
-                        <div id="aiSuccessStatus" class="ai-success-badge d-none">
-                            <i class="fas fa-check-circle me-1"></i> @Localizer["FaceDetected"]
+                        
+                        <div id="aiSuccessStatus" class="position-absolute top-0 start-0 m-3 px-3 py-2 small fw-bold text-black d-none" style="background: var(--accent-color); font-size: 0.75rem; text-transform: uppercase;">
+                            <i class="fa-solid fa-check me-2"></i> @Localizer["FaceDetected"]
                         </div>
-                        <button id="reScanFace" class="btn btn-sm btn-dark position-absolute bottom-0 start-0 m-2 opacity-50" style="z-index: 5; font-size: 0.6rem;">
-                            <i class="fas fa-search me-1"></i> Re-scan Face
+                        
+                        <button id="reScanFace" class="btn btn-ghost btn-sm position-absolute bottom-0 start-0 m-3 px-3 py-2" style="font-size: 0.65rem;">
+                            Re-scan Focus
                         </button>
                     </div>
                 </div>
@@ -72,126 +76,94 @@
 
             <!-- RIGHT: Thumbnails + Controls -->
             <div class="col-lg-5">
-                <div class="glass-card p-4">
-                    <div class="custom-accordion" id="styleAccordion">
-                        <div class="style-group mb-4">
-                            <h5 class="section-title">
-                                <i class="fas fa-cut me-2"></i>@Localizer["Hairstyles"]
-                            </h5>
-                            <div class="thumb-grid">
-                                <div class="thumb-wrapper" onclick="selectNone('hairstyle')">
-                                    <div class="style-thumb-none">
-                                        <i class="fas fa-ban"></i>
-                                    </div>
-                                    <span class="thumb-name">@Localizer["NoHairstyle"]</span>
+                <div class="editorial-card h-100 border-0 p-4 p-md-5 d-flex flex-column">
+                    
+                    <!-- Styles selection -->
+                    <div class="mb-5">
+                        <h6 class="text-uppercase fw-bold small text-muted mb-4 letter-spacing-1">
+                            @Localizer["Hairstyles"]
+                        </h6>
+                        <div class="d-flex gap-3 overflow-x-auto pb-3" style="scrollbar-width: thin;">
+                            <div class="text-center flex-shrink-0" onclick="selectNone('hairstyle')" style="width: 70px; cursor: pointer;">
+                                <div class="d-flex align-items-center justify-content-center mb-2" style="width: 100%; aspect-ratio: 4/5; border: 1px solid var(--border-subtle);">
+                                    <i class="fa-solid fa-ban text-muted"></i>
                                 </div>
-                                @if (hairstyles != null)
+                                <span class="small text-muted text-uppercase" style="font-size: 0.65rem;">None</span>
+                            </div>
+                            @if (hairstyles != null)
+                            {
+                                @foreach (var h in hairstyles)
                                 {
-                                    @foreach (var h in hairstyles)
-                                    {
-                                        <div class="thumb-wrapper">
+                                    <div class="text-center flex-shrink-0 style-thumb-container" style="width: 70px; cursor: pointer;">
+                                        <div class="gallery-img-wrapper mb-2 border border-secondary border-opacity-10" style="aspect-ratio: 4/5;">
                                             <img src="/Hairstyles/Image/@h.Id"
                                                  alt="@h.Name"
-                                                 class="style-thumb"
+                                                 class="style-thumb gallery-img"
                                                  data-type="hairstyle"
                                                  data-id="@h.Id"
                                                  data-src="/Hairstyles/Image/@h.Id" />
-                                            <span class="thumb-name">@h.Name</span>
                                         </div>
-                                    }
-                                }
-                            </div>
-                        </div>
-
-                        <div class="style-group mb-4">
-                            <h5 class="section-title">
-                                <i class="fas fa-user-tie me-2"></i>@Localizer["FacialHair"]
-                            </h5>
-                            <div class="thumb-grid">
-                                <div class="thumb-wrapper" onclick="selectNone('facial')">
-                                    <div class="style-thumb-none">
-                                        <i class="fas fa-ban"></i>
+                                        <span class="small text-muted text-truncate d-block text-uppercase" style="font-size: 0.65rem;">@h.Name</span>
                                     </div>
-                                    <span class="thumb-name">@Localizer["NoBeard"]</span>
-                                </div>
-                                @if (facialHairs != null)
-                                {
-                                    @foreach (var f in facialHairs)
-                                    {
-                                        <div class="thumb-wrapper">
-                                            <img src="/FacialHairs/Image/@f.Id"
-                                                 alt="@f.Name"
-                                                 class="style-thumb"
-                                                 data-type="facial"
-                                                 data-id="@f.Id"
-                                                 data-src="/FacialHairs/Image/@f.Id" />
-                                            <span class="thumb-name">@f.Name</span>
-                                        </div>
-                                    }
                                 }
-                            </div>
+                            }
                         </div>
                     </div>
 
-                    <div class="controls-panel mt-4 pt-4 border-top">
-                        <h6 class="text-uppercase fw-bold small text-muted mb-3">@Localizer["FineTuning"]</h6>
-                        <div class="control-grid mb-4">
-                            <button class="btn btn-ctrl" id="moveUp" title="Up"><i class="fas fa-chevron-up"></i></button>
-                            <button class="btn btn-ctrl" id="moveDown" title="Down"><i class="fas fa-chevron-down"></i></button>
-                            <button class="btn btn-ctrl" id="moveLeft" title="Left"><i class="fas fa-chevron-left"></i></button>
-                            <button class="btn btn-ctrl" id="moveRight" title="Right"><i class="fas fa-chevron-right"></i></button>
-                            
-                            <button class="btn btn-ctrl btn-zoom" id="zoomIn" title="Zoom In"><i class="fas fa-plus"></i></button>
-                            <button class="btn btn-ctrl btn-zoom" id="zoomOut" title="Zoom Out"><i class="fas fa-minus"></i></button>
-                            
-                            <button class="btn btn-ctrl btn-rotate" id="rotateLeft" title="Rotate Left"><i class="fas fa-undo"></i></button>
-                            <button class="btn btn-ctrl btn-rotate" id="rotateRight" title="Rotate Right"><i class="fas fa-redo"></i></button>
-                            
-                            <button class="btn btn-ctrl btn-danger-soft" id="resetOverlay" title="Reset current layer">
-                                <i class="fas fa-sync-alt"></i>
-                            </button>
-
-                            <button class="btn btn-ctrl btn-brush" id="toggleBrush" title="Retouch tool">
-                                <i class="fas fa-paint-brush"></i>
-                            </button>
-                        </div>
-
-                        <!-- Brush Controls (Hidden by default) -->
-                        <div id="brushOptions" class="mt-3 p-3 rounded-4 bg-light d-none">
-                            <div class="d-flex align-items-center justify-content-between mb-2">
-                                <h6 class="small fw-bold mb-0">Retouch Settings</h6>
-                                <button id="aiAutoHide" class="btn btn-sm btn-premium-gradient py-1 px-2" style="font-size: 0.7rem; height: auto;">
-                                    <i class="fas fa-magic me-1"></i> AI Auto-Hide
-                                </button>
-                            </div>
-                            <div class="d-flex align-items-center gap-3 mb-2">
-                                <input type="color" id="brushColor" class="form-control form-control-color border-0 bg-transparent" value="#ffffff" title="Skin/background color">
-                                <div class="flex-grow-1">
-                                    <label class="small text-muted mb-0">Size: <span id="brushSizeVal">20</span>px</label>
-                                    <input type="range" class="form-range" id="brushSize" min="5" max="100" value="20">
+                    <div class="mb-5">
+                        <h6 class="text-uppercase fw-bold small text-muted mb-4 letter-spacing-1">
+                            @Localizer["FacialHair"]
+                        </h6>
+                        <div class="d-flex gap-3 overflow-x-auto pb-3" style="scrollbar-width: thin;">
+                            <div class="text-center flex-shrink-0" onclick="selectNone('facial')" style="width: 70px; cursor: pointer;">
+                                <div class="d-flex align-items-center justify-content-center mb-2" style="width: 100%; aspect-ratio: 4/5; border: 1px solid var(--border-subtle);">
+                                    <i class="fa-solid fa-ban text-muted"></i>
                                 </div>
-                                <div class="d-flex gap-1">
-                                     <button id="undoBrush" class="btn btn-ctrl btn-sm" title="Undo">
-                                        <i class="fas fa-undo"></i>
-                                    </button>
-                                     <button id="clearBrush" class="btn btn-ctrl btn-sm btn-danger-soft" title="Clear all">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </div>
+                                <span class="small text-muted text-uppercase" style="font-size: 0.65rem;">None</span>
                             </div>
-                            <div class="small text-muted mt-2"><i class="fas fa-info-circle me-1"></i> Tip: Use the color picker to match your skin or background.</div>
+                            @if (facialHairs != null)
+                            {
+                                @foreach (var f in facialHairs)
+                                {
+                                    <div class="text-center flex-shrink-0 style-thumb-container" style="width: 70px; cursor: pointer;">
+                                        <div class="gallery-img-wrapper mb-2 border border-secondary border-opacity-10" style="aspect-ratio: 4/5;">
+                                            <img src="/FacialHairs/Image/@f.Id"
+                                                 alt="@f.Name"
+                                                 class="style-thumb gallery-img"
+                                                 data-type="facial"
+                                                 data-id="@f.Id"
+                                                 data-src="/FacialHairs/Image/@f.Id" />
+                                        </div>
+                                        <span class="small text-muted text-truncate d-block text-uppercase" style="font-size: 0.65rem;">@f.Name</span>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Fine tuning omitted for minimal look, kept basics -->
+                    <!-- AI Generation Panel -->
+                    <div class="mt-auto border-top border-secondary border-opacity-25 pt-4">
+                        <div class="form-group mb-4">
+                            <label for="lookTitle" class="form-label text-uppercase small letter-spacing-1 text-muted">@Localizer["NameYourLook"]</label>
+                            <input type="text" id="lookTitle" class="form-control bg-transparent border-secondary border-opacity-25 text-white rounded-0 shadow-none focus-border-accent" placeholder="E.g. The Milan Cut" maxlength="100">
+                        </div>
+                        
+                        <div id="aiLoadingState" class="d-none text-center py-4 mb-3 border border-secondary border-opacity-25 bg-black">
+                            <i class="fa-solid fa-wand-magic-sparkles fa-bounce mb-3" style="color: var(--accent-color); font-size: 1.5rem;"></i>
+                            <h6 class="text-uppercase ls-1 small text-white mb-2">Generating Reality...</h6>
+                            <p class="text-muted small mb-0" style="font-size: 0.7rem;">Please wait while our AI engine reconstructs your look.</p>
                         </div>
 
-                        <div class="save-section">
-                            <div class="form-floating mb-3">
-                                <input type="text" id="lookTitle" class="form-control custom-input" placeholder="@Localizer["NameYourLook"]" maxlength="100">
-                                <label for="lookTitle">@Localizer["NameYourLook"]</label>
-                            </div>
-                            <button id="saveLookBtn" class="btn btn-premium-gradient w-100 py-3">
-                                <i class="fas fa-save me-2"></i>@Localizer["SaveToGallery"]
+                        <div class="d-flex gap-2">
+                            <button id="generateAiBtn" class="btn btn-luxury py-3 flex-grow-1 text-uppercase ls-1" style="font-size: 0.8rem;">
+                                <i class="fa-solid fa-wand-magic-sparkles me-2"></i> Generate
                             </button>
-                            <div id="saveLookMsg" class="text-center mt-2 small"></div>
+                            <button id="saveLookBtn" class="btn btn-outline-secondary py-3 px-4 d-none" title="Save to Gallery">
+                                <i class="fa-solid fa-download"></i>
+                            </button>
                         </div>
+                        <div id="saveLookMsg" class="text-center mt-3 text-uppercase small text-muted" style="font-size: 0.7rem; letter-spacing: 1px;"></div>
                     </div>
                 </div>
             </div>
@@ -200,412 +172,36 @@
 </div>
 }
 
+<style>
+    .style-thumb-container .gallery-img-wrapper {
+        transition: all 0.3s ease;
+    }
+    .style-thumb-container:hover .gallery-img-wrapper {
+        border-color: var(--text-primary) !important;
+    }
+    .style-thumb.selected-thumb {
+        filter: grayscale(0%) !important;
+    }
+    /* Override for selected thumbnail border */
+    .style-thumb.selected-thumb {
+        border: 1px solid var(--accent-color) !important;
+    }
+</style>
+
 @section Scripts {
     @if (User.Identity != null && User.Identity.IsAuthenticated)
     {
         <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
         <script src="~/js/preview.js" asp-append-version="true"></script>
-    }
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            function reveal() {
-                var reveals = document.querySelectorAll('.reveal');
-                for (var i = 0; i < reveals.length; i++) {
-                    var windowHeight = window.innerHeight;
-                    var elementTop = reveals[i].getBoundingClientRect().top;
-                    var elementVisible = 100; // Trigger when element is 100px from bottom screen edge
-                    if (elementTop < windowHeight - elementVisible) {
-                        reveals[i].classList.add('active');
-                    }
+        
+        <script>
+            // Mark selected item border since we moved to wrapper architecture
+            document.addEventListener('click', function(e) {
+                if(e.target.classList.contains('style-thumb')) {
+                    document.querySelectorAll('.style-thumb').forEach(t => t.classList.remove('selected-thumb'));
+                    e.target.classList.add('selected-thumb');
                 }
-            }
-            window.addEventListener('scroll', reveal);
-            // Trigger initially
-            reveal();
-        });
-    </script>
+            });
+        </script>
+    }
 }
-
-<style>
-    :root {
-        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-        --glass-bg: rgba(255, 255, 255, 0.7);
-        --glass-border: rgba(255, 255, 255, 0.4);
-        --text-dark: #1e293b;
-        --text-muted: #64748b;
-        --body-bg: radial-gradient(circle at top right, #f8fafc, #f1f5f9);
-        --canvas-bg: #ffffff;
-        --thumb-bg: #f8fafc;
-        --thumb-none-bg: #f1f5f9;
-        --btn-ctrl-bg: #f1f5f9;
-        --btn-ctrl-border: #e2e8f0;
-        --input-bg: rgba(255, 255, 255, 0.5);
-    }
-
-    [data-bs-theme="dark"] {
-        --glass-bg: rgba(30, 30, 30, 0.65);
-        --glass-border: rgba(255, 255, 255, 0.08);
-        --text-dark: #f8fafc;
-        --text-muted: #94a3b8;
-        --body-bg: radial-gradient(circle at top right, #0f172a, #1a202c);
-        --canvas-bg: #1e1e1e;
-        --thumb-bg: #1e293b;
-        --thumb-none-bg: #334155;
-        --btn-ctrl-bg: #334155;
-        --btn-ctrl-border: #475569;
-        --input-bg: rgba(0, 0, 0, 0.3);
-    }
-
-    html {
-        scroll-behavior: smooth;
-    }
-
-    body {
-        font-family: 'Outfit', sans-serif;
-        background: var(--body-bg);
-        color: var(--text-dark);
-        overflow-x: hidden;
-    }
-
-    .hero-section {
-        min-height: calc(100vh - 160px); 
-        margin-bottom: 25vh; /* Pushes the 'Try Your New Look' far down so it's not visible initially */
-        background: linear-gradient(135deg, rgba(99,102,241,0.06), rgba(168,85,247,0.08)) !important;
-        border-radius: 24px !important;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-    }
-    
-    [data-bs-theme="dark"] .hero-section {
-        background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(168,85,247,0.15)) !important;
-    }
-
-    .reveal {
-        opacity: 0;
-        transform: translateY(60px);
-        transition: opacity 1.2s cubic-bezier(0.2, 0.8, 0.2, 1), transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-    }
-
-    .reveal.active {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-    .text-gradient {
-        background: var(--primary-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .glass-card {
-        background: var(--glass-bg);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid var(--glass-border);
-        border-radius: 24px;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-        height: 100%;
-        padding: 2rem;
-    }
-
-    .upload-label {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        padding: 0.75rem 1.5rem;
-        border: 2px dashed #cbd5e1;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        color: var(--text-muted);
-        width: fit-content;
-        margin: 0 auto;
-        font-size: 0.9rem;
-    }
-
-    .upload-label:hover {
-        border-color: #6366f1;
-        background: rgba(99, 102, 241, 0.05);
-        color: #6366f1;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
-    }
-
-    .upload-label:active {
-        transform: translateY(0);
-        background: rgba(99, 102, 241, 0.1);
-    }
-
-    .canvas-wrapper {
-        position: relative;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: transparent;
-        border-radius: 16px;
-        overflow: hidden;
-        min-height: auto;
-        padding: 10px;
-    }
-
-    #previewCanvas {
-        max-width: 100%;
-        height: auto;
-        display: block;
-        border-radius: 12px;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
-        background: var(--canvas-bg);
-    }
-
-    .active-badge {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        background: rgba(0, 0, 0, 0.6);
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 100px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        backdrop-filter: blur(4px);
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .canvas-wrapper:hover .active-badge {
-        opacity: 1;
-    }
-
-    .section-title {
-        font-weight: 700;
-        font-size: 1.1rem;
-        margin-bottom: 1.25rem;
-        color: var(--text-dark);
-    }
-
-    .thumb-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-        gap: 1rem;
-    }
-
-    .thumb-wrapper {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .style-thumb {
-        width: 100%;
-        aspect-ratio: 1;
-        object-fit: cover;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        background: var(--thumb-bg);
-        border: 2px solid transparent;
-    }
-
-    .style-thumb-none {
-        width: 100%;
-        aspect-ratio: 1;
-        background: var(--thumb-none-bg);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        color: var(--text-muted);
-        border: 2px dashed #cbd5e1;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .thumb-wrapper:hover .style-thumb-none {
-        background: #e2e8f0;
-        color: #64748b;
-        border-color: #94a3b8;
-    }
-
-    .thumb-wrapper.selected-thumb .style-thumb-none {
-        border-color: #6366f1;
-        background: #eef2ff;
-        color: #6366f1;
-        border-style: solid;
-    }
-
-    .style-thumb:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    }
-
-    .selected-thumb {
-        border-color: #a855f7 !important;
-        box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.2) !important;
-    }
-
-    .active-editing {
-        border-color: #6366f1 !important;
-        transform: scale(1.05);
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.3) !important;
-    }
-
-    .thumb-name {
-        font-size: 0.7rem;
-        font-weight: 500;
-        color: var(--text-muted);
-        text-align: center;
-    }
-
-    .control-grid {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 0.5rem;
-    }
-
-    .btn-ctrl {
-        aspect-ratio: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 12px;
-        background: var(--btn-ctrl-bg);
-        border: 1px solid var(--btn-ctrl-border);
-        color: var(--text-dark);
-        transition: all 0.2s ease;
-    }
-
-    .btn-ctrl:hover {
-        background: var(--btn-ctrl-border);
-        transform: scale(1.05);
-    }
-
-    .btn-zoom, .btn-rotate, .btn-danger-soft, .btn-brush {
-        /* Reset specific tinted colors to rely on themes, or keep soft tints dependent on theme */
-    }
-    
-    [data-bs-theme="dark"] .btn-zoom { background: rgba(22, 101, 52, 0.2); color: #4ade80; border-color: rgba(22, 101, 52, 0.4); }
-    [data-bs-theme="dark"] .btn-rotate { background: rgba(30, 64, 175, 0.2); color: #60a5fa; border-color: rgba(30, 64, 175, 0.4); }
-    [data-bs-theme="dark"] .btn-danger-soft { background: rgba(153, 27, 27, 0.2); color: #f87171; border-color: rgba(153, 27, 27, 0.4); }
-    [data-bs-theme="dark"] .btn-brush { background: rgba(157, 23, 77, 0.2); color: #f472b6; border-color: rgba(157, 23, 77, 0.4); }
-
-    .btn-brush.active {
-        background: #be185d;
-        color: white;
-        border-color: #be185d;
-    }
-
-    .btn-ctrl:active {
-        transform: scale(0.95);
-    }
-
-    .custom-input {
-        border-radius: 12px;
-        border: 1px solid var(--btn-ctrl-border);
-        background: var(--input-bg);
-        color: var(--text-dark);
-    }
-
-    .custom-input:focus {
-        background: var(--canvas-bg);
-        border-color: #6366f1;
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-    }
-
-    .btn-premium-gradient {
-        background: var(--primary-gradient);
-        border: none;
-        color: white;
-        font-weight: 600;
-        border-radius: 12px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
-    }
-
-    .btn-premium-gradient:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(168, 85, 247, 0.4);
-        filter: brightness(1.1);
-    }
-
-    /* ... rest of the existing styles ... */
-
-    .cropper-modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.9) !important;
-        display: none;
-        justify-content: center;
-        align-items: center;
-        z-index: 999999 !important;
-        backdrop-filter: blur(5px);
-    }
-
-    .cropper-content-box {
-        background: #ffffff !important;
-        opacity: 1 !important;
-        padding: 2.5rem;
-        border-radius: 28px;
-        max-width: 95%;
-        width: 550px;
-        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5);
-        position: relative;
-        z-index: 1000000 !important;
-    }
-
-    .cropper-img-container {
-        border-radius: 16px;
-        overflow: hidden;
-        background: transparent;
-        min-height: 200px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: none;
-    }
-    .ai-success-badge {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        color: white;
-        padding: 5px 12px;
-        border-radius: 50px;
-        font-weight: 600;
-        font-size: 0.75rem;
-        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
-        z-index: 10;
-        animation: fadeInDown 0.5s ease-out;
-    }
-
-    @@keyframes fadeInDown {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .ai-status-badge {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        background: linear-gradient(135deg, #3b82f6 0%, #2dd4bf 100%);
-        color: white;
-        padding: 8px 16px;
-        border-radius: 50px;
-        font-weight: 600;
-        font-size: 0.85rem;
-        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-        z-index: 10;
-        animation: pulseAI 2s infinite;
-    }
-
-    @@keyframes pulseAI {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
-    }
-</style>

@@ -6,36 +6,42 @@
     var receivedRequests = ViewBag.ReceivedRequests as List<Microsoft.AspNetCore.Identity.IdentityUser>;
 }
 
-<div class="container py-4">
-    <div class="row mb-4 align-items-center">
+<div class="container-fluid py-4 fade-up" style="@(Context.Request.Query.ContainsKey("embed") ? "min-height: 100vh;" : "")">
+    <div class="row mb-5 align-items-center border-bottom border-light border-opacity-10 pb-4">
         <div class="col-md-6">
-            <h2 class="fw-bold mb-0 premium-text">Community</h2>
-            <p class="text-muted mb-0">Connect with other people and share your journey.</p>
+            <h2 class="display-6 brand-font fw-bold text-white mb-2">Community</h2>
+            <p class="text-secondary text-uppercase ls-1 small mb-0">Platform Connections</p>
         </div>
-        <div class="col-md-6 text-md-end mt-3 mt-md-0">
-            <div class="input-group search-bar shadow-sm">
-                <span class="input-group-text bg-white border-0"><i class="fa-solid fa-search text-muted"></i></span>
-                <input type="text" id="friendSearch" class="form-control border-0" placeholder="Search people...">
+        <div class="col-md-6 text-md-end mt-4 mt-md-0">
+            <div class="input-group border border-secondary border-opacity-25 rounded-0 overflow-hidden ms-auto shadow-sm" style="max-width: 300px; background: var(--bg-surface);">
+                <span class="input-group-text bg-transparent border-0 px-3 py-2 text-secondary">
+                    <i class="fa-solid fa-magnifying-glass small"></i>
+                </span>
+                <input type="text" id="friendSearch" class="form-control border-0 bg-transparent text-white shadow-none focus-none py-2" placeholder="Search identities..." style="font-size: 0.85rem; letter-spacing: 0.05em;">
             </div>
         </div>
     </div>
 
     <!-- Navigation Tabs -->
-    <ul class="nav nav-pills custom-tabs mb-4" id="friendsTab" role="tablist">
+    <ul class="nav nav-pills custom-tabs mb-5 border-bottom border-secondary border-opacity-25" id="friendsTab" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="friends-tab" data-bs-toggle="tab" data-bs-target="#friends" type="button" role="tab">All Friends (@myFriends?.Count)</button>
+            <button class="nav-link active bg-transparent rounded-0 text-uppercase ls-1 py-3 px-4" id="friends-tab" data-bs-toggle="tab" data-bs-target="#friends" type="button" role="tab" style="font-size: 0.75rem;">
+                All Links (@myFriends?.Count)
+            </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="requests-tab" data-bs-toggle="tab" data-bs-target="#requests" type="button" role="tab">
-                Requests 
+            <button class="nav-link bg-transparent rounded-0 text-uppercase ls-1 py-3 px-4" id="requests-tab" data-bs-toggle="tab" data-bs-target="#requests" type="button" role="tab" style="font-size: 0.75rem;">
+                Pending
                 @if(receivedRequests?.Count > 0)
                 {
-                    <span class="badge bg-danger rounded-pill ms-1">@receivedRequests.Count</span>
+                    <span class="badge rounded-0 ms-2" style="background: var(--accent-color); color: #000;">@receivedRequests.Count</span>
                 }
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="discover-tab" data-bs-toggle="tab" data-bs-target="#discover" type="button" role="tab">Discover</button>
+            <button class="nav-link bg-transparent rounded-0 text-uppercase ls-1 py-3 px-4" id="discover-tab" data-bs-toggle="tab" data-bs-target="#discover" type="button" role="tab" style="font-size: 0.75rem;">
+                Discover
+            </button>
         </li>
     </ul>
 
@@ -48,15 +54,19 @@
                     foreach (var user in myFriends)
                     {
                         <div class="col-12 col-md-6 col-lg-4 user-card-item">
-                            <div class="card user-card shadow-sm border-0 h-100">
-                                <div class="card-body d-flex align-items-center">
-                                    <img src="/Profile/GetPhoto?userId=@user.Id" class="rounded-circle avatar-lg me-3" alt="Avatar">
-                                    <div class="flex-grow-1 overflow-hidden">
-                                        <h6 class="mb-0 fw-bold text-truncate searchable-name">@user.UserName</h6>
-                                        <small class="text-muted">Friend</small>
+                            <div class="bg-surface border border-secondary border-opacity-25 rounded-0 h-100 p-4 transition-all hover-border-accent">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-black border border-secondary border-opacity-50" style="width: 50px; height: 50px;">
+                                        <img src="/Profile/GetPhoto?userId=@user.Id" class="w-100 h-100 object-fit-cover" alt="Avatar" onerror="this.src='https://ui-avatars.com/api/?name=@user.UserName&background=000&color=d4af37'">
+                                    </div>
+                                    <div class="ms-3 flex-grow-1 overflow-hidden">
+                                        <h6 class="mb-0 fw-bold text-white ls-1 text-truncate searchable-name" style="font-size: 0.9rem;">@user.UserName</h6>
+                                        <small class="text-secondary text-uppercase font-monospace" style="font-size: 0.65rem;">Active Link</small>
                                     </div>
                                     <div class="ms-2">
-                                        <button onclick="removeFriend('@user.Id')" class="btn btn-outline-danger btn-sm rounded-pill px-3">Remove</button>
+                                        <button onclick="removeFriend('@user.Id')" class="btn btn-ghost border-danger border-opacity-50 text-danger rounded-0 px-3 py-2 text-uppercase ls-1" style="font-size: 0.65rem; background: rgba(220, 53, 69, 0.05);" title="Sever Link">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -65,10 +75,10 @@
                 }
                 else
                 {
-                    <div class="col-12 text-center py-5">
-                        <img src="/images/no-image.png" class="mb-3 opacity-25" style="width: 80px;" alt="Empty">
-                        <h5 class="text-muted">No friends yet.</h5>
-                        <p class="text-secondary small">Head over to the Discover tab to find new people!</p>
+                    <div class="col-12 text-center py-5 my-5 border border-secondary border-opacity-10 bg-surface">
+                        <i class="fa-solid fa-network-wired fa-2x text-muted mb-4 opacity-50"></i>
+                        <h4 class="fw-bold brand-font text-white mb-2">No Verified Links</h4>
+                        <p class="text-secondary small ls-1 text-uppercase mb-0">Use the Discovery protocol to establish connections.</p>
                     </div>
                 }
             </div>
@@ -79,31 +89,35 @@
             
             @if((receivedRequests == null || !receivedRequests.Any()) && (sentRequests == null || !sentRequests.Any()))
             {
-                <div class="col-12 text-center py-5">
-                    <h5 class="text-muted">No pending requests.</h5>
+                <div class="col-12 text-center py-5 my-5 border border-secondary border-opacity-10 bg-surface">
+                    <i class="fa-solid fa-satellite fa-2x text-muted mb-4 opacity-50"></i>
+                    <h5 class="fw-bold brand-font text-white mb-2">No Signal Detected</h5>
+                    <p class="text-secondary small ls-1 text-uppercase mb-0">No pending requests inbound or outbound.</p>
                 </div>
             }
 
             @if (receivedRequests != null && receivedRequests.Any())
             {
-                <h5 class="fw-bold mb-3 section-title">Received Requests</h5>
+                <h6 class="fw-bold mb-4 text-uppercase ls-1 text-white border-start border-3 px-3 section-title" style="border-color: var(--accent-color) !important; font-size: 0.8rem;">
+                    Inbound Requests
+                </h6>
                 <div class="row g-4 user-grid mb-5">
                     @foreach (var user in receivedRequests)
                     {
                         <div class="col-12 col-md-6 col-lg-4 user-card-item">
-                            <div class="card user-card shadow-sm border-0 h-100 border-start border-4 border-primary">
-                                <div class="card-body d-flex flex-column justify-content-center">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <img src="/Profile/GetPhoto?userId=@user.Id" class="rounded-circle avatar-lg me-3" alt="Avatar">
-                                        <div class="flex-grow-1 overflow-hidden">
-                                            <h6 class="mb-0 fw-bold text-truncate searchable-name">@user.UserName</h6>
-                                            <small class="text-muted">Wants to be friends</small>
-                                        </div>
+                            <div class="bg-surface border border-secondary border-opacity-25 border-start border-3 rounded-0 h-100 p-4 transition-all" style="border-left-color: var(--accent-color) !important;">
+                                <div class="d-flex align-items-center mb-4">
+                                    <div class="bg-black border border-secondary border-opacity-50" style="width: 50px; height: 50px;">
+                                        <img src="/Profile/GetPhoto?userId=@user.Id" class="w-100 h-100 object-fit-cover" alt="Avatar" onerror="this.src='https://ui-avatars.com/api/?name=@user.UserName&background=000&color=d4af37'">
                                     </div>
-                                    <div class="d-flex gap-2 w-100 mt-auto">
-                                        <button onclick="acceptFriend('@user.Id')" class="btn btn-primary flex-grow-1 rounded-pill shadow-sm">Accept</button>
-                                        <button onclick="removeFriend('@user.Id')" class="btn btn-light flex-grow-1 rounded-pill">Decline</button>
+                                    <div class="ms-3 flex-grow-1 overflow-hidden">
+                                        <h6 class="mb-0 fw-bold text-white ls-1 text-truncate searchable-name" style="font-size: 0.9rem;">@user.UserName</h6>
+                                        <small class="text-secondary text-uppercase font-monospace" style="font-size: 0.65rem;">Awaiting Verification</small>
                                     </div>
+                                </div>
+                                <div class="d-flex gap-2 w-100 mt-auto border-top border-secondary border-opacity-25 pt-3">
+                                    <button onclick="acceptFriend('@user.Id')" class="btn btn-luxury flex-grow-1 py-2 text-uppercase ls-1" style="font-size: 0.7rem;">Verify</button>
+                                    <button onclick="removeFriend('@user.Id')" class="btn btn-ghost border border-secondary border-opacity-25 text-secondary flex-grow-1 py-2 text-uppercase ls-1" style="font-size: 0.7rem;">Reject</button>
                                 </div>
                             </div>
                         </div>
@@ -113,20 +127,26 @@
 
             @if (sentRequests != null && sentRequests.Any())
             {
-                <h5 class="fw-bold mb-3 section-title mt-4">Sent Requests</h5>
-                <div class="row g-4 user-grid">
+                <h6 class="fw-bold mb-4 text-uppercase ls-1 text-white border-start border-3 px-3 section-title" style="border-color: var(--text-muted) !important; font-size: 0.8rem;">
+                    Outbound Requests
+                </h6>
+                <div class="row g-4 user-grid mb-5">
                     @foreach (var user in sentRequests)
                     {
                         <div class="col-12 col-md-6 col-lg-4 user-card-item">
-                            <div class="card user-card shadow-sm border-0 h-100">
-                                <div class="card-body d-flex align-items-center">
-                                    <img src="/Profile/GetPhoto?userId=@user.Id" class="rounded-circle avatar-lg me-3 opacity-75" alt="Avatar">
-                                    <div class="flex-grow-1 overflow-hidden">
-                                        <h6 class="mb-0 fw-bold text-truncate searchable-name text-muted">@user.UserName</h6>
-                                        <small class="text-secondary">Request Sent</small>
+                            <div class="bg-surface border border-secondary border-opacity-25 rounded-0 h-100 p-4 transition-all">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-black border border-secondary border-opacity-50 opacity-50" style="width: 50px; height: 50px;">
+                                        <img src="/Profile/GetPhoto?userId=@user.Id" class="w-100 h-100 object-fit-cover filter-grayscale" alt="Avatar" onerror="this.src='https://ui-avatars.com/api/?name=@user.UserName&background=000&color=d4af37'">
+                                    </div>
+                                    <div class="ms-3 flex-grow-1 overflow-hidden">
+                                        <h6 class="mb-0 fw-bold text-white opacity-75 ls-1 text-truncate searchable-name" style="font-size: 0.9rem;">@user.UserName</h6>
+                                        <small class="text-secondary text-uppercase font-monospace" style="font-size: 0.65rem;">Signal Transmitted</small>
                                     </div>
                                     <div class="ms-2">
-                                        <button onclick="removeFriend('@user.Id')" class="btn btn-outline-secondary btn-sm rounded-pill px-3">Cancel</button>
+                                        <button onclick="removeFriend('@user.Id')" class="btn btn-ghost border-danger border-opacity-50 text-danger rounded-0 px-3 py-2 text-uppercase ls-1" style="font-size: 0.65rem; background: rgba(220, 53, 69, 0.05);" title="Abort">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -144,24 +164,26 @@
                     foreach (var user in suggestions)
                     {
                         <div class="col-12 col-md-6 col-lg-4 user-card-item">
-                            <div class="card user-card shadow-sm border-0 h-100">
-                                <div class="card-body d-flex flex-column align-items-center text-center p-4">
-                                    <img src="/Profile/GetPhoto?userId=@user.Id" class="rounded-circle mb-3 shadow-sm border border-2 border-white" style="width: 80px; height: 80px; object-fit: cover;" alt="Avatar">
-                                    <h5 class="fw-bold mb-1 text-truncate w-100 searchable-name">@user.UserName</h5>
-                                    <small class="text-muted mb-3">Community Member</small>
-                                    
-                                    <button onclick="addFriend('@user.Id')" class="btn btn-primary rounded-pill w-100 shadow-sm mt-auto d-flex align-items-center justify-content-center gap-2">
-                                        <i class="fa-solid fa-user-plus"></i> Add Friend
-                                    </button>
+                            <div class="bg-surface border border-secondary border-opacity-25 rounded-0 h-100 p-4 transition-all d-flex flex-column align-items-center justify-content-center text-center">
+                                <div class="bg-black border border-secondary border-opacity-50 mb-4" style="width: 80px; height: 80px; padding: 4px;">
+                                    <img src="/Profile/GetPhoto?userId=@user.Id" class="w-100 h-100 object-fit-cover" alt="Avatar" onerror="this.src='https://ui-avatars.com/api/?name=@user.UserName&background=000&color=d4af37'">
                                 </div>
+                                <h5 class="fw-bold mb-1 text-truncate w-100 searchable-name text-white font-monospace" style="font-size: 0.9rem;">@user.UserName</h5>
+                                <small class="text-secondary text-uppercase ls-1 mb-4" style="font-size: 0.65rem;">Unverified Entity</small>
+                                
+                                <button onclick="addFriend('@user.Id')" class="btn btn-outline-light rounded-0 w-100 py-2 text-uppercase ls-1 mt-auto mx-auto" style="font-size: 0.75rem;">
+                                    <i class="fa-solid fa-wifi me-2"></i> Transmit Signal
+                                </button>
                             </div>
                         </div>
                     }
                 }
                 else
                 {
-                    <div class="col-12 text-center py-5">
-                        <h5 class="text-muted">No new people found.</h5>
+                    <div class="col-12 text-center py-5 my-5 border border-secondary border-opacity-10 bg-surface">
+                        <i class="fa-solid fa-radar fa-2x text-muted mb-4 opacity-50"></i>
+                        <h4 class="fw-bold brand-font text-white mb-2">No Targets Found</h4>
+                        <p class="text-secondary small ls-1 text-uppercase mb-0">The discovery radar is currently clear.</p>
                     </div>
                 }
             </div>
@@ -170,68 +192,25 @@
 </div>
 
 <style>
-    .premium-text {
-        background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-    
-    .search-bar {
-        border-radius: 30px;
-        overflow: hidden;
-        border: 1px solid rgba(0,0,0,0.05);
-        transition: all 0.3s ease;
-    }
-    .search-bar:focus-within {
-        box-shadow: 0 5px 15px rgba(13, 110, 253, 0.15) !important;
-        border-color: rgba(13, 110, 253, 0.4);
-    }
-    .search-bar input:focus {
-        box-shadow: none;
-    }
-
-    .custom-tabs {
-        border-bottom: 2px solid rgba(0,0,0,0.05);
-        gap: 15px;
-    }
     .custom-tabs .nav-link {
-        color: #6c757d;
-        border: none;
-        border-bottom: 3px solid transparent;
-        border-radius: 0;
-        padding: 10px 15px;
-        font-weight: 600;
+        color: var(--text-muted);
+        border: 1px solid transparent;
+        border-bottom: 2px solid transparent;
         transition: all 0.2s ease;
     }
     .custom-tabs .nav-link:hover {
-        color: #0d6efd;
+        color: var(--text-primary);
     }
     .custom-tabs .nav-link.active {
-        color: #0d6efd;
-        background: none;
-        border-bottom-color: #0d6efd;
+        color: var(--text-primary);
+        border-bottom-color: var(--accent-color);
+        background: var(--border-subtle) !important;
     }
-
-    .user-card {
-        border-radius: 16px;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    .hover-border-accent:hover {
+        border-color: rgba(255,255,255,0.2) !important;
     }
-    .user-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
-    }
-
-    .avatar-lg {
-        width: 50px;
-        height: 50px;
-        object-fit: cover;
-    }
-    
-    .section-title {
-        color: #495057;
-        font-size: 1.1rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
+    .filter-grayscale {
+        filter: grayscale(100%);
     }
 </style>
 

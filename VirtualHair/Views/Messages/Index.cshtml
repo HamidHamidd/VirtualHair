@@ -3,106 +3,93 @@
     ViewData["Title"] = "Messages";
 }
 
-<div class="container-fluid py-3 h-100" style="min-height: calc(100vh - 100px);">
-    <div class="row g-0 chat-container shadow-lg">
+<div class="h-100 d-flex flex-column cyber-messages" style="min-height: calc(100vh - 100px); @(Context.Request.Query.ContainsKey("embed") ? "min-height: 100vh;" : "")">
+    
+    <!-- Scanline Overlay -->
+    <div class="scanlines"></div>
+
+    <div class="row g-0 flex-grow-1 shadow-lg bg-black border border-secondary border-opacity-10 overflow-hidden" style="border-radius: 0;">
         
         <!-- Sidebar: Conversations List -->
-        <div class="col-12 col-md-4 col-lg-3 chat-sidebar">
-            <div class="p-3 border-bottom d-flex align-items-center justify-content-between header-bg border-opacity-10">
-                <h5 class="mb-0 fw-bold bg-clip-text">Messages</h5>
-                <button class="btn btn-sm btn-outline-secondary rounded-circle shadow-sm border-0 d-flex justify-content-center align-items-center" style="width: 32px; height: 32px;">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                </button>
+        <div class="col-12 col-md-4 col-lg-3 border-end border-secondary border-opacity-10 bg-surface d-flex flex-column">
+            <div class="p-4 border-bottom border-secondary border-opacity-5 d-flex align-items-center justify-content-between">
+                <h6 class="mb-0 fw-bold brand-font text-white letter-spacing-2 text-uppercase small">Directory</h6>
+                <div class="badge bg-black border border-secondary border-opacity-25 text-accent ls-2 font-monospace" style="font-size: 0.6rem;">SYS.NET</div>
             </div>
             
-            <div class="p-3 bg-search border-bottom border-opacity-10">
-                <div class="input-group chat-search-group">
-                    <span class="input-group-text bg-transparent border-0 pe-1 text-muted">
-                        <i class="fa-solid fa-magnifying-glass"></i>
+            <div class="p-3 border-bottom border-secondary border-opacity-5 bg-black">
+                <div class="input-group border border-secondary border-opacity-20 rounded-0 overflow-hidden bg-surface">
+                    <span class="input-group-text bg-transparent border-0 px-3 py-2 text-muted">
+                        <i class="fa-solid fa-magnifying-glass small"></i>
                     </span>
-                    <input type="text" id="searchInput" class="form-control border-0 bg-transparent ps-2 focus-none msg-text-input" placeholder="Search conversations...">
+                    <input type="text" id="searchInput" class="form-control border-0 bg-transparent text-white shadow-none focus-none py-2 font-monospace" placeholder="Filter lines..." style="font-size: 0.75rem; letter-spacing: 0.1em;">
                 </div>
             </div>
 
-            <div class="chat-list overflow-auto py-2">
+            <div class="chat-list overflow-auto flex-grow-1 custom-scrollbar py-0">
                 @if (Model != null && Model.Any())
                 {
                     foreach (var user in Model)
                     {
-                        <div class="chat-item d-flex align-items-center p-3 mt-1" data-userid="@user.Id" data-username="@user.UserName">
+                        <div class="chat-item d-flex align-items-center p-3 border-bottom border-secondary border-opacity-5" data-userid="@user.Id" data-username="@user.UserName" style="cursor: pointer; position: relative; overflow: hidden;">
                             <div class="position-relative">
-                                <img src="/Profile/GetPhoto?userId=@user.Id" class="rounded-circle chat-avatar shadow-sm object-fit-cover" alt="User avatar">
+                                <img src="/Profile/GetPhoto?userId=@user.Id" class="rounded-0 border border-secondary border-opacity-10 grayscale-img" style="width: 48px; height: 48px; object-fit: cover;" alt="User avatar" onerror="this.src='https://ui-avatars.com/api/?name=@user.UserName&background=000&color=d4af37'">
+                                <div class="active-dot"></div>
                             </div>
                             <div class="ms-3 flex-grow-1 overflow-hidden">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <h6 class="mb-0 text-truncate fw-semibold">@user.UserName</h6>
-                                    <small class="text-muted time-stamp"></small>
+                                    <h6 class="mb-0 text-truncate fw-bold text-white ls-1" style="font-size: 0.8rem;">@user.UserName</h6>
                                 </div>
-                                <p class="mb-0 text-truncate text-muted small">Tap to chat</p>
+                                <p class="mb-0 text-truncate text-muted text-uppercase ls-1 font-monospace" style="font-size: 0.55rem;">Link Ready</p>
                             </div>
                         </div>
                     }
                 }
                 else
                 {
-                    <div class="text-center p-3 text-muted small">
-                        No other users found.
+                    <div class="text-center p-5 text-muted text-uppercase ls-2 small opacity-50">
+                        <i class="fa-solid fa-satellite-dish fs-3 mb-3 d-block"></i>
+                        No links found.
                     </div>
                 }
             </div>
         </div>
 
         <!-- Main Chat Area -->
-        <div class="col-12 col-md-8 col-lg-9 d-flex flex-column chat-main position-relative">
+        <div class="col-12 col-md-8 col-lg-9 d-flex flex-column chat-main position-relative bg-black h-100">
             <!-- Chat Header -->
-            <div class="p-3 border-bottom d-flex align-items-center justify-content-between header-bg z-index-2 border-opacity-10">
+            <div class="p-4 border-bottom border-secondary border-opacity-10 d-flex align-items-center justify-content-between bg-surface" style="z-index: 10;">
                 <div class="d-flex align-items-center">
-                    <!-- Mobile Back Button -->
-                    <button class="btn btn-link text-decoration-none d-md-none me-2 p-0 text-body">
-                        <i class="fa-solid fa-chevron-left fa-lg"></i>
+                    <button class="btn btn-ghost text-white border-secondary border-opacity-25 rounded-0 d-md-none me-3 p-1" style="width: 32px; height: 32px;">
+                        <i class="fa-solid fa-chevron-left small"></i>
                     </button>
                     <div class="position-relative">
-                        <img src="/images/no-image.png" id="chatHeaderAvatar" class="rounded-circle header-avatar shadow-sm object-fit-cover" alt="Avatar">
-                        <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-2 border-white rounded-circle indicator"></span>
+                        <img src="https://ui-avatars.com/api/?name=None&background=000&color=d4af37" id="chatHeaderAvatar" class="rounded-0 border border-secondary border-opacity-20" style="width: 42px; height: 42px; object-fit: cover;" alt="Avatar" onerror="this.src='https://ui-avatars.com/api/?name=' + currentUserName + '&background=000&color=d4af37'">
                     </div>
                     <div class="ms-3">
-                        <h6 class="mb-0 fw-bold" id="chatHeaderName">Select a user</h6>
-                        <small class="text-success fw-medium d-none" id="chatHeaderStatus">Online</small>
+                        <h6 class="mb-0 fw-bold text-white ls-2 text-uppercase brand-font" id="chatHeaderName" style="font-size: 0.85rem;">Idle Connection</h6>
+                        <small class="text-accent ls-1 font-monospace d-none" id="chatHeaderStatus" style="font-size: 0.55rem; letter-spacing: 2px;">• POINT-TO-POINT ENCRYPTED</small>
                     </div>
-                </div>
-                <div>
-                    <button class="btn btn-outline-secondary border-0 rounded-circle btn-action me-1 text-muted">
-                        <i class="fa-solid fa-phone"></i>
-                    </button>
-                    <button class="btn btn-outline-secondary border-0 rounded-circle btn-action me-1 text-muted">
-                        <i class="fa-solid fa-video"></i>
-                    </button>
-                    <button class="btn btn-outline-secondary border-0 rounded-circle btn-action text-muted">
-                        <i class="fa-solid fa-ellipsis-vertical"></i>
-                    </button>
                 </div>
             </div>
 
             <!-- Chat Messages -->
-            <div id="chatMessages" class="chat-messages flex-grow-1 p-4 overflow-auto position-relative custom-scrollbar">
-                
-                <div class="text-center text-muted small mb-4 time-divider">
-                    <span class="px-3 py-1 bg-body text-secondary rounded-pill border border-opacity-10">Select a conversation to start chatting</span>
+            <div id="chatMessages" class="chat-messages flex-grow-1 p-4 overflow-auto position-relative custom-scrollbar d-flex flex-column gap-4" style="background: radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.02) 0%, transparent 100%);">
+                <div class="my-auto text-center">
+                    <div class="d-inline-block p-4 border border-secondary border-opacity-10 bg-surface">
+                        <i class="fa-solid fa-terminal text-accent mb-3 d-block fs-4"></i>
+                        <h6 class="fw-bold text-white ls-2 text-uppercase mb-2 small">Terminal Ready</h6>
+                        <p class="text-muted small ls-1 mb-0 opacity-50">Please select a record from the directory to establish a secure link.</p>
+                    </div>
                 </div>
             </div>
 
             <!-- Chat Input Toolbar -->
-            <div class="p-3 border-top chat-input-area mt-auto z-index-2 border-opacity-10">
-                <div class="input-group chat-input-group p-1 shadow-sm rounded-pill bg-body">
-                    <button class="btn btn-link text-muted btn-attachment d-flex align-items-center justify-content-center border-0 text-decoration-none" type="button">
-                        <i class="fa-solid fa-paperclip fs-5"></i>
-                    </button>
-                    <input type="text" id="msgInput" class="form-control border-0 bg-transparent focus-none px-2 py-3 msg-text-input" placeholder="Type your message...">
-                    <button class="btn btn-link text-muted btn-emoji d-flex align-items-center justify-content-center border-0 text-decoration-none" type="button">
-                        <i class="fa-regular fa-face-smile fs-5"></i>
-                    </button>
-                    <button id="sendBtn" class="btn btn-primary rounded-circle btn-send shadow-sm d-flex align-items-center justify-content-center m-1 text-white" type="button">
-                        <i class="fa-solid fa-paper-plane"></i>
+            <div class="p-4 bg-surface mt-auto border-top border-secondary border-opacity-10 shadow-lg" style="z-index: 10;">
+                <div class="input-group bg-black border border-secondary border-opacity-30 rounded-0 p-1">
+                    <input type="text" id="msgInput" class="form-control border-0 bg-transparent text-white shadow-none focus-none px-3 py-2 font-monospace" placeholder="Enter transmission..." style="font-size: 0.8rem; letter-spacing: 0.05em;">
+                    <button id="sendBtn" class="btn btn-luxury py-0 px-4 rounded-0" type="button">
+                        <i class="fa-solid fa-paper-plane small"></i>
                     </button>
                 </div>
             </div>
@@ -123,259 +110,110 @@
     /* Container setup */
     .chat-container {
         height: 100%;
-        background: var(--bs-body-bg);
-        border-radius: var(--chat-radius);
-        overflow: hidden;
-        border: 1px solid rgba(128,128,128,0.1);
-        min-height: 700px;
+    }
+    /* Cyber-Editorial Messages */
+    .cyber-messages {
+        position: relative;
+        background: var(--bg-base);
+        color: var(--text-primary);
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
-    /* SideBar */
-    .chat-sidebar {
-        border-right: 1px solid rgba(128,128,128,0.1);
-        background-color: var(--bs-body-bg);
-        display: flex;
-        flex-direction: column;
-    }
-
-    .header-bg {
-        background: rgba(var(--bs-body-bg-rgb), 0.95);
-        backdrop-filter: blur(10px);
-    }
-
-    .bg-clip-text {
-        background: var(--message-sent-bg);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        color: #007bff; /* fallback */
-    }
-
-    .chat-search-group {
-        background: rgba(128,128,128,0.06);
-        border-radius: 30px;
-        transition: box-shadow 0.3s ease, background 0.3s ease;
-    }
-    .chat-search-group:focus-within {
-        background: rgba(128,128,128,0.09);
-        box-shadow: 0 0 0 0.25rem rgba(0,191,255,0.15);
-    }
-    
-    .msg-text-input {
-        color: var(--bs-body-color);
-    }
-    .msg-text-input::placeholder {
-        color: rgba(128,128,128,0.6);
-    }
-
-    /* Chat List */
-    .chat-list {
-        flex-grow: 1;
-        overflow-y: auto;
-    }
-
-    .chat-list::-webkit-scrollbar {
-        width: 6px;
-    }
-    .chat-list::-webkit-scrollbar-thumb {
-        background-color: rgba(128,128,128,0.2);
-        border-radius: 10px;
+    .scanlines {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                    linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+        background-size: 100% 3px, 3px 100%;
+        z-index: 5;
+        pointer-events: none;
+        opacity: 0.15;
     }
 
     .chat-item {
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        border-radius: 16px;
-        margin: 0 12px;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        transition: var(--transition-snappy);
     }
-
     .chat-item:hover {
-        background-color: rgba(128,128,128,0.06);
-        transform: translateX(4px);
+        background: rgba(212, 175, 55, 0.05) !important;
     }
-
     .chat-item.active {
-        background: var(--message-sent-bg);
-        box-shadow: var(--message-sent-shadow);
+        background: rgba(212, 175, 55, 0.1) !important;
+        border-left: 3px solid var(--accent-color) !important;
     }
 
-    .chat-item.active:hover {
-        transform: scale(1.02);
+    .grayscale-img {
+        filter: grayscale(100%) contrast(1.1);
+        transition: var(--transition-snappy);
+    }
+    .chat-item:hover .grayscale-img, .chat-item.active .grayscale-img {
+        filter: grayscale(0%);
     }
 
-    .chat-avatar {
-        width: 52px;
-        height: 52px;
-    }
-
-    .header-avatar {
-        width: 46px;
-        height: 46px;
-    }
-
-    .message-avatar {
-        width: 34px;
-        height: 34px;
-        border-color: rgba(128,128,128,0.1) !important;
-    }
-
-    .indicator {
-        width: 14px;
-        height: 14px;
-    }
-    
-    .badge-notification {
-        font-size: 0.75rem;
-        font-weight: 700;
-    }
-
-    /* Main Chat Area */
-    .chat-main {
-        background-color: var(--bs-body-bg);
-        position: relative;
-    }
-
-    /* Subtle mesh background */
-    .chat-main::before {
-        content: '';
+    .active-dot {
         position: absolute;
-        inset: 0;
-        background-image: radial-gradient(rgba(128,128,128,0.15) 1px, transparent 1px);
-        background-size: 24px 24px;
-        opacity: 0.4;
-        z-index: 0;
-        pointer-events: none;
-    }
-
-    .chat-messages {
-        z-index: 1;
-        scroll-behavior: smooth;
-    }
-
-    .custom-scrollbar::-webkit-scrollbar {
-        width: 6px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        background-color: rgba(128,128,128,0.2);
-        border-radius: 10px;
+        bottom: 0;
+        right: 0;
+        width: 10px;
+        height: 10px;
+        background: var(--accent-color);
+        border: 2px solid #000;
     }
 
     .message-bubble {
-        max-width: 85%;
-        font-size: 0.98rem;
-        line-height: 1.5;
+        max-width: 75%;
+        padding: 1rem 1.5rem !important;
+        border-radius: 0 !important;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
         position: relative;
-        animation: slideInUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        opacity: 0;
-        transform: translateY(20px);
+        border: 1px solid rgba(255,255,255,0.05);
     }
-
-    .message-wrapper:nth-child(2) .message-bubble { animation-delay: 0.05s; }
-    .message-wrapper:nth-child(3) .message-bubble { animation-delay: 0.15s; }
-    .message-wrapper:nth-child(4) .message-bubble { animation-delay: 0.25s; }
-    .message-wrapper:nth-child(5) .message-bubble { animation-delay: 0.35s; }
-
-    @@keyframes slideInUp {
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .message-bubble.received {
-        background-color: rgba(128,128,128,0.08);
-        border: 1px solid rgba(128,128,128,0.05);
-        color: var(--bs-body-color);
-        border-bottom-left-radius: 4px !important;
-    }
-
     .message-bubble.sent {
-        background: var(--message-sent-bg);
-        box-shadow: var(--message-sent-shadow);
-        border-bottom-right-radius: 4px !important;
-    }
-
-    .message-time {
-        font-size: 0.75rem;
-        letter-spacing: 0.3px;
-    }
-
-    .time-divider span {
-        font-size: 0.8rem;
-        font-weight: 500;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-    }
-
-    .btn-action {
-        width: 40px;
-        height: 40px;
-        padding: 0;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-        background: rgba(128,128,128,0.05);
-    }
-    .btn-action:hover {
-        transform: translateY(-2px);
-        background-color: rgba(128,128,128,0.1);
-        color: var(--bs-body-color) !important;
-    }
-
-    /* Input Area */
-    .chat-input-area {
-        background: rgba(var(--bs-body-bg-rgb), 0.95);
-        backdrop-filter: blur(12px);
-    }
-
-    .chat-input-group {
-        border: 1px solid rgba(128,128,128,0.1);
-        background: var(--bs-body-bg);
-        transition: all 0.3s ease;
-    }
-    
-    .chat-input-group:focus-within {
-        border-color: rgba(0,191,255,0.4);
-        box-shadow: var(--accent-glow);
-    }
-
-    .focus-none:focus {
+        background: rgba(212, 175, 55, 0.08) !important;
+        color: var(--text-primary) !important;
+        border-right: 2px solid var(--accent-color) !important;
         box-shadow: none !important;
     }
-
-    .btn-attachment, .btn-emoji {
-        width: 48px;
-        transition: color 0.2s, transform 0.2s;
-    }
-    .btn-attachment:hover, .btn-emoji:hover {
-        color: #00d2ff !important;
-        transform: scale(1.1);
+    .message-bubble.received {
+        background: var(--bg-surface) !important;
+        color: var(--text-primary) !important;
+        border-left: 2px solid var(--accent-color) !important;
+        opacity: 0.9;
     }
 
-    .btn-send {
-        width: 44px;
-        height: 44px;
-        padding: 0;
-        background: var(--message-sent-bg);
+    .message-avatar {
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
+        min-height: 32px !important;
+        flex: 0 0 32px !important;
+        object-fit: cover !important;
+        border-radius: 0 !important; /* Sharp editorial look */
+        border: 1px solid rgba(255,255,255,0.1) !important;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar { width: 3px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.1); }
+
+    .btn-luxury {
+        background: var(--accent-color);
+        color: #000;
         border: none;
-        transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
+        letter-spacing: 2px;
+        font-weight: 800;
+        transition: var(--transition-snappy);
     }
-    .btn-send:hover {
-        transform: scale(1.1) rotate(10deg);
-        box-shadow: var(--message-sent-shadow);
+    .btn-luxury:hover {
+        background: var(--text-primary);
+        color: var(--bg-base);
+        transform: translateY(-2px);
     }
 
-    /* Responsive adjustments */
-    @@media (max-width: 767.98px) {
-        .chat-sidebar {
-            display: none !important; /* Hide sidebar on mobile by default */
-        }
-        .chat-container {
-            border-radius: 0;
-            border: none;
-            min-height: calc(100vh - 60px);
-            margin: -1rem; /* Negate container padding if applied by layout */
-        }
-    }
+    @@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .chat-item { animation: fadeIn 0.5s ease forwards; }
 </style>
 
 @section Scripts {
@@ -412,6 +250,53 @@
                 const chatContainer = document.getElementById('chatMessages');
                 chatContainer.innerHTML = ''; // clear initial text/previous chat
                 
+                // --- Invitation Logic UI ---
+                const inputArea = document.querySelector('.chat-input-toolbar'); // wait, I need to check the class
+                const msgInput = document.getElementById('msgInput');
+                const sendBtn = document.getElementById('sendBtn');
+                
+                // Clear any existing invitation overlays
+                const existingOverlay = document.getElementById('invitationOverlay');
+                if (existingOverlay) existingOverlay.remove();
+
+                if (!data.isFriend) {
+                    const overlay = document.createElement('div');
+                    overlay.id = 'invitationOverlay';
+                    overlay.className = 'p-3 bg-dark border-top border-secondary border-opacity-10 text-center';
+                    
+                    if (data.isPending) {
+                        if (data.amRequester) {
+                            overlay.innerHTML = `<span class="text-secondary small ls-1 text-uppercase"><i class="fa-solid fa-hourglass-start me-2"></i> Waiting for ${data.otherUser} to accept your transmission invitation.</span>`;
+                            msgInput.disabled = true;
+                            msgInput.placeholder = "Link pending...";
+                            sendBtn.disabled = true;
+                        } else {
+                            overlay.innerHTML = `
+                                <div class="d-flex flex-column align-items-center gap-3">
+                                    <span class="text-white small ls-1 text-uppercase">${data.otherUser} wants to establish a direct link.</span>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-luxury px-4 py-2 small" onclick="handleInvite('${data.otherUserId}', 'accept')">Accept</button>
+                                        <button class="btn btn-ghost border border-secondary border-opacity-25 px-4 py-2 small" onclick="handleInvite('${data.otherUserId}', 'reject')">Decline</button>
+                                    </div>
+                                </div>`;
+                            msgInput.disabled = true;
+                            msgInput.placeholder = "Accept invite to reply...";
+                            sendBtn.disabled = true;
+                        }
+                    } else {
+                        overlay.innerHTML = `<span class="text-accent small ls-1 text-uppercase"><i class="fa-solid fa-shield-halved me-2"></i> No active link. Your first message will serve as a connection request.</span>`;
+                        msgInput.disabled = false;
+                        msgInput.placeholder = "Send invitation packet...";
+                        sendBtn.disabled = false;
+                    }
+                    document.querySelector('.chat-main').insertBefore(overlay, document.querySelector('.chat-main > .p-4.mt-auto'));
+                } else {
+                    msgInput.disabled = false;
+                    msgInput.placeholder = "Transmit packet...";
+                    sendBtn.disabled = false;
+                }
+                // --- End Invitation Logic UI ---
+
                 if (data.messages && data.messages.length > 0) {
                     data.messages.forEach(msg => {
                         const timeStr = new Date(msg.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -428,6 +313,14 @@
                 scrollToBottom();
             } catch (err) {
                 console.error("Failed to load chat", err);
+            }
+        }
+
+        async function handleInvite(userId, action) {
+            const url = action === 'accept' ? '/Friends/AcceptFriend' : '/Friends/RemoveFriend';
+            const res = await fetch(url + '?targetId=' + userId, { method: 'POST' });
+            if (res.ok) {
+                loadChat(userId); // reload
             }
         }
 
@@ -453,7 +346,7 @@
                     </div>`;
             } else {
                 wrapper.innerHTML = `
-                    <img src="/Profile/GetPhoto?userId=${currentUserId}" class="rounded-circle message-avatar me-2 align-self-end shadow-sm border">
+                    <img src="/Profile/GetPhoto?userId=${currentUserId}" class="rounded-0 message-avatar me-2 align-self-end shadow-sm border" onerror="this.src='https://ui-avatars.com/api/?name=' + currentUserName + '&background=000&color=d4af37'">
                     <div>
                         <div class="message-bubble received p-3 rounded-4 shadow-sm mb-1 px-4">${content}</div>
                         <small class="text-muted small ms-2 message-time opacity-75">${timeStr}</small>
@@ -489,6 +382,12 @@
                     const timeStr = new Date(data.msg.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     appendMessage(data.msg.content, true, timeStr);
                     scrollToBottom();
+                    
+                    // Re-check status in case it was an invitation
+                    loadChat(currentUserId);
+                } else {
+                    alert(data.message || "Failed to transmit.");
+                    input.value = content; // restore
                 }
             } catch(err) {
                 console.error("Failed to send message", err);

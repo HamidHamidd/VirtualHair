@@ -5,229 +5,115 @@
     ViewData["Title"] = Localizer["MyProfile"];
 }
 
-<style>
-    /* ... style remains the same ... */
-    .profile-header-card {
-        border: none;
-        border-radius: 28px;
-        background: var(--bs-body-bg);
-        box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
-        overflow: hidden;
-        margin-bottom: 2rem;
+<div class="container py-5 fade-up" style="max-width: 700px;">
+
+    @if (TempData["ProfileMsg"] != null)
+    {
+        <div class="alert bg-surface border border-secondary border-opacity-25 text-white rounded-0 p-4 mb-5 d-flex align-items-center justify-content-between" role="alert">
+            <div class="d-flex align-items-center gap-3">
+                <i class="fa-solid fa-circle-check text-accent fs-5"></i>
+                <span class="ls-1" style="font-size: 0.85rem;">@(Localizer[TempData["ProfileMsg"]?.ToString() ?? ""])</span>
+            </div>
+            <button type="button" class="btn-close shadow-none btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     }
 
-    [data-bs-theme="dark"] .profile-header-card {
-        background: #1c1c1e;
-        box-shadow: 0 10px 40px -10px rgba(0,0,0,0.4);
-    }
-
-
-    .profile-avatar-wrapper {
-        position: relative;
-        padding-top: 2rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        z-index: 2;
-    }
-
-    .profile-avatar-container {
-        width: 130px;
-        height: 130px;
-        border-radius: 50%;
-        border: 6px solid var(--bs-body-bg);
-        overflow: hidden;
-        background: #eee;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-        cursor: pointer;
-        transition: transform 0.3s ease;
-        position: relative;
-    }
-
-    [data-bs-theme="dark"] .profile-avatar-container {
-        border-color: #1c1c1e;
-    }
-
-    .profile-avatar-container:hover {
-        transform: scale(1.05);
-    }
-
-    .profile-avatar-container img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .avatar-overlay {
-        position: absolute;
-        inset: 0;
-        background: rgba(0,0,0,0.4);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        color: white;
-        font-size: 1.5rem;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-    
-    .profile-avatar-container:hover .avatar-overlay {
-        opacity: 1;
-    }
-
-    .profile-info {
-        padding: 2rem 2.5rem;
-    }
-
-    .settings-section {
-        background: rgba(99, 102, 241, 0.03);
-        border-radius: 20px;
-        padding: 2rem;
-        margin-bottom: 1.5rem;
-        border: 1px solid rgba(99, 102, 241, 0.08);
-        transition: all 0.3s ease;
-    }
-
-    [data-bs-theme="dark"] .settings-section {
-        background: rgba(255, 255, 255, 0.02);
-        border-color: rgba(255, 255, 255, 0.05);
-    }
-    
-    .settings-section:hover {
-        background: rgba(99, 102, 241, 0.05);
-        border-color: rgba(99, 102, 241, 0.15);
-    }
-
-    .form-floating > .form-control:focus ~ label,
-    .form-floating > .form-control:not(:placeholder-shown) ~ label {
-        color: #6366f1;
-    }
-
-    .custom-profile-input {
-        border-radius: 12px !important;
-        border: 1px solid #e2e8f0 !important;
-        background: rgba(255,255,255,0.7) !important;
-        transition: all 0.3s ease;
-    }
-    
-    [data-bs-theme="dark"] .custom-profile-input {
-        background: rgba(0,0,0,0.2) !important;
-        border-color: #333 !important;
-    }
-
-    .custom-profile-input:focus {
-        background: #fff !important;
-        border-color: #6366f1 !important;
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1) !important;
-    }
-
-    [data-bs-theme="dark"] .custom-profile-input:focus {
-        background: #2a2a2a !important;
-    }
-
-    .btn-gradient {
-        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-        color: white;
-        border: none;
-        transition: all 0.3s ease;
-    }
-
-    .btn-gradient:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(168, 85, 247, 0.4);
-        color: white;
-    }
-</style>
-
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-8 col-xl-7">
-
-            @if (TempData["ProfileMsg"] != null)
+    <!-- PROFILE HEADER -->
+    <div class="text-center mb-5 pb-4 border-bottom border-light border-opacity-10 position-relative">
+        <div class="profile-avatar-container mx-auto mb-4 position-relative" style="width: 150px; height: 150px; cursor: pointer; border: 1px solid var(--border-focus);" onclick="document.getElementById('profilePhotoInput').click()">
+            @if (Model.HasPhoto)
             {
-                <div class="alert alert-info alert-dismissible fade show rounded-4 shadow-sm mb-4 border-0 bg-primary bg-opacity-10 text-primary" role="alert">
-                    <i class="fa-solid fa-circle-info me-2"></i>@(Localizer[TempData["ProfileMsg"]?.ToString() ?? ""])
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
+                <img src="/Profile/Photo" alt="Profile" class="w-100 h-100 object-fit-cover" />
             }
+            else
+            {
+                <img src="https://ui-avatars.com/api/?name=@(Uri.EscapeDataString(Model.UserName))&size=256&background=000&color=d4af37" alt="Profile" class="w-100 h-100 object-fit-cover" />
+            }
+            <div class="avatar-overlay position-absolute w-100 h-100 top-0 start-0 d-flex align-items-center justify-content-center bg-black bg-opacity-75" style="opacity: 0; transition: opacity 0.3s ease;">
+                <i class="fa-solid fa-camera text-white fs-3"></i>
+            </div>
+        </div>
+        
+        <h2 class="display-6 brand-font fw-bold text-white mb-2">@Model.UserName</h2>
+        <p class="text-secondary text-uppercase ls-1 small mb-0">@Model.Email</p>
+    </div>
 
-            <div class="profile-header-card">
-                <div class="profile-avatar-wrapper">
-                    <div class="profile-avatar-container mb-3" onclick="document.getElementById('profilePhotoInput').click()">
-                        @if (Model.HasPhoto)
-                        {
-                            <img src="/Profile/Photo" alt="Profile" />
-                        }
-                        else
-                        {
-                            <img src="https://ui-avatars.com/api/?name=@(Uri.EscapeDataString(Model.UserName))&size=256&background=random" alt="Profile" />
-                        }
-                        <div class="avatar-overlay">
-                            <i class="fa-solid fa-camera"></i>
-                        </div>
-                    </div>
-                    <div class="mb-2">
-                        <h3 class="fw-bold mb-1">@Model.UserName</h3>
-                        <p class="text-muted mb-0"><i class="fa-solid fa-envelope me-2 small"></i>@Model.Email</p>
-                    </div>
+    <!-- PROFILE SETTINGS -->
+    <div class="editorial-card bg-surface border border-secondary border-opacity-10 p-4 p-md-5 mb-5 rounded-0">
+        
+        <form asp-action="UpdateUserName" method="post" class="mb-5 pb-5 border-bottom border-secondary border-opacity-10">
+            @Html.AntiForgeryToken()
+            <h5 class="fw-bold mb-4 ls-1 fs-6 d-flex align-items-center text-uppercase text-white">
+                <span style="color: var(--accent-color); margin-right: 0.75rem;">/</span> @Localizer["PersonalIdentity"]
+            </h5>
+            
+            <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+            
+            <div class="form-floating mb-4">
+                <input class="form-control bg-transparent border-0 border-bottom border-secondary border-opacity-25 rounded-0 px-0 shadow-none text-white focus-border-accent" 
+                       asp-for="NewUserName" placeholder="Username" autocomplete="username" maxlength="60" />
+                <label class="px-0 text-secondary">@Localizer["DisplayName"]</label>
+                <span asp-validation-for="NewUserName" class="text-danger small mt-1 d-block"></span>
+            </div>
+            
+            <p class="text-muted small mb-4 ls-1" style="font-size: 0.75rem;">
+                <i class="fa-solid fa-circle-exclamation me-1"></i> @Localizer["UniqueUsernameNote"]
+            </p>
+
+            <button class="btn btn-luxury px-5 py-2 w-100" type="submit">
+                @Localizer["ApplyChanges"]
+            </button>
+        </form>
+
+        <!-- HIDDEN PROFILE UPLOAD TOOLS -->
+        <input id="profilePhotoInput" class="d-none" type="file" accept="image/*" />
+        <form id="cropUploadForm" asp-action="UploadPhoto" method="post" class="d-none">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="croppedImageBase64" id="croppedImageBase64" />
+        </form>
+
+        <div class="mt-4">
+            <h5 class="fw-bold mb-4 ls-1 fs-6 d-flex align-items-center text-uppercase text-white">
+                <span style="color: var(--accent-color); margin-right: 0.75rem;">/</span> @Localizer["Security"]
+            </h5>
+            <div class="d-flex align-items-center justify-content-between p-4 border border-secondary border-opacity-25 mb-4">
+                <div>
+                    <h6 class="fw-bold mb-1 text-white">@Localizer["Password"]</h6>
+                    <small class="text-secondary ls-1 text-uppercase" style="font-size: 0.65rem;">@Localizer["ChangePassword"]</small>
                 </div>
+                <a class="btn btn-ghost px-4 py-2" asp-area="Identity" asp-page="/Account/Manage/ChangePassword">
+                    @Localizer["Change"]
+                </a>
+            </div>
 
-                <div class="profile-info">
-                    <form asp-action="UpdateUserName" method="post" class="mb-4">
-                        @Html.AntiForgeryToken()
-                        <div class="settings-section">
-                            <h5 class="fw-bold mb-3 d-flex align-items-center">
-                                <i class="fa-solid fa-user-tag me-2 text-primary"></i> @Localizer["PersonalIdentity"]
-                            </h5>
-                            
-                            <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
-                            
-                            <div class="form-floating mb-3">
-                                <input class="form-control custom-profile-input px-3" 
-                                       asp-for="NewUserName" placeholder="Username" autocomplete="username" maxlength="60" />
-                                <label class="px-3">@Localizer["DisplayName"]</label>
-                                <span asp-validation-for="NewUserName" class="text-danger small ms-2"></span>
-                            </div>
-                            
-                            <p class="text-muted small mb-3">
-                                <i class="fa-solid fa-circle-exclamation me-1"></i> @Localizer["UniqueUsernameNote"]
-                            </p>
-
-                            <button class="btn btn-gradient rounded-pill px-4" type="submit">
-                                <i class="fa-solid fa-check me-2"></i>@Localizer["ApplyChanges"]
-                            </button>
-                        </div>
-                    </form>
-
-                    <input id="profilePhotoInput" class="d-none" type="file" accept="image/*" />
-
-                    <form id="cropUploadForm" asp-action="UploadPhoto" method="post" class="d-none">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="croppedImageBase64" id="croppedImageBase64" />
-                    </form>
-
-                    <div class="settings-section mb-0">
-                        <h5 class="fw-bold mb-3 d-flex align-items-center">
-                            <i class="fa-solid fa-shield-halved me-2 text-primary"></i> @Localizer["Security"]
-                        </h5>
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div>
-                                <div class="fw-bold">@Localizer["Password"]</div>
-                                <div class="text-muted small">@Localizer["ChangePassword"]</div>
-                            </div>
-                            <a class="btn btn-outline-secondary rounded-pill px-4"
-                               asp-area="Identity"
-                               asp-page="/Account/Manage/ChangePassword">
-                                <i class="fa-solid fa-key me-2"></i>@Localizer["Change"]
-                            </a>
-                        </div>
-                    </div>
+            <h5 class="fw-bold mb-4 ls-1 fs-6 d-flex align-items-center text-uppercase text-danger mt-5">
+                <span style="color: var(--bs-danger); margin-right: 0.75rem;">/</span> @Localizer["SessionTermination"]
+            </h5>
+            <div class="d-flex align-items-center justify-content-between p-4 border border-danger border-opacity-25" style="background: rgba(220, 53, 69, 0.05);">
+                <div>
+                    <h6 class="fw-bold mb-1 text-white">@Localizer["Disconnect"]</h6>
+                    <small class="text-secondary ls-1 text-uppercase" style="font-size: 0.65rem;">@Localizer["Logout"]</small>
                 </div>
+                <form class="form-inline m-0 p-0" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-ghost border-danger border-opacity-50 text-danger px-4 py-2 text-uppercase ls-1" style="font-size: 0.8rem;">
+                        <i class="fa-solid fa-power-off me-2"></i> @Localizer["Logout"]
+                    </button>
+                </form>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .profile-avatar-container:hover .avatar-overlay {
+        opacity: 1 !important;
+    }
+    .focus-border-accent:focus {
+        border-color: var(--accent-color) !important;
+        box-shadow: none !important;
+    }
+</style>
 
 <!-- Crop Modal -->
 <div class="modal fade" id="cropModal" tabindex="-1" aria-hidden="true">

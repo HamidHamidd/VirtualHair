@@ -1,231 +1,132 @@
 @model VirtualHair.Models.AdminDashboardViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
 @{
-    ViewData["Title"] = "Admin Dashboard";
+    ViewData["Title"] = Localizer["AdminPanel"];
 }
 
-<style>
-    .admin-card {
-        border: none;
-        border-radius: 20px;
-        background: var(--bs-body-bg);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        overflow: hidden;
-        position: relative;
-    }
-
-    [data-bs-theme="dark"] .admin-card {
-        background: #1e1e1e;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
-
-    .admin-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-    }
-
-    .stat-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-        margin-bottom: 1rem;
-    }
-
-    .bg-soft-blue { background: rgba(0, 191, 255, 0.1); color: #00bfff; }
-    .bg-soft-green { background: rgba(40, 167, 69, 0.1); color: #28a745; }
-    .bg-soft-orange { background: rgba(253, 126, 20, 0.1); color: #fd7e14; }
-    .bg-soft-purple { background: rgba(138, 43, 226, 0.1); color: #8a2be2; }
-    .bg-soft-red { background: rgba(220, 53, 69, 0.1); color: #dc3545; }
-
-    .dashboard-header {
-        background: linear-gradient(135deg, #00bfff, #8a2be2);
-        color: white;
-        padding: 3rem 2rem;
-        border-radius: 24px;
-        margin-bottom: 2rem;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .dashboard-header::after {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -20%;
-        width: 300px;
-        height: 300px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 50%;
-    }
-
-    .recent-activity {
-        max-height: 400px;
-        overflow-y: auto;
-    }
-
-    .activity-item {
-        padding: 1rem;
-        border-bottom: 1px solid rgba(0,0,0,0.05);
-        transition: background 0.2s;
-    }
-
-    .activity-item:hover {
-        background: rgba(0, 191, 255, 0.05);
-    }
-
-    [data-bs-theme="dark"] .activity-item {
-        border-bottom-color: rgba(255,255,255,0.05);
-    }
-</style>
-
-<div class="container mt-4">
-    <div class="dashboard-header shadow-lg">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h1 class="fw-bold mb-1">Admin Control Center</h1>
-                <p class="opacity-75 mb-0">Manage your platform results and users efficiently.</p>
-            </div>
-            <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                <div class="d-flex justify-content-md-end gap-2">
-                    <a asp-action="Users" class="btn btn-light rounded-pill px-4">
-                        <i class="fa-solid fa-users me-2"></i>Users
-                    </a>
-                </div>
-            </div>
+<div class="container py-5 fade-up">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 pb-4 border-bottom border-light border-opacity-10">
+        <div>
+            <h2 class="display-6 brand-font fw-bold text-white mb-2">@Localizer["AdminPanel"]</h2>
+            <p class="text-secondary text-uppercase ls-1 small mb-0">@Localizer["PlatformAccessControl"]</p>
+        </div>
+        <div class="mt-4 mt-md-0 d-flex gap-3">
+            <a asp-action="Users" class="btn btn-outline-secondary px-4 py-2">
+                <i class="fa-solid fa-users me-2"></i> @Localizer["UserRegistry"]
+            </a>
         </div>
     </div>
 
-    <!-- Stats Row -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-4 col-lg-2">
-            <div class="admin-card p-4">
-                <div class="stat-icon bg-soft-blue">
-                    <i class="fa-solid fa-user-group"></i>
-                </div>
-                <h3 class="fw-bold mb-0">@Model.TotalUsers</h3>
-                <small class="text-muted">Total Users</small>
-            </div>
-        </div>
-        <div class="col-md-4 col-lg-2">
-            <div class="admin-card p-4">
-                <div class="stat-icon bg-soft-green">
-                    <i class="fa-solid fa-scissors"></i>
-                </div>
-                <h3 class="fw-bold mb-0">@Model.TotalHairstyles</h3>
-                <small class="text-muted">Hairstyles</small>
-            </div>
-        </div>
-        <div class="col-md-4 col-lg-2">
-            <div class="admin-card p-4">
-                <div class="stat-icon bg-soft-orange">
-                    <i class="fa-solid fa-beard"></i>
-                </div>
-                <h3 class="fw-bold mb-0">@Model.TotalFacialHairs</h3>
-                <small class="text-muted">Facial Hair</small>
-            </div>
-        </div>
-        <div class="col-md-4 col-lg-2">
-            <div class="admin-card p-4">
-                <div class="stat-icon bg-soft-purple">
-                    <i class="fa-solid fa-share-nodes"></i>
-                </div>
-                <h3 class="fw-bold mb-0">@Model.TotalPosts</h3>
-                <small class="text-muted">Total Posts</small>
-            </div>
-        </div>
-        <div class="col-md-4 col-lg-2">
-            <div class="admin-card p-4">
-                <div class="stat-icon bg-soft-red">
-                    <i class="fa-solid fa-envelope"></i>
-                </div>
-                <h3 class="fw-bold mb-0">@Model.TotalMessages</h3>
-                <small class="text-muted">Messages</small>
-            </div>
-        </div>
-        <div class="col-md-4 col-lg-2">
-            <div class="admin-card p-4">
-                <div class="stat-icon bg-soft-blue">
-                    <i class="fa-solid fa-camera"></i>
-                </div>
-                <h3 class="fw-bold mb-0">@Model.TotalPhotos</h3>
-                <small class="text-muted">User Photos</small>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-4">
-        <!-- Quick Management -->
-        <div class="col-lg-4">
-            <div class="admin-card p-4 h-100">
-                <h5 class="fw-bold mb-4">Management Hub</h5>
-                <div class="d-grid gap-3">
-                    <a asp-controller="Hairstyles" asp-action="Index" class="btn btn-outline-primary p-3 text-start d-flex align-items-center">
-                        <i class="fa-solid fa-scissors me-3 fs-4"></i>
-                        <div>
-                            <div class="fw-bold">Hairstyles</div>
-                            <small class="opacity-75">Create/Edit hairstyles</small>
-                        </div>
-                    </a>
-                    <a asp-controller="FacialHairs" asp-action="Index" class="btn btn-outline-primary p-3 text-start d-flex align-items-center">
-                        <i class="fa-solid fa-beard me-3 fs-4"></i>
-                        <div>
-                            <div class="fw-bold">Facial Hair</div>
-                            <small class="opacity-75">Update beard styles</small>
-                        </div>
-                    </a>
-                    <a asp-action="Users" class="btn btn-outline-primary p-3 text-start d-flex align-items-center">
-                        <i class="fa-solid fa-users-gear me-3 fs-4"></i>
-                        <div>
-                            <div class="fw-bold">User Access</div>
-                            <small class="opacity-75">Manage memberships</small>
-                        </div>
-                    </a>
-                    <a asp-action="Posts" class="btn btn-outline-primary p-3 text-start d-flex align-items-center">
-                        <i class="fa-solid fa-newspaper me-3 fs-4"></i>
-                        <div>
-                            <div class="fw-bold">Post Moderation</div>
-                            <small class="opacity-75">Control community feed</small>
-                        </div>
-                    </a>
-                </div>
+    <div class="row g-4 mb-5">
+        <!-- Quick Links -->
+        <div class="col-lg-3">
+            <h6 class="fw-bold mb-4 text-uppercase ls-1 text-white border-start border-3 px-3" style="border-color: var(--accent-color) !important;">
+                @Localizer["Management"]
+            </h6>
+            <div class="d-flex flex-column gap-2 mb-4">
+                <a asp-controller="Hairstyles" asp-action="Index" class="btn btn-ghost text-start py-3 border border-secondary border-opacity-25 w-100 rounded-0">
+                    <i class="fa-solid fa-scissors me-3" style="color: var(--accent-color);"></i> @Localizer["Hairstyles"]
+                </a>
+                <a asp-controller="FacialHairs" asp-action="Index" class="btn btn-ghost text-start py-3 border border-secondary border-opacity-25 w-100 rounded-0">
+                    <i class="fa-solid fa-beard me-3" style="color: var(--accent-color);"></i> @Localizer["FacialHair"]
+                </a>
+                <a asp-action="Users" class="btn btn-ghost text-start py-3 border border-secondary border-opacity-25 w-100 rounded-0">
+                    <i class="fa-solid fa-users-gear me-3" style="color: var(--accent-color);"></i> @Localizer["UserRoles"]
+                </a>
+                <a asp-action="Posts" class="btn btn-ghost text-start py-3 border border-secondary border-opacity-25 w-100 rounded-0">
+                    <i class="fa-solid fa-newspaper me-3" style="color: var(--accent-color);"></i> @Localizer["ActivePosts"]
+                </a>
             </div>
         </div>
 
-        <!-- Recent Activity -->
-        <div class="col-lg-8">
-            <div class="admin-card p-4 h-100">
-                <h5 class="fw-bold mb-4">Recent Users</h5>
-                <div class="recent-activity">
-                    @if (!Model.RecentUsers.Any())
-                    {
-                        <div class="text-center py-5 text-muted">
-                            <i class="fa-solid fa-info-circle mb-2 fs-1"></i>
-                            <p>No recent activity found.</p>
-                        </div>
-                    }
-                    else
-                    {
+        <!-- Dashboard Stats -->
+        <div class="col-lg-9">
+            <h6 class="fw-bold mb-4 text-uppercase ls-1 text-white border-start border-3 px-3" style="border-color: var(--accent-color) !important;">
+                @Localizer["PlatformStatistics"]
+            </h6>
+            
+            <div class="row g-3 mb-5">
+                <div class="col-md-4 col-sm-6">
+                    <div class="bg-surface border border-secondary border-opacity-25 p-4 rounded-0 position-relative h-100">
+                        <small class="text-secondary text-uppercase ls-1 d-block mb-2" style="font-size: 0.65rem;">@Localizer["TotalUsers"]</small>
+                        <h3 class="display-5 fw-bold text-white mb-0">@Model.TotalUsers</h3>
+                        <i class="fa-solid fa-user-group position-absolute opacity-10 fs-1" style="bottom: 1rem; right: 1.5rem; color: var(--accent-color);"></i>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <div class="bg-surface border border-secondary border-opacity-25 p-4 rounded-0 position-relative h-100">
+                        <small class="text-secondary text-uppercase ls-1 d-block mb-2" style="font-size: 0.65rem;">@Localizer["TotalHairstyles"]</small>
+                        <h3 class="display-5 fw-bold text-white mb-0">@Model.TotalHairstyles</h3>
+                        <i class="fa-solid fa-scissors position-absolute opacity-10 fs-1" style="bottom: 1rem; right: 1.5rem; color: var(--accent-color);"></i>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <div class="bg-surface border border-secondary border-opacity-25 p-4 rounded-0 position-relative h-100">
+                        <small class="text-secondary text-uppercase ls-1 d-block mb-2" style="font-size: 0.65rem;">@Localizer["FacialHair"]</small>
+                        <h3 class="display-5 fw-bold text-white mb-0">@Model.TotalFacialHairs</h3>
+                        <i class="fa-solid fa-beard position-absolute opacity-10 fs-1" style="bottom: 1rem; right: 1.5rem; color: var(--accent-color);"></i>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <div class="bg-surface border border-secondary border-opacity-25 p-4 rounded-0 position-relative h-100">
+                        <small class="text-secondary text-uppercase ls-1 d-block mb-2" style="font-size: 0.65rem;">@Localizer["CommunityPosts"]</small>
+                        <h3 class="display-5 fw-bold text-white mb-0">@Model.TotalPosts</h3>
+                        <i class="fa-solid fa-share-nodes position-absolute opacity-10 fs-1" style="bottom: 1rem; right: 1.5rem; color: var(--accent-color);"></i>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <div class="bg-surface border border-secondary border-opacity-25 p-4 rounded-0 position-relative h-100">
+                        <small class="text-secondary text-uppercase ls-1 d-block mb-2" style="font-size: 0.65rem;">@Localizer["DirectMessaging"]</small>
+                        <h3 class="display-5 fw-bold text-white mb-0">@Model.TotalMessages</h3>
+                        <i class="fa-solid fa-envelope position-absolute opacity-10 fs-1" style="bottom: 1rem; right: 1.5rem; color: var(--accent-color);"></i>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <div class="bg-surface border border-secondary border-opacity-25 p-4 rounded-0 position-relative h-100">
+                        <small class="text-secondary text-uppercase ls-1 d-block mb-2" style="font-size: 0.65rem;">@Localizer["GalleryPhotos"]</small>
+                        <h3 class="display-5 fw-bold text-white mb-0">@Model.TotalPhotos</h3>
+                        <i class="fa-solid fa-camera position-absolute opacity-10 fs-1" style="bottom: 1rem; right: 1.5rem; color: var(--accent-color);"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Log -->
+            <h6 class="fw-bold mb-4 text-uppercase ls-1 text-white border-start border-3 px-3" style="border-color: var(--accent-color) !important;">
+                @Localizer["RecentUsers"]
+            </h6>
+            
+            <div class="bg-surface border border-secondary border-opacity-25 rounded-0">
+                @if (!Model.RecentUsers.Any())
+                {
+                    <div class="p-5 text-center text-secondary">
+                        <i class="fa-solid fa-ghost fs-1 mb-3 opacity-25"></i>
+                        <p class="mb-0 text-uppercase ls-1 small">@Localizer["NoRecentUsers"]</p>
+                    </div>
+                }
+                else
+                {
+                    <ul class="list-group list-group-flush rounded-0 bg-transparent">
                         @foreach (var user in Model.RecentUsers)
                         {
-                            <div class="activity-item d-flex align-items-center">
-                                <div class="avatar-soft bg-soft-blue me-3" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fa-solid fa-user"></i>
+                            <li class="list-group-item bg-transparent text-white border-secondary border-opacity-25 p-4 d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="d-flex align-items-center justify-content-center bg-black border border-secondary border-opacity-50" style="width: 40px; height: 40px; border-radius: 5px;">
+                                        <i class="fa-solid fa-user text-secondary"></i>
+                                    </div>
+                                    <div>
+                                        <p class="mb-0 fw-bold">@user.Email</p>
+                                        <small class="text-secondary text-uppercase ls-1" style="font-size: 0.65rem;">New user joined</small>
+                                    </div>
                                 </div>
                                 <div>
-                                    <div class="fw-bold">@user.Email</div>
-                                    <small class="text-muted">New user joined</small>
+                                    <a asp-action="Users" class="btn btn-ghost px-3 py-1 text-uppercase ls-1 small" style="font-size: 0.7rem;">View</a>
                                 </div>
-                                <div class="ms-auto">
-                                    <a asp-action="Users" class="btn btn-sm btn-light border">View</a>
-                                </div>
-                            </div>
+                            </li>
                         }
-                    }
-                </div>
+                    </ul>
+                }
             </div>
         </div>
     </div>

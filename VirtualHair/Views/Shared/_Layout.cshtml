@@ -20,13 +20,23 @@
 
     var requestCulture = Context.Features.Get<Microsoft.AspNetCore.Localization.IRequestCultureFeature>();
     var currentCulture = requestCulture?.RequestCulture.UICulture.TwoLetterISOLanguageName ?? "en";
+    bool isEmbed = Context.Request.Query.ContainsKey("embed");
 }
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
+<html lang="@currentCulture" data-bs-theme="dark">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - VirtualHair</title>
+    <title>@ViewData["Title"] - VIRTUALHAIR</title>
+    
+    <!-- Theme Restore Script (Prevents FOUC) -->
+    <script>
+        (function() {
+            var theme = localStorage.getItem('vh-theme') || 'dark';
+            document.documentElement.setAttribute('data-bs-theme', theme);
+        })();
+    </script>
+
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -35,355 +45,241 @@
     <!-- Cropper.js -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+    
     <!-- Site CSS -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     @RenderSection("Styles", required: false)
 </head>
 
-<body class="bg-body text-body" style="position: relative; z-index: 0;">
-    <!-- Loader -->
-    <div class="page-loader" id="pageLoader"></div>
-
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg bg-body shadow-sm fixed-top">
-        <div class="container-fluid d-flex justify-content-between align-items-center position-relative">
+<body class="@(isEmbed ? "bg-base" : "")">
+    @if (!isEmbed)
+    {
+    <!-- Top Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-editorial">
+        <div class="container-fluid px-4 px-lg-5">
             <!-- Left: Logo -->
-            <a class="navbar-brand fw-bold fs-3 ms-2 logo-text logo-animate" asp-controller="Home" asp-action="Index" style="z-index: 5;">
-                VirtualHair
+            <a class="navbar-brand m-0" asp-controller="Home" asp-action="Index">
+                VIRTUAL<i>HAIR</i>
             </a>
 
-            <!-- Center: Home Button -->
-            <div class="position-absolute top-50 start-50 translate-middle d-none d-md-flex" style="z-index: 5;">
-                <style>
-                    .navbar-home-btn {
-                        background: transparent;
-                        color: var(--bs-body-color) !important;
-                        border: 1px solid transparent;
-                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                    }
-                    .navbar-home-btn:hover {
-                        background: rgba(99, 102, 241, 0.08); /* Very light background on hover */
-                        color: #6366f1 !important; /* Brand color on hover */
-                        transform: translateY(-2px);
-                    }
-                    [data-bs-theme="dark"] .navbar-home-btn {
-                        color: #eef2ff !important;
-                    }
-                    [data-bs-theme="dark"] .navbar-home-btn:hover {
-                        background: rgba(168, 85, 247, 0.15);
-                    }
-
-                    .theme-toggle-btn {
-                        border: 1px solid var(--bs-border-color);
-                        background: rgba(120, 120, 120, 0.05);
-                        backdrop-filter: blur(10px);
-                        color: var(--bs-body-color);
-                        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                        overflow: hidden;
-                        position: relative;
-                        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-                    }
-
-                    .theme-toggle-btn:hover {
-                        background: rgba(120, 120, 120, 0.1);
-                        transform: translateY(-3px) scale(1.02);
-                        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-                    }
-                    
-                    .theme-toggle-btn:active {
-                        transform: translateY(0) scale(0.95);
-                    }
-
-                    .theme-toggle-btn i {
-                         transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-                         font-size: 1.1rem;
-                    }
-                    .theme-toggle-btn:hover i {
-                         transform: rotate(360deg) scale(1.2);
-                    }
-
-                    [data-bs-theme="dark"] .theme-toggle-btn {
-                        background: rgba(255,255,255,0.05);
-                        border-color: rgba(255,255,255,0.1);
-                    }
-                    [data-bs-theme="dark"] .theme-toggle-btn:hover {
-                        background: rgba(255,255,255,0.1);
-                        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-                    }
-
-                    .lang-toggle-btn {
-                        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
-                        color: #6366f1;
-                        border: 1px solid rgba(99, 102, 241, 0.2);
-                        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                        font-weight: 700;
-                    }
-
-                    [data-bs-theme="dark"] .lang-toggle-btn {
-                        color: #a855f7;
-                        border-color: rgba(168, 85, 247, 0.3);
-                        background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
-                    }
-
-                    .lang-toggle-btn:hover {
-                        transform: translateY(-3px) scale(1.05);
-                        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.15);
-                        filter: brightness(1.1);
-                    }
-                    .lang-toggle-btn:active {
-                        transform: translateY(0) scale(0.95);
-                    }
-
-                    /* Smooth Global Theme Transition */
-                    html.theme-transition * {
-                        transition: background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1), 
-                                    color 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-                                    border-color 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-                                    box-shadow 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-                    }
-                </style>
-                <a asp-controller="Home" asp-action="Index" class="nav-link px-4 py-2 rounded-pill fw-bold navbar-home-btn">
-                    <i class="fa-solid fa-house me-2"></i><span data-localize="Home">@Localizer["Home"]</span>
+            <!-- Center: Links (Desktop) -->
+            <div class="d-none d-lg-flex flex-row align-items-center gap-4 mx-auto">
+                <a asp-controller="Home" asp-action="Index" class="nav-link-editorial text-decoration-none">
+                    <span data-localize="Home">@Localizer["Home"]</span>
                 </a>
+                @if (isAuthenticated)
+                {
+                    <a asp-controller="UserHairstyles" asp-action="Index" class="nav-link-editorial text-decoration-none">
+                        <span data-localize="MyGallery">@Localizer["MyGallery"]</span>
+                    </a>
+                    <a asp-controller="Timeline" asp-action="Index" class="nav-link-editorial text-decoration-none">
+                        <span data-localize="Feed">HUB</span>
+                    </a>
+                    @if (isAdmin)
+                    {
+                        <a asp-controller="Admin" asp-action="Index" class="nav-link-editorial text-decoration-none" style="color: #d4af37;">
+                            <i class="fa-solid fa-crown me-1"></i> Dashboard
+                        </a>
+                    }
+                }
             </div>
 
-            <!-- Right: Menu -->
-            <button class="btn btn-outline-secondary me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu" style="z-index: 5;">
-                <i class="fa-solid fa-bars"></i>
-            </button>
+            <!-- Right: Actions & Menu -->
+            <div class="d-flex align-items-center gap-3">
+                <!-- Theme Switcher -->
+                <button id="themeToggle" class="btn btn-ghost px-3 py-1 me-2" style="font-size: 0.9rem; border-color: rgba(255,255,255,0.1);" title="Toggle Theme">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+
+                <!-- Culture Switcher -->
+                <form asp-controller="Culture" asp-action="SetLanguage" method="post" id="cultureForm" class="d-none d-md-block m-0">
+                    <input type="hidden" name="returnUrl" value="@($"{Context.Request.Path}{Context.Request.QueryString}")" />
+                    <input type="hidden" name="culture" value="@(currentCulture == "en" ? "bg" : "en")" />
+                    <button type="submit" class="btn btn-ghost px-3 py-1" style="font-size: 0.7rem; border-color: rgba(255,255,255,0.1);" title="@Localizer[currentCulture == "en" ? "TranslateToBG" : "TranslateToEN"]">
+                        @(currentCulture == "en" ? "BG" : "EN")
+                    </button>
+                </form>
+
+                <button class="btn btn-ghost px-3 py-2 border-0 shadow-none d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu">
+                    <i class="fa-solid fa-bars fs-5"></i>
+                </button>
+                
+                @if (isAuthenticated)
+                {
+                    <a asp-controller="Profile" asp-action="Index" class="d-none d-lg-inline-block rounded-circle overflow-hidden ms-2" style="width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.1);">
+                        <img src="/Profile/Photo" alt="Profile" class="w-100 h-100 object-fit-cover" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=@(Uri.EscapeDataString(User?.Identity?.Name ?? "User"))&background=000&color=d4af37';" />
+                    </a>
+                }
+                else
+                {
+                    <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-ghost py-2 px-4 d-none d-lg-inline-block">
+                        @Localizer["Login"]
+                    </a>
+                }
+            </div>
         </div>
     </nav>
 
-    <!-- Offcanvas Menu -->
-    <div class="offcanvas offcanvas-end custom-offcanvas" tabindex="-1" id="offcanvasMenu">
-        <div class="offcanvas-header border-bottom d-flex justify-content-between align-items-center">
-            @if (isAuthenticated)
-            {
-                <a asp-controller="Profile" asp-action="Index"
-                   class="d-inline-flex align-items-center text-decoration-none gap-3"
-                   aria-label="Profile"
-                   title="Profile">
-                    <img src="/Profile/Photo"
-                         alt="Profile"
-                         class="profile-avatar"
-                         onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=@(Uri.EscapeDataString(User?.Identity?.Name ?? "User"))&size=88';" />
-                    <span class="fw-bold text-body">@User.Identity?.Name</span>
-                </a>
-            }
-            else
-            {
-                <span></span>
-            }
-
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    <!-- Offcanvas Mobile/Sidebar Menu -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasMenu">
+        <div class="offcanvas-header pb-0 border-0 pt-4 px-4">
+            <span class="navbar-brand text-white m-0" style="font-size: 1.5rem; font-style: italic; color: var(--text-primary) !important;">
+                VIRTUAL<i style="color: var(--accent-color); font-style: normal;">HAIR</i>
+            </span>
+            <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas"></button>
         </div>
 
-        <div class="offcanvas-body">
-            <ul class="nav flex-column offcanvas-animated">
-
-                <!-- Merged Home/Try Now link -->
-                <li class="nav-item" style="--order:2">
-                    <a asp-controller="Home" asp-action="Index" class="nav-link">
-                        <i class="fa-solid fa-house me-2"></i>@Localizer["Home"]
+        <div class="offcanvas-body pt-5 px-4 d-flex flex-column">
+            <ul class="nav flex-column gap-2 mb-auto">
+                <li class="nav-item">
+                    <a asp-controller="Home" asp-action="Index" class="nav-link-editorial d-block py-3 border-bottom text-decoration-none">
+                        <span data-localize="Home">@Localizer["Home"]</span>
                     </a>
                 </li>
 
                 @if (isAuthenticated)
                 {
-
-                    <li class="nav-item" style="--order:5">
-                        <a asp-controller="UserHairstyles" asp-action="Index" class="nav-link">
-                            <i class="fa-solid fa-images me-2"></i>@Localizer["MyGallery"]
+                    <li class="nav-item">
+                        <a asp-controller="UserHairstyles" asp-action="Index" class="nav-link-editorial d-block py-3 border-bottom text-decoration-none" style="color: var(--accent-color);">
+                            <span data-localize="MyGallery">@Localizer["MyGallery"]</span>
                         </a>
                     </li>       
-
-                    <li class="nav-item" style="--order:3">
-                        <a asp-controller="Hairstyles" asp-action="Index" class="nav-link">
-                            <span data-localize="Hairstyles">@Localizer["Hairstyles"]</span>
+                    <li class="nav-item mt-4 mb-2">
+                        <span class="text-secondary small fw-bold text-uppercase letter-spacing-2">@Localizer["Community"]</span>
+                    </li>
+                    <li class="nav-item">
+                        <a asp-controller="Feed" asp-action="Index" class="nav-link-editorial d-block py-3 border-bottom text-decoration-none">
+                            <span data-localize="Feed">@Localizer["Feed"]</span>
                         </a>
                     </li>
-
-                    <li class="nav-item" style="--order:4">
-                        <a asp-controller="FacialHairs" asp-action="Index" class="nav-link">
-                            <span data-localize="FacialHair">@Localizer["FacialHair"]</span>
-                        </a>
-                    </li>
-
-
-                    <!-- ⭐ CLEAN COMMUNITY SECTION (no dropdown, stable) ⭐ -->
-                    <li class="nav-item mt-3" style="--order:7">
-                        <span class="text-uppercase text-secondary fw-bold small ms-2">@Localizer["Community"]</span>
-                    </li>
-
-                    <li class="nav-item" style="--order:8">
-                        <a asp-controller="Feed" asp-action="Index" class="nav-link">
-                            <i class="fa-solid fa-newspaper me-2"></i><span data-localize="Feed">@Localizer["Feed"]</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-item" style="--order:9">
-                        <a asp-controller="Messages" asp-action="Index" class="nav-link d-flex align-items-center justify-content-between">
-                            <div><i class="fa-solid fa-envelope me-2"></i><span data-localize="Messages">@Localizer["Messages"]</span></div>
-                            @if (unreadMessagesCount > 0)
-                            {
-                                <span class="badge bg-danger rounded-pill">@unreadMessagesCount</span>
-                            }
-                        </a>
-                    </li>
-
-                    <li class="nav-item" style="--order:10">
-                        <a asp-controller="Friends" asp-action="Index" class="nav-link">
-                            <i class="fa-solid fa-user-group me-2"></i><span data-localize="Friends">@Localizer["Friends"]</span>
-                        </a>
-                    </li>
-
                     @if (isAdmin)
                     {
-                        <li class="nav-item" style="--order:11">
-                            <a asp-controller="Admin" asp-action="Index" class="nav-link text-warning">
-                                <i class="fa-solid fa-toolbox me-2"></i>@Localizer["AdminPanel"]
+                        <li class="nav-item mt-4 mb-2">
+                            <span class="text-secondary small fw-bold text-uppercase letter-spacing-2" style="color: #d4af37 !important;">@Localizer["AdminPanel"]</span>
+                        </li>
+                        <li class="nav-item">
+                            <a asp-controller="Admin" asp-action="Index" class="nav-link-editorial d-block py-3 border-bottom text-decoration-none" style="color: #d4af37;">
+                                <i class="fa-solid fa-crown me-2"></i> @Localizer["Dashboard"]
                             </a>
                         </li>
                     }
                 }
+            </ul>
 
-                <hr class="text-secondary" />
-
-                <!-- Theme & Language Toggle -->
-                <li class="nav-item" style="--order:12">
-                    <div class="row g-2 align-items-center">
-                        <div class="col-8">
-                            <button id="themeToggleBtn" class="btn w-100 d-flex justify-content-center align-items-center gap-2 rounded-pill theme-toggle-btn py-2">
-                                <i id="themeIcon" class="fa-solid fa-sun text-warning"></i>
-                                <span id="themeLabel" class="small fw-bold">Light</span>
-                            </button>
-                        </div>
-                        <div class="col-4">
-                            <form asp-controller="Culture" asp-action="SetLanguage" method="post" id="cultureForm">
-                                <input type="hidden" name="returnUrl" value="@($"{Context.Request.Path}{Context.Request.QueryString}")" />
-                                <input type="hidden" name="culture" value="@(currentCulture == "en" ? "bg" : "en")" />
-                                <button type="submit" class="btn w-100 d-flex justify-content-center align-items-center gap-2 rounded-pill lang-toggle-btn py-2">
-                                    <i class="fa-solid fa-globe"></i>
-                                    <span class="small fw-bold">@(currentCulture == "en" ? "BG" : "EN")</span>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </li>
-
-                <hr class="text-secondary" />
-
+            <div class="mt-4 pt-4 border-top" style="border-color: var(--border-subtle) !important;">
                 @if (isAuthenticated)
                 {
-                    <li class="nav-item" style="--order:13">
-                        <form asp-area="Identity" asp-page="/Account/Logout" method="post">
-                            <button type="submit" class="btn btn-danger w-100 mt-2">@Localizer["Logout"]</button>
-                        </form>
-                    </li>
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <img src="/Profile/Photo" alt="Profile" class="rounded-0 border border-secondary border-opacity-25" style="width: 50px; height: 50px; object-fit: cover;" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=@(Uri.EscapeDataString(User?.Identity?.Name ?? "User"))&background=000&color=d4af37';" />
+                        <div>
+                            <div class="fw-bold fs-6 m-0" style="color: var(--text-primary);">@User.Identity?.Name</div>
+                            <a asp-controller="Profile" asp-action="Index" class="small text-muted text-decoration-none">@Localizer["ViewProfile"]</a>
+                        </div>
+                    </div>
+                    <form asp-area="Identity" asp-page="/Account/Logout" method="post" class="m-0">
+                        <button type="submit" class="btn btn-ghost w-100 py-3 text-secondary border-0 text-start px-0" style="color: var(--text-secondary);">
+                            @Localizer["Logout"] <i class="fa-solid fa-arrow-right-long ms-2"></i>
+                        </button>
+                    </form>
                 }
                 else
                 {
-                    <li class="nav-item" style="--order:14">
-                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-secondary w-100 mt-2">@Localizer["Login"]</a>
-                    </li>
-                    <li class="nav-item" style="--order:15">
-                        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary w-100 mt-2">@Localizer["Register"]</a>
-                    </li>
+                    <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-luxury w-100 py-3 mb-2">@Localizer["Login"]</a>
+                    <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-ghost w-100 py-3">@Localizer["Register"]</a>
                 }
-            </ul>
+                
+                <div class="d-flex gap-2 mt-4">
+                    <button id="mobileThemeToggle" class="btn btn-ghost flex-grow-1 border border-secondary border-opacity-25 py-2 text-uppercase ls-1" style="font-size: 0.7rem;">
+                        <i class="fa-solid fa-moon me-2"></i> @Localizer["DarkMode"]
+                    </button>
+                    <form asp-controller="Culture" asp-action="SetLanguage" method="post" id="mobileCultureForm" class="flex-grow-1 m-0">
+                        <input type="hidden" name="returnUrl" value="@($"{Context.Request.Path}{Context.Request.QueryString}")" />
+                        <input type="hidden" name="culture" value="@(currentCulture == "en" ? "bg" : "en")" />
+                        <button type="submit" class="btn btn-ghost w-100 py-2 border border-secondary border-opacity-25 text-uppercase ls-1" style="font-size: 0.7rem;">
+                            @(currentCulture == "en" ? "BG" : "EN")
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
+    }
 
-    <div class="container mt-5 pt-5">
-        <main role="main">@RenderBody()</main>
-    </div>
+    <!-- Main Content -->
+    <main role="main">
+        @RenderBody()
+    </main>
 
-    <footer class="text-center py-4 border-top mt-auto">
-        <p class="text-secondary mb-0">@(Localizer["FooterInfo", DateTime.Now.Year])</p>
+    @if (!isEmbed)
+    {
+    <!-- Footer -->
+    <footer class="py-5 mt-auto text-center">
+        <div class="container-fluid">
+            <hr class="mb-4" style="border-color: var(--border-subtle); max-width: 400px; margin: 0 auto;" />
+            <h4 class="brand-font fs-3 text-white mb-2" style="font-style: italic;">VIRTUAL<i style="color: var(--accent-color); font-style: normal;">HAIR</i></h4>
+            <p class="mb-0 fw-medium letter-spacing-1 text-uppercase" style="color: var(--text-muted); font-size: 0.65rem;">
+                &copy; @DateTime.Now.Year. THE FUTURE OF STYLING.
+            </p>
+        </div>
     </footer>
+    }
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        const html = document.documentElement;
-        const themeBtn = document.getElementById('themeToggleBtn');
-        const themeIcon = document.getElementById('themeIcon');
-        const themeLabel = document.getElementById('themeLabel');
-
-        if (localStorage.getItem('theme') === 'dark') {
-            html.setAttribute('data-bs-theme', 'dark');
-            themeIcon.classList.replace('fa-sun', 'fa-moon');
-            themeLabel.textContent = 'Dark Mode';
-        }
-
-        function updateThemeElements(theme) {
-            html.setAttribute('data-bs-theme', theme);
-            localStorage.setItem('theme', theme);
-            if (theme === 'dark') {
-                themeIcon.classList.replace('fa-sun', 'fa-moon');
-                themeLabel.textContent = 'Dark Mode';
-            } else {
-                themeIcon.classList.replace('fa-moon', 'fa-sun');
-                themeLabel.textContent = 'Light Mode';
-            }
-        }
-
-        themeBtn.addEventListener('click', () => {
-            html.classList.add('theme-transition');
-            const isDark = html.getAttribute('data-bs-theme') === 'dark';
-            const nextTheme = isDark ? 'light' : 'dark';
-            
-            updateThemeElements(nextTheme);
-
-            setTimeout(() => {
-                html.classList.remove('theme-transition');
-            }, 850);
-        });
-
-        // Smooth Language Switch
-        document.getElementById('cultureForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const form = this;
-            const targetCulture = form.querySelector('input[name="culture"]').value;
-            
-            // 1. Fetch translations for the next language
-            try {
-                const res = await fetch(`/Culture/GetTranslations?culture=${targetCulture}`);
-                const translations = await res.json();
-                
-                // 2. Animate out current labels
-                const locElements = document.querySelectorAll('[data-localize]');
-                locElements.forEach(el => {
-                    el.style.opacity = '0';
-                    el.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-                    el.style.transform = 'translateY(8px) scale(0.95)';
-                    el.style.filter = 'blur(2px)';
+        // Smooth Language Switch Animation
+        const cultureForm = document.getElementById('cultureForm');
+        const mCultureForm = document.getElementById('mobileCultureForm');
+        
+        const attachTransition = (form) => {
+            if (form) {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    document.body.style.transition = 'opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1)';
+                    document.body.style.opacity = '0';
+                    setTimeout(() => form.submit(), 500);
                 });
-                
-                // 3. Swap text and animate in
-                setTimeout(() => {
-                    locElements.forEach(el => {
-                        const key = el.getAttribute('data-localize');
-                        if (translations[key]) el.textContent = translations[key];
-                        el.style.opacity = '1';
-                        el.style.transform = 'translateY(0) scale(1)';
-                        el.style.filter = 'blur(0)';
-                    });
-                    
-                    // 4. Subtle body fade out for the final redirect
-                    setTimeout(() => {
-                        document.body.style.transition = 'opacity 0.5s ease';
-                        document.body.style.opacity = '0';
-                        setTimeout(() => form.submit(), 300);
-                    }, 600);
-                }, 400);
-
-            } catch (err) {
-                // Fallback to normal submit if something fails
-                form.submit();
             }
+        };
+        
+        attachTransition(cultureForm);
+        attachTransition(mCultureForm);
+
+        // Theme Toggle Logic
+        const themeToggle = document.getElementById('themeToggle');
+        const mobileThemeToggle = document.getElementById('mobileThemeToggle');
+        const htmlEl = document.documentElement;
+
+        function setTheme(theme) {
+            htmlEl.setAttribute('data-bs-theme', theme);
+            localStorage.setItem('vh-theme', theme);
+            const isDark = theme === 'dark';
+            const iconClass = isDark ? 'fa-sun' : 'fa-moon';
+            
+            if(themeToggle) {
+                themeToggle.innerHTML = `<i class="fa-solid ${iconClass}"></i>`;
+            }
+            if(mobileThemeToggle) {
+                const text = isDark ? '@Localizer["LightMode"]' : '@Localizer["DarkMode"]';
+                mobileThemeToggle.innerHTML = `<i class="fa-solid ${iconClass} me-2"></i> ${text}`;
+            }
+        }
+
+        const savedTheme = localStorage.getItem('vh-theme') || 'dark';
+        setTheme(savedTheme);
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'vh-theme') setTheme(e.newValue);
         });
+
+        function toggleThemeAction() {
+            const currentTheme = htmlEl.getAttribute('data-bs-theme');
+            setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        }
+
+        if(themeToggle) themeToggle.addEventListener('click', toggleThemeAction);
+        if(mobileThemeToggle) mobileThemeToggle.addEventListener('click', toggleThemeAction);
     </script>
 
     @RenderSection("Scripts", required: false)

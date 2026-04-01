@@ -40,6 +40,16 @@ namespace VirtualHair.Controllers
             var currentUser = await _userManager.GetUserAsync(User);
             if (currentUser == null) return Unauthorized();
 
+            // Friendship check
+            var friendship = await _context.Friendships
+                .FirstOrDefaultAsync(f => 
+                    (f.RequesterId == currentUser.Id && f.AddresseeId == userId) || 
+                    (f.RequesterId == userId && f.AddresseeId == currentUser.Id));
+
+            bool isFriend = friendship?.IsAccepted ?? false;
+            bool isPending = friendship != null && !friendship.IsAccepted;
+            bool amRequester = friendship?.RequesterId == currentUser.Id;
+
             // Mark unread incoming messages from this user as read
             var unreadMessages = await _context.Messages
                 .Where(m => m.ReceiverId == currentUser.Id && m.SenderId == userId && !m.IsRead)
@@ -47,10 +57,7 @@ namespace VirtualHair.Controllers
 
             if (unreadMessages.Any())
             {
-                foreach (var msg in unreadMessages)
-                {
-                    msg.IsRead = true;
-                }
+                foreach (var msg in unreadMessages) msg.IsRead = true;
                 await _context.SaveChangesAsync();
             }
 
@@ -68,7 +75,14 @@ namespace VirtualHair.Controllers
                 .ToListAsync();
 
             var otherUser = await _userManager.FindByIdAsync(userId);
-            return Json(new { messages, otherUser = otherUser?.UserName });
+            return Json(new { 
+                messages, 
+                otherUser = otherUser?.UserName,
+                isFriend,
+                isPending,
+                amRequester,
+                otherUserId = userId
+            });
         }
 
         public class SendMessageRequest
@@ -84,6 +98,36 @@ namespace VirtualHair.Controllers
             if (currentUser == null) return Unauthorized();
 
             if (string.IsNullOrWhiteSpace(req.Content)) return BadRequest();
+
+            // Logic: Can only send if friends or if it's the VERY FIRST message (invitation)
+            var friendship = await _context.Friendships
+                .FirstOrDefaultAsync(f => 
+                    (f.RequesterId == currentUser.Id && f.AddresseeId == req.ReceiverId) || 
+                    (f.RequesterId == req.ReceiverId && f.AddresseeId == currentUser.Id));
+
+            if (friendship == null)
+            {
+                // NO previous contact. This is the INVITATION message.
+                // Create pending friendship
+                _context.Friendships.Add(new Friendship
+                {
+                    RequesterId = currentUser.Id,
+                    AddresseeId = req.ReceiverId,
+                    IsAccepted = false
+                });
+            }
+            else if (!friendship.IsAccepted)
+            {
+                // Contact exists but not accepted.
+                // If I am the one who sent the request, I can't send more messages.
+                // Exception: if the other person hasn't responded yet, we only allow 1 message.
+                var existingMessagesCount = await _context.Messages
+                    .CountAsync(m => m.SenderId == currentUser.Id && m.ReceiverId == req.ReceiverId);
+
+                if (existingMessagesCount >= 1) {
+                    return Json(new { success = false, message = "You must wait for the other user to accept your invitation before sending more messages." });
+                }
+            }
 
             var msg = new Message
             {

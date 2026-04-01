@@ -1,0 +1,409 @@
+@model IEnumerable<VirtualHair.Models.Post>
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Community"];
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+}
+
+<div class="container-fluid p-0 m-0" style="height: calc(100vh - 75px); overflow: hidden; margin-top: -1.5rem;">
+    <div class="row g-0 h-100">
+        
+        <!-- LEFT SIDEBAR: FILTERS & ACTIONS -->
+        <div class="col-lg-2 d-none d-lg-block border-end border-secondary border-opacity-10 p-4 h-100 bg-surface">
+            <h5 class="fw-bold brand-font mb-4 ls-1" style="color: var(--text-primary);"><i class="fa-solid fa-globe text-accent me-2"></i>HUB</h5>
+            
+            <a asp-action="Create" class="btn btn-luxury w-100 py-3 rounded-0 fw-bold d-flex align-items-center justify-content-center gap-2 mb-5 shadow-sm">
+                <i class="fa-solid fa-plus"></i> @Localizer["NewPost"]
+            </a>
+
+            <h6 class="text-uppercase ls-1 small mb-3 text-muted">HUB Filters</h6>
+            <div class="d-flex flex-column gap-2 mb-5">
+                <a asp-action="Index" class="text-decoration-none text-muted small fw-bold @(!(ViewBag.IsMyPosts == true) ? "text-accent" : "")"><i class="fa-solid fa-globe me-2"></i> Global Hub</a>
+                <a asp-action="MyPosts" class="text-decoration-none text-muted small fw-bold @((ViewBag.IsMyPosts == true) ? "text-accent" : "")"><i class="fa-solid fa-user me-2"></i> My Transmissions</a>
+                <a href="#" class="text-decoration-none text-muted small fw-bold"><i class="fa-solid fa-fire me-2"></i> Trending Looks</a>
+            </div>
+            
+            <h6 class="text-uppercase ls-1 small mb-3 text-muted">Style Tags</h6>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="badge border border-secondary border-opacity-25 rounded-0 text-muted px-2 py-1">#FadeCut</span>
+                <span class="badge border border-secondary border-opacity-25 rounded-0 text-muted px-2 py-1">#Buzz</span>
+                <span class="badge border border-secondary border-opacity-25 rounded-0 text-muted px-2 py-1">#CleanShave</span>
+                <span class="badge border border-secondary border-opacity-25 rounded-0 text-muted px-2 py-1">#LongHair</span>
+            </div>
+        </div>
+
+        <!-- CENTER: MAIN FEED -->
+        <div class="col-lg-7 col-md-12 h-100 custom-scrollbar position-relative" style="overflow-y: auto; background: var(--bg-base);">
+            <div class="container py-5 px-3 px-md-5 mx-auto" style="max-width: 800px;">
+                @if (!Model.Any())
+                {
+                    <div class="text-center py-5 my-5 border border-secondary border-opacity-10 bg-surface shadow-sm">
+                        <i class="fa-solid fa-images fa-3x text-muted mb-4 opacity-50"></i>
+                        <h4 class="fw-bold brand-font mb-2 text-white">@Localizer["FeedEmpty"]</h4>
+                        <p class="text-secondary small ls-1 text-uppercase mb-4">@Localizer["FeedEmptyDesc"]</p>
+                        <a asp-action="Create" class="btn btn-ghost px-5 py-2">@Localizer["CreatePost"]</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="feed-stacked-layout">
+                        @foreach (var post in Model)
+                        {
+                            var userLike = post.Likes.FirstOrDefault(l => l.UserId == currentUserId);
+                            bool hasLiked = userLike != null && !userLike.IsDislike;
+                            bool hasDisliked = userLike != null && userLike.IsDislike;
+                            int totalLikes = post.Likes.Count(l => !l.IsDislike);
+                            int totalDislikes = post.Likes.Count(l => l.IsDislike);
+
+                            var userRatingObj = post.Ratings?.FirstOrDefault(r => r.UserId == currentUserId);
+                            int userRating = userRatingObj?.Score ?? 0;
+                            double avgRate = post.Ratings != null && post.Ratings.Any() ? post.Ratings.Average(r => r.Score) : 0;
+                            int totalRates = post.Ratings?.Count ?? 0;
+
+                            <div class="feed-post-card bg-surface border border-secondary border-opacity-10 mb-5 fade-up shadow-sm">
+                                <!-- User Header -->
+                                <div class="p-3 d-flex align-items-center justify-content-between border-bottom border-secondary border-opacity-10">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img src="/Profile/GetPhoto?userId=@post.UserId" onerror="this.src='https://ui-avatars.com/api/?name=@(ViewBag.UserNames.ContainsKey(post.UserId) ? ViewBag.UserNames[post.UserId] : post.UserId)&background=000&color=d4af37'" class="rounded-circle border border-secondary border-opacity-25" style="width: 45px; height: 45px; object-fit: cover;">
+                                        <div>
+                                            <h6 class="mb-0 fw-bold ls-1 text-white" style="font-size: 0.9rem;">@(ViewBag.UserNames.ContainsKey(post.UserId) ? ViewBag.UserNames[post.UserId] : post.UserId)</h6>
+                                            <small class="text-muted d-block text-uppercase ls-1" style="font-size: 0.65rem;">@post.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy - HH:mm")</small>
+                                        </div>
+                                    </div>
+                                    <div class="text-end text-muted small">
+                                        @if (post.UserId == currentUserId)
+                                        {
+                                            <div class="dropdown">
+                                                <i class="fa-solid fa-ellipsis-vertical px-2 cursor-pointer" data-bs-toggle="dropdown"></i>
+                                                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end bg-elevated border border-secondary border-opacity-25 shadow small">
+                                                    <li><a class="dropdown-item text-uppercase ls-1 py-2" asp-action="Edit" asp-route-id="@post.Id"><i class="fa-solid fa-pen-to-square me-2"></i> Edit Post</a></li>
+                                                    <li>
+                                                        <form asp-action="Delete" asp-route-id="@post.Id" method="post" onsubmit="return confirm('Archive this transmission permanently?')">
+                                                            <button type="submit" class="dropdown-item text-danger text-uppercase ls-1 py-2"><i class="fa-solid fa-trash-can me-2"></i> Delete Post</button>
+                                                        </form>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <i class="fa-solid fa-ellipsis-vertical px-2" style="cursor: pointer;"></i>
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- Image Content -->
+                                @if (!string.IsNullOrEmpty(post.ImagePath))
+                                {
+                                    <div class="post-img-wrapper position-relative bg-black overflow-hidden d-flex align-items-center justify-content-center" style="min-height: 400px; max-height: 600px;">
+                                        <div class="position-absolute w-100 h-100 opacity-25" style="background-image: url('@post.ImagePath'); background-size: cover; background-position: center; filter: blur(30px);"></div>
+                                        <img src="@post.ImagePath" class="img-fluid position-relative z-1 h-100 w-100 object-fit-contain shadow" loading="lazy" />
+                                    </div>
+                                }
+
+                                <!-- Description & Tags -->
+                                @if (!string.IsNullOrWhiteSpace(post.Description) || !string.IsNullOrWhiteSpace(post.Tags))
+                                {
+                                    <div class="px-4 pt-4 pb-2">
+                                        @if (!string.IsNullOrWhiteSpace(post.Description))
+                                        {
+                                            <p class="mb-2 fw-light text-white" style="font-size: 0.95rem; line-height: 1.6;">
+                                                <strong class="fw-bold me-2 ls-1" style="font-size: 0.85rem;">@(ViewBag.UserNames.ContainsKey(post.UserId) ? ViewBag.UserNames[post.UserId] : post.UserId)</strong> @post.Description
+                                            </p>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(post.Tags))
+                                        {
+                                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                                @foreach(var tag in post.Tags.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries))
+                                                {
+                                                    <span class="text-accent small fw-bold">@(tag.StartsWith("#") ? tag : "#" + tag)</span>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                }
+
+                                <!-- Interactions (Like/Dislike/Rating) -->
+                                <div class="px-4 py-3 border-top border-bottom border-secondary border-opacity-10 d-flex flex-wrap align-items-center justify-content-between gap-3 bg-base bg-opacity-50">
+                                    <div class="d-flex align-items-center gap-4">
+                                        <!-- Like -->
+                                        <button class="btn p-0 text-white interact-btn d-flex align-items-center gap-2 border-0 bg-transparent" data-post-id="@post.Id" data-action="like" title="Love It">
+                                            <i class="fa-heart fs-4 transition-all @(hasLiked ? "fa-solid text-accent" : "fa-regular")"></i>
+                                            <span class="fw-bold fs-6 like-count">@totalLikes</span>
+                                        </button>
+                                        <!-- Dislike -->
+                                        <button class="btn p-0 text-white interact-btn d-flex align-items-center gap-2 border-0 bg-transparent text-muted" data-post-id="@post.Id" data-action="dislike" title="Not For Me">
+                                            <i class="fa-thumbs-down fs-5 transition-all @(hasDisliked ? "fa-solid text-danger" : "fa-regular")"></i>
+                                            <span class="fw-bold fs-7 dislike-count">@totalDislikes</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Score Rating -->
+                                    <div class="d-flex align-items-center gap-2 rating-container">
+                                        <div class="text-end">
+                                            <div class="small fw-bold ls-1 text-uppercase text-muted" style="font-size: 0.65rem;">Look Score</div>
+                                            <div class="fw-bold text-white fs-5 avg-rating-display">@(avgRate > 0 ? avgRate.ToString("0.0") : "-.-") <span class="text-muted small fs-6">/5</span></div>
+                                        </div>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-ghost rounded-circle text-white d-flex align-items-center justify-content-center p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="width: 40px; height: 40px;">
+                                                <i class="fa-solid fa-star @(userRating > 0 ? "text-accent" : "text-muted")"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark bg-elevated border border-secondary border-opacity-25 shadow p-2" style="min-width: 250px;">
+                                                <li><h6 class="dropdown-header text-uppercase ls-1">Rate this Look</h6></li>
+                                                <li>
+                                                    <div class="d-flex justify-content-between px-3 py-2 rating-stars" data-post-id="@post.Id">
+                                                        @for(int i=1; i<=5; i++)
+                                                        {
+                                                            <i class="fa-star fs-4 cursor-pointer transition-all @(i <= userRating ? "fa-solid text-accent" : "fa-regular text-muted")" data-val="@i" title="@i / 5" style="font-size: 1.2rem;"></i>
+                                                        }
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Comments Section (AJAX directly inside Feed) -->
+                                <div class="px-4 py-3 bg-surface">
+                                    <h6 class="text-uppercase ls-1 small fw-bold text-muted mb-3"><i class="fa-regular fa-comment me-2"></i> Comments (@post.Comments.Count())</h6>
+                                    
+                                    <div class="comments-list mb-3 custom-scrollbar" style="max-height: 200px; overflow-y: auto;">
+                                        @if(!post.Comments.Any())
+                                        {
+                                            <p class="text-muted small fst-italic no-comments-msg">Be the first to comment...</p>
+                                        }
+                                        else
+                                        {
+                                            foreach(var c in post.Comments.OrderBy(c => c.CreatedAt))
+                                            {
+                                                <div class="mb-2">
+                                                    <strong class="text-white me-2 small fw-bold">@(ViewBag.UserNames.ContainsKey(c.UserId) ? ViewBag.UserNames[c.UserId] : c.UserId)</strong>
+                                                    <span class="text-muted small">@c.Text</span>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+
+                                    <!-- Add Comment Wrapper -->
+                                    <div class="d-flex gap-2">
+                                        <input type="text" class="form-control bg-transparent border-0 border-bottom border-secondary border-opacity-25 rounded-0 px-2 py-2 text-white shadow-none comment-input" placeholder="Add a comment..." data-post-id="@post.Id" />
+                                        <button class="btn btn-ghost px-3 py-1 post-comment-btn" data-post-id="@post.Id">Post</button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- RIGHT SIDEBAR: INLINE TOGGLE PANELS -->
+        <div id="hubSidebar" class="col-lg-3 d-none d-lg-flex flex-column border-start border-secondary border-opacity-10 h-100 bg-surface p-0 overflow-hidden">
+            
+            <!-- Default Button State -->
+            <div id="sidebarButtons" class="p-4 d-flex flex-column gap-4 h-100">
+                <h6 class="fw-bold mb-2 text-white ls-1 text-uppercase small opacity-50">Social Sync</h6>
+
+                <!-- Friends Toggle Button -->
+                <button class="btn btn-ghost w-100 d-flex flex-column align-items-center justify-content-center gap-3 p-5 border-secondary border-opacity-25 sidebar-toggle-btn" 
+                        onclick="toggleSidebarPanel('friendsPanel')" style="height: 200px; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);">
+                    <div class="d-flex align-items-center justify-content-center bg-black rounded-circle border border-secondary border-opacity-25" style="width: 70px; height: 70px;">
+                        <i class="fa-solid fa-user-group text-accent fs-3"></i>
+                    </div>
+                    <div class="text-center">
+                        <span class="d-block fw-bold text-white ls-1 text-uppercase small">Directory</span>
+                        <small class="text-muted text-uppercase ls-1" style="font-size: 0.6rem;">Manage Contacts</small>
+                    </div>
+                </button>
+
+                <!-- Messages Toggle Button -->
+                <button class="btn btn-ghost w-100 d-flex flex-column align-items-center justify-content-center gap-3 p-5 border-secondary border-opacity-25 sidebar-toggle-btn" 
+                        onclick="toggleSidebarPanel('messagesPanel')" style="height: 200px; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);">
+                    <div class="d-flex align-items-center justify-content-center bg-black rounded-circle border border-secondary border-opacity-25" style="width: 70px; height: 70px;">
+                        <i class="fa-solid fa-envelope-open-text text-accent fs-3"></i>
+                    </div>
+                    <div class="text-center">
+                        <span class="d-block fw-bold text-white ls-1 text-uppercase small">Transmissions</span>
+                        <small class="text-muted text-uppercase ls-1" style="font-size: 0.6rem;">Direct Lines</small>
+                    </div>
+                </button>
+
+                <div class="mt-auto p-4 border border-secondary border-opacity-10 text-center">
+                    <i class="fa-solid fa-signal text-accent mb-2 small d-block"></i>
+                    <small class="text-muted text-uppercase ls-1" style="font-size: 0.55rem;">All systems operational</small>
+                </div>
+            </div>
+
+            <!-- Friends Active Panel -->
+            <div id="friendsPanel" class="sidebar-panel d-none flex-column h-100 bg-black">
+                <div class="p-3 border-bottom border-secondary border-opacity-20 d-flex align-items-center justify-content-between bg-surface">
+                    <button class="btn btn-ghost border-0 p-1 text-muted" onclick="toggleSidebarPanel('sidebarButtons')"><i class="fa-solid fa-arrow-left"></i></button>
+                    <span class="fw-bold text-white ls-1 text-uppercase small">Directory</span>
+                    <i class="fa-solid fa-user-group text-accent small"></i>
+                </div>
+                <div class="flex-grow-1 position-relative">
+                    <iframe src="/Friends?embed=true" class="w-100 h-100 border-0" title="Friends"></iframe>
+                </div>
+            </div>
+
+            <!-- Messages Active Panel -->
+            <div id="messagesPanel" class="sidebar-panel d-none flex-column h-100 bg-black">
+                <div class="p-3 border-bottom border-secondary border-opacity-20 d-flex align-items-center justify-content-between bg-surface">
+                    <button class="btn btn-ghost border-0 p-1 text-muted" onclick="toggleSidebarPanel('sidebarButtons')"><i class="fa-solid fa-arrow-left"></i></button>
+                    <span class="fw-bold text-white ls-1 text-uppercase small">Transmissions</span>
+                    <i class="fa-solid fa-envelope-open-text text-accent small"></i>
+                </div>
+                <div class="flex-grow-1 position-relative">
+                    <iframe src="/Messages?embed=true" class="w-100 h-100 border-0" title="Messages"></iframe>
+                </div>
+            </div>
+
+        </div>
+
+<style>
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(120,120,120,0.2); border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(120,120,120,0.5); }
+    
+    .ls-1 { letter-spacing: 1px; }
+    .cursor-pointer { cursor: pointer; }
+    
+    .rating-stars i:hover ~ i { color: var(--text-muted) !important; }
+    .rating-stars i:hover, .rating-stars i.fa-solid:hover { color: var(--accent-color) !important; font-weight: 900 !important; }
+
+    @@media (max-width: 992px) {
+        .community-hub-container {
+            flex-direction: column !important;
+            height: auto !important;
+            overflow: visible !important;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script>
+        function toggleSidebarPanel(panelId) {
+            document.getElementById('sidebarButtons').classList.add('d-none');
+            document.querySelectorAll('.sidebar-panel').forEach(p => p.classList.add('d-none'));
+
+            if (panelId === 'sidebarButtons') {
+                document.getElementById('sidebarButtons').classList.remove('d-none');
+                document.getElementById('sidebarButtons').classList.add('d-flex');
+            } else {
+                const panel = document.getElementById(panelId);
+                panel.classList.remove('d-none');
+                panel.classList.add('d-flex');
+            }
+        }
+
+        // LIKE & DISLIKE AJAX
+        document.querySelectorAll('.interact-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const postId = this.dataset.postId;
+                const action = this.dataset.action; // 'like' or 'dislike'
+                const isDislike = action === 'dislike';
+                
+                const card = this.closest('.feed-post-card');
+                const likeCountSpan = card.querySelector(".like-count");
+                const dislikeCountSpan = card.querySelector(".dislike-count");
+                
+                const likeIcon = card.querySelector('button[data-action="like"] i');
+                const dislikeIcon = card.querySelector('button[data-action="dislike"] i');
+
+                const clickedIcon = this.querySelector('i');
+                clickedIcon.style.transform = "scale(1.3)";
+                setTimeout(() => { clickedIcon.style.transform = "scale(1)"; }, 150);
+
+                fetch('/Timeline/ToggleLike', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ PostId: postId, IsDislike: isDislike })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    likeCountSpan.textContent = data.likes;
+                    dislikeCountSpan.textContent = data.dislikes;
+                    
+                    // Toggle visually
+                    if (isDislike) {
+                        dislikeIcon.className = dislikeIcon.classList.contains('fa-solid') ? "fa-thumbs-down fs-5 transition-all fa-regular" : "fa-thumbs-down fs-5 transition-all fa-solid text-danger";
+                        likeIcon.className = "fa-heart fs-4 transition-all fa-regular";
+                    } else {
+                        likeIcon.className = likeIcon.classList.contains('fa-solid') ? "fa-heart fs-4 transition-all fa-regular" : "fa-heart fs-4 transition-all fa-solid text-accent";
+                        dislikeIcon.className = "fa-thumbs-down fs-5 transition-all fa-regular";
+                    }
+                });
+            });
+        });
+
+        // RATING AJAX
+        document.querySelectorAll('.rating-stars i').forEach(star => {
+            star.addEventListener('click', function(e) {
+                e.stopPropagation(); 
+                const val = this.dataset.val;
+                const postId = this.closest('.rating-stars').dataset.postId;
+                
+                fetch('/Timeline/RatePost', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ PostId: postId, Score: val })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    const card = this.closest('.feed-post-card');
+                    card.querySelector('.avg-rating-display').innerHTML = data.averageRating.toFixed(1) + ' <span class="text-muted small fs-6">/5</span>';
+                    
+                    // Update stars visually
+                    const allStars = this.closest('.rating-stars').querySelectorAll('i');
+                    allStars.forEach((s, idx) => {
+                        if (idx < val) s.className = "fa-star fs-4 cursor-pointer transition-all fa-solid text-accent";
+                        else s.className = "fa-star fs-4 cursor-pointer transition-all fa-regular text-muted";
+                    });
+                    
+                    const dropdownBtnIcon = card.querySelector(`button[data-bs-toggle="dropdown"] i`);
+                    dropdownBtnIcon.classList.remove('text-muted');
+                    dropdownBtnIcon.classList.add('text-accent');
+                });
+            });
+        });
+
+        // COMMENT AJAX
+        document.querySelectorAll('.post-comment-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const postId = this.dataset.postId;
+                const input = document.querySelector(`input.comment-input[data-post-id="${postId}"]`);
+                const text = input.value;
+                if (!text) return;
+
+                const formData = new FormData();
+                formData.append('postId', postId);
+                formData.append('text', text);
+
+                fetch('/Timeline/AddComment', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const card = this.closest('.feed-post-card');
+                        const list = card.querySelector('.comments-list');
+                        const noMsg = list.querySelector('.no-comments-msg');
+                        if(noMsg) noMsg.remove();
+                        
+                        const div = document.createElement('div');
+                        div.className = "mb-2 fade-up";
+                        div.innerHTML = `<strong class="text-white me-2 small fw-bold">${data.user}</strong><span class="text-muted small">${data.text}</span>`;
+                        list.appendChild(div);
+                        
+                        input.value = "";
+                        list.scrollTop = list.scrollHeight;
+                    }
+                });
+            });
+        });
+    </script>
+}

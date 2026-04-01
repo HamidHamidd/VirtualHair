@@ -1,8 +1,9 @@
 using System;
+using Microsoft.AspNetCore.Identity;
 
 namespace VirtualHair.Models
 {
-    public class Like
+    public class Rating
     {
         public int Id { get; set; }
 
@@ -11,7 +12,7 @@ namespace VirtualHair.Models
 
         public string UserId { get; set; }
 
-        public bool IsDislike { get; set; }
+        public int Score { get; set; } // 1-5 or 1-10
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }

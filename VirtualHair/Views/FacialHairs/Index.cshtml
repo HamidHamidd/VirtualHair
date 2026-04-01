@@ -6,76 +6,129 @@
     ViewData["Title"] = "Facial Hairs";
 }
 
-<div class="d-flex align-items-center justify-content-between mb-4 mt-3">
-    <h1 class="fw-bold mb-0">Facial Hairs</h1>
+<div class="container py-5 fade-up">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center mb-5 border-bottom border-light border-opacity-10 pb-4 gap-3">
+        <h2 class="display-5 brand-font fw-bold mb-0 text-white">
+            <i class="fa-solid fa-user-ninja me-3" style="color: var(--accent-color);"></i>Facial Hairs Dictionary
+        </h2>
 
-    @if (User.IsInRole("Admin"))
-    {
-        <a asp-action="Create" class="btn text-white rounded-pill px-4 shadow-sm" style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); border:none;">
-            <i class="fa-solid fa-plus me-1"></i> Add Facial Hair
-        </a>
-    }
-</div>
-
-@if (!Model.Any())
-{
-    <div class="alert alert-info">No facial hair styles available.</div>
-}
-else
-{
-    <div class="row g-3">
-        @foreach (var item in Model)
+        @if (User.IsInRole("Admin"))
         {
-            <div class="col-12 col-sm-6 col-lg-4">
-                <div class="gallery-card card h-100 border-0">
-                    @if (item.ImageData != null)
-                    {
-                        <div class="gallery-img-wrapper">
-                            <img src="/FacialHairs/Image/@item.Id" alt="@item.Name" class="card-img-top gallery-img">
-                        </div>
-                    }
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title mb-1 fw-semibold">@item.Name</h5>
-                        <p class="text-secondary mb-2">
-                            <small>
-                                Default Color: @item.DefaultColorHex
-                            </small>
-                        </p>
-
-                        <div class="mt-auto d-flex gap-2">
-                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-secondary btn-sm">
-                                <i class="fa-regular fa-eye me-1"></i> Details
-                            </a>
-
-                            @if (User.IsInRole("Admin"))
-                            {
-                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm">
-                                    <i class="fa-regular fa-pen-to-square me-1"></i> Edit
-                                </a>
-                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm">
-                                    <i class="fa-regular fa-trash-can me-1"></i> Delete
-                                </a>
-                            }
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <a asp-action="Create" class="btn btn-luxury d-flex align-items-center gap-2">
+                <i class="fa-solid fa-plus"></i> <span class="d-none d-sm-inline">Add Style</span>
+            </a>
         }
     </div>
 
-    <div class="d-flex justify-content-center mt-4">
-        @Html.PagedListPager(
-        (IPagedList)Model,
-        page => Url.Action("Index", new { page }),
-        new PagedListRenderOptions
-        {
-            DisplayLinkToFirstPage = PagedListDisplayMode.Always,
-            DisplayLinkToLastPage = PagedListDisplayMode.Always,
-            DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
-            DisplayLinkToNextPage = PagedListDisplayMode.Always,
-            UlElementClasses = new[] { "pagination" },
-            LiElementClasses = new[] { "page-item" },
-            PageClasses = new[] { "page-link" }
-        })
+    @if (!Model.Any())
+    {
+        <div class="editorial-card text-center py-5">
+            <div class="badge-editorial d-inline-block mb-4">
+                <i class="fa-solid fa-ban fa-2x"></i>
+            </div>
+            <h4 class="fw-bold brand-font mb-2">No facial hairs available</h4>
+            <p class="text-secondary text-uppercase small letter-spacing-1 mb-0">The dictionary is currently empty.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 border border-secondary border-opacity-25" style="border-right: none; border-bottom: none;">
+            @foreach (var item in Model)
+            {
+                <div class="col m-0 p-0 border-end border-bottom border-secondary border-opacity-25" style="animation: fadeUp 0.5s ease forwards; animation-delay: @(0.1 + Array.IndexOf(Model.ToArray(), item) * 0.05)s; opacity: 0;">
+                    <div class="gallery-card h-100 d-flex flex-column p-4">
+                        <!-- Image -->
+                        <div class="gallery-img-wrapper mb-4 border border-secondary border-opacity-25" style="aspect-ratio: 4/5; background: var(--bg-surface);">
+                            @if (item.ImageData != null)
+                            {
+                                <img src="/FacialHairs/Image/@item.Id" class="gallery-img w-100 h-100 object-fit-cover" alt="@item.Name">
+                            }
+                            else
+                            {
+                                <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted">
+                                    <i class="fa-solid fa-image fa-2x opacity-25"></i>
+                                </div>
+                            }
+                        </div>
+                        
+                        <!-- Info -->
+                        <div class="d-flex flex-column flex-grow-1">
+                            <h5 class="brand-font mb-3 fs-5 text-truncate">@item.Name</h5>
+                            
+                            <div class="d-flex flex-column gap-2 small text-secondary mb-4 flex-grow-1" style="font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;">
+                                <div class="d-flex align-items-center justify-content-between border-bottom border-secondary border-opacity-25 pb-2">
+                                    <span>Color Hex</span>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="rounded-0 shadow-sm" style="width: 14px; height: 14px; background-color: @(item.DefaultColorHex ?? "transparent"); border: 1px solid rgba(255,255,255,0.2);"></div>
+                                        <span class="fw-bold text-white font-monospace">@item.DefaultColorHex</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action buttons -->
+                            <div class="d-flex gap-2 mt-auto pt-3 border-top border-secondary border-opacity-25">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-ghost flex-grow-1 py-2 px-0" title="Details">
+                                    <i class="fa-solid fa-info-circle"></i> View
+                                </a>
+
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-ghost text-warning py-2 px-3" title="Edit">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-ghost text-danger py-2 px-3" title="Delete">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="d-flex justify-content-center mt-5 custom-pagination">
+            @Html.PagedListPager(
+            (IPagedList)Model,
+            page => Url.Action("Index", new { page }),
+            new PagedListRenderOptions
+            {
+                DisplayLinkToFirstPage = PagedListDisplayMode.Always,
+                DisplayLinkToLastPage = PagedListDisplayMode.Always,
+                DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                UlElementClasses = new[] { "pagination", "m-0" },
+                LiElementClasses = new[] { "page-item" },
+                PageClasses = new[] { "page-link", "bg-transparent", "border-secondary", "border-opacity-25", "text-secondary" }
+            })
+        </div>
+    }
 </div>
-}
+
+<style>
+    .custom-pagination .pagination {
+        gap: 0.5rem;
+    }
+    .custom-pagination .page-link {
+        color: var(--text-secondary) !important;
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 0.5rem 1rem;
+        border-radius: 0 !important;
+        transition: all 0.3s ease;
+    }
+    .custom-pagination .page-link:hover {
+        background: var(--bg-surface) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-focus) !important;
+    }
+    .custom-pagination .active .page-link {
+        background: var(--text-primary) !important;
+        color: var(--bg-base) !important;
+        border-color: var(--text-primary) !important;
+    }
+</style>

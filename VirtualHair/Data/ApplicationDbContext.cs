@@ -25,6 +25,7 @@ namespace VirtualHair.Data
         public DbSet<Post> Posts => Set<Post>();
         public DbSet<Like> Likes => Set<Like>();
         public DbSet<Comment> Comments => Set<Comment>();
+        public DbSet<Rating> Ratings => Set<Rating>();
 
         // Chat
         public DbSet<Message> Messages => Set<Message>();
@@ -116,6 +117,20 @@ namespace VirtualHair.Data
                 .HasOne<IdentityUser>()
                 .WithMany()
                 .HasForeignKey(l => l.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // Rating → Post
+            builder.Entity<Rating>()
+                .HasOne(r => r.Post)
+                .WithMany(p => p.Ratings)
+                .HasForeignKey(r => r.PostId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // Rating → User
+            builder.Entity<Rating>()
+                .HasOne<IdentityUser>()
+                .WithMany()
+                .HasForeignKey(r => r.UserId)
                 .OnDelete(DeleteBehavior.NoAction);
 
             // Message → Sender

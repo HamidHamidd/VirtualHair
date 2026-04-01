@@ -6,118 +6,104 @@
     var facialImg = Model.FacialHair?.ImageData != null ? $"/FacialHairs/Image/{Model.FacialHair.Id}" : null;
 }
 
-<div class="container py-4">
-    <div class="mx-auto" style="max-width: 980px;">
-        <div class="card border-0 shadow-sm details-card">
-            <div class="row g-0">
+<div class="container py-5 fade-up">
+    <!-- Breadcrumb & Header -->
+    <div class="d-flex align-items-center justify-content-between mb-5 border-bottom border-light border-opacity-10 pb-4">
+        <div>
+            <h2 class="display-6 brand-font fw-bold text-white mb-2">Look Details</h2>
+            <p class="text-secondary text-uppercase ls-1 small mb-0">Generated Visualizations</p>
+        </div>
+        <a asp-action="Index" class="btn btn-ghost px-4 py-2 border border-secondary border-opacity-25 rounded-0 text-uppercase ls-1" style="font-size: 0.75rem;">
+            <i class="fa-solid fa-arrow-left me-2"></i> Gallery
+        </a>
+    </div>
 
-                <!-- LEFT: Main preview -->
-                <div class="col-12 col-lg-7 details-left">
-                    <div class="details-image-wrap">
-                        <img src="@lookImg" alt="Look preview" class="details-image" />
+    <div class="row g-4 mb-5">
+        <!-- LEFT: Main preview -->
+        <div class="col-lg-7">
+            <div class="bg-surface border border-secondary border-opacity-25 p-4 rounded-0 position-relative h-100 d-flex align-items-center justify-content-center">
+                <img src="@lookImg" alt="Look preview" class="img-fluid" style="max-height: 700px; object-fit: contain;" />
+            </div>
+        </div>
+
+        <!-- RIGHT: Info -->
+        <div class="col-lg-5">
+            <div class="bg-surface border border-secondary border-opacity-25 p-4 rounded-0 h-100 d-flex flex-column">
+                
+                <!-- Title -->
+                <div class="mb-5 pb-4 border-bottom border-secondary border-opacity-25">
+                    <h3 class="fw-bold brand-font text-white mb-2" style="font-size: 2rem; line-height: 1.2;">@(string.IsNullOrWhiteSpace(Model.Title) ? "Untitled Look" : Model.Title)</h3>
+                    <div class="text-secondary text-uppercase ls-1" style="font-size: 0.65rem;">
+                        <i class="fa-regular fa-clock me-1"></i> Saved on @Model.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy")
                     </div>
                 </div>
 
-                <!-- RIGHT: Info -->
-                <div class="col-12 col-lg-5 details-right">
-                    <div class="p-4 p-lg-5 h-100 d-flex flex-column">
-
-                        <!-- Title -->
-                        <div class="mb-3">
-                            <h2 class="details-title">@Model.Title</h2>
-                            <div class="details-sub text-muted">
-                                Saved look preview
-                            </div>
-                        </div>
-
-                        <!-- Info list -->
-                        <div class="details-section mb-4">
-                            <div class="details-row">
-                                <div class="details-label">Hairstyle</div>
-                                <div class="details-value">
-                                    @if (Model.Hairstyle != null)
-                                    {
-                                        <span>@Model.Hairstyle.Name</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">—</span>
-                                    }
-                                </div>
-                            </div>
-
-                            <div class="details-row">
-                                <div class="details-label">Facial hair</div>
-                                <div class="details-value">
-                                    @(Model.FacialHair?.Name ?? "—")
-                                </div>
-                            </div>
-
-                            <div class="details-row">
-                                <div class="details-label">Created</div>
-                                <div class="details-value">
-                                    @Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Mini previews -->
-                        <div class="details-section mb-4">
-                            <div class="details-mini-title mb-2">Selected assets</div>
-
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <div class="mini-card">
-                                        <div class="mini-label">Hairstyle</div>
-                                        <div class="mini-img-wrap">
-                                            @if (!string.IsNullOrWhiteSpace(hairstyleImg))
-                                            {
-                                                <img src="@hairstyleImg" class="mini-img" alt="Hairstyle" />
-                                            }
-                                            else
-                                            {
-                                                <div class="mini-placeholder">No hairstyle</div>
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-6">
-                                    <div class="mini-card">
-                                        <div class="mini-label">Facial hair</div>
-                                        <div class="mini-img-wrap">
-                                            @if (!string.IsNullOrWhiteSpace(facialImg))
-                                            {
-                                                <img src="@facialImg" class="mini-img" alt="Facial hair" />
-                                            }
-                                            else
-                                            {
-                                                <div class="mini-placeholder">No facial hair</div>
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Actions -->
-                        <div class="mt-auto d-flex flex-wrap gap-2">
-                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary px-4 rounded-pill">
-                                Edit
-                            </a>
-
-                            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger px-4 rounded-pill">
-                                Delete
-                            </a>
-
-                            <a asp-action="Index" class="btn btn-outline-secondary px-4 rounded-pill ms-lg-auto">
-                                Back
-                            </a>
-                        </div>
-
+                <!-- Info list -->
+                <h6 class="fw-bold mb-4 text-uppercase ls-1 text-white border-start border-3 px-3" style="border-color: var(--accent-color) !important; font-size: 0.8rem;">
+                    Configuration
+                </h6>
+                <div class="d-flex flex-column gap-3 mb-5">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-secondary text-uppercase ls-1" style="font-size: 0.7rem;">
+                            <i class="fa-solid fa-scissors opacity-50 me-2"></i>Hairstyle
+                        </span>
+                        <span class="fw-bold text-white text-end">@(Model.Hairstyle?.Name ?? "Original Hair")</span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-secondary text-uppercase ls-1" style="font-size: 0.7rem;">
+                            <i class="fa-solid fa-user-ninja opacity-50 me-2"></i>Facial Hair
+                        </span>
+                        <span class="fw-bold text-white text-end">@(Model.FacialHair?.Name ?? "No additions")</span>
                     </div>
                 </div>
 
+                <!-- Mini previews -->
+                <h6 class="fw-bold mb-4 text-uppercase ls-1 text-white border-start border-3 px-3" style="border-color: var(--accent-color) !important; font-size: 0.8rem;">
+                    Components
+                </h6>
+                <div class="row g-3 mb-5 flex-grow-1">
+                    <div class="col-6">
+                        <div class="border border-secondary border-opacity-25 p-2 rounded-0 text-center bg-black">
+                            <div class="mb-2 mx-auto d-flex align-items-center justify-content-center" style="aspect-ratio: 1/1; background: var(--bg-surface);">
+                                @if (!string.IsNullOrWhiteSpace(hairstyleImg))
+                                {
+                                    <img src="@hairstyleImg" class="w-100 h-100 object-fit-contain p-2" alt="Hairstyle" />
+                                }
+                                else
+                                {
+                                    <i class="fa-solid fa-ban text-secondary opacity-50 fs-2"></i>
+                                }
+                            </div>
+                            <span class="text-secondary text-uppercase ls-1" style="font-size: 0.65rem;">Hair</span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="border border-secondary border-opacity-25 p-2 rounded-0 text-center bg-black">
+                            <div class="mb-2 mx-auto d-flex align-items-center justify-content-center" style="aspect-ratio: 1/1; background: var(--bg-surface);">
+                                @if (!string.IsNullOrWhiteSpace(facialImg))
+                                {
+                                    <img src="@facialImg" class="w-100 h-100 object-fit-contain p-2" alt="Facial hair" />
+                                }
+                                else
+                                {
+                                    <i class="fa-solid fa-ban text-secondary opacity-50 fs-2"></i>
+                                }
+                            </div>
+                            <span class="text-secondary text-uppercase ls-1" style="font-size: 0.65rem;">Beard</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="d-flex gap-2 pt-4 border-top border-secondary border-opacity-25 mt-auto">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-secondary flex-grow-1 rounded-0 py-3 text-uppercase ls-1" style="font-size: 0.75rem;">
+                        <i class="fa-solid fa-pen-to-square me-2"></i> Edit
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-ghost border-danger border-opacity-50 text-danger flex-grow-1 rounded-0 py-3 text-uppercase ls-1" style="font-size: 0.75rem; background: rgba(220, 53, 69, 0.05);">
+                        <i class="fa-solid fa-trash-can me-2"></i> Delete
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -125,10 +111,10 @@
 
 <!-- Toast -->
 <div class="position-fixed top-0 end-0 p-3" style="z-index: 1080">
-    <div id="toastMsg" class="toast align-items-center text-bg-success border-0" role="alert">
+    <div id="toastMsg" class="toast align-items-center text-bg-success border-0 rounded-0" role="alert">
         <div class="d-flex">
-            <div class="toast-body" id="toastBody">Action completed.</div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            <div class="toast-body fw-medium" id="toastBody">Action completed.</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto shadow-none" data-bs-dismiss="toast"></button>
         </div>
     </div>
 </div>
@@ -142,157 +128,14 @@
                 const toast = document.getElementById('toastMsg');
                 const body = document.getElementById('toastBody');
                 if (error) {
-                    toast.classList.remove('text-bg-success');
-                    toast.classList.add('text-bg-danger');
-                    body.textContent = error;
+                    toast.classList.replace('text-bg-success', 'text-bg-danger');
+                    body.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-2"></i>' + error;
                 } else {
-                    toast.classList.remove('text-bg-danger');
-                    toast.classList.add('text-bg-success');
-                    body.textContent = success;
+                    toast.classList.replace('text-bg-danger', 'text-bg-success');
+                    body.innerHTML = '<i class="fa-solid fa-check-circle me-2"></i>' + success;
                 }
-                new bootstrap.Toast(toast, { delay: 3000 }).show();
+                new bootstrap.Toast(toast, { delay: 4000 }).show();
             }
         })();
     </script>
 }
-
-<style>
-    /* --- iOS / clean modern style --- */
-    .details-card {
-        border-radius: 20px;
-        overflow: hidden;
-        background: var(--bs-body-bg);
-    }
-
-    .details-left {
-        background: #0f1116;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 12px;
-    }
-
-    .details-image-wrap {
-        width: 100%;
-        border-radius: 16px;
-        overflow: hidden;
-        background: #0b0d12;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-    }
-
-    .details-image {
-        width: 100%;
-        height: auto;
-        display: block;
-        object-fit: contain;
-        max-height: 640px;
-    }
-
-    .details-right {
-        background: var(--bs-body-bg);
-    }
-
-    .details-title {
-        font-weight: 700;
-        letter-spacing: 0.2px;
-        margin: 0;
-        font-size: clamp(1.4rem, 2.2vw, 2rem);
-    }
-
-    .details-sub {
-        font-size: 0.95rem;
-        opacity: 0.75;
-    }
-
-    .details-section {
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.07);
-        border-radius: 14px;
-        padding: 14px;
-        backdrop-filter: blur(6px);
-    }
-
-    .details-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px 2px;
-        border-bottom: 1px dashed rgba(255,255,255,0.07);
-    }
-
-        .details-row:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-
-    .details-label {
-        font-size: 0.9rem;
-        color: var(--bs-secondary-color);
-        font-weight: 600;
-        width: 45%;
-    }
-
-    .details-value {
-        font-size: 0.95rem;
-        font-weight: 600;
-        text-align: right;
-        width: 55%;
-        color: var(--bs-body-color);
-    }
-
-    .details-mini-title {
-        font-size: 0.95rem;
-        font-weight: 700;
-        letter-spacing: 0.2px;
-    }
-
-    .mini-card {
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.07);
-        padding: 10px;
-        height: 100%;
-        background: rgba(255,255,255,0.02);
-    }
-
-    .mini-label {
-        font-size: 0.85rem;
-        color: var(--bs-secondary-color);
-        font-weight: 600;
-        margin-bottom: 8px;
-    }
-
-    .mini-img-wrap {
-        border-radius: 10px;
-        overflow: hidden;
-        background: #0b0d12;
-        aspect-ratio: 1 / 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .mini-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
-
-    .mini-placeholder {
-        font-size: 0.85rem;
-        color: #9aa3b2;
-        text-align: center;
-        padding: 10px;
-    }
-
-    /* FIXED MEDIA QUERY */
-    @@media (max-width: 991px) {
-        .details-left {
-            padding: 8px;
-        }
-
-        .details-image {
-            max-height: 520px;
-        }
-    }
-</style>

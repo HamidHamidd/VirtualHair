@@ -177,9 +177,24 @@
                                         {
                                             foreach(var c in post.Comments.OrderBy(c => c.CreatedAt))
                                             {
-                                                <div class="mb-2">
-                                                    <strong class="text-white me-2 small fw-bold">@(ViewBag.UserNames.ContainsKey(c.UserId) ? ViewBag.UserNames[c.UserId] : c.UserId)</strong>
-                                                    <span class="text-muted small">@c.Text</span>
+                                                <div class="mb-2 d-flex align-items-center justify-content-between group-hover-visible-container">
+                                                    <div>
+                                                        <strong class="text-white me-2 small fw-bold">@(ViewBag.UserNames.ContainsKey(c.UserId) ? ViewBag.UserNames[c.UserId] : c.UserId)</strong>
+                                                        <span class="text-muted small">@c.Text</span>
+                                                    </div>
+                                                    @if (c.UserId == currentUserId)
+                                                    {
+                                                        <div class="ms-auto position-relative">
+                                                            <button class="btn btn-link text-danger p-0 delete-trigger" title="Delete comment" style="font-size: 0.7rem;">
+                                                                <i class="fa-solid fa-xmark"></i>
+                                                            </button>
+                                                            <button class="btn btn-danger btn-sm py-0 px-2 d-none delete-confirm-btn" 
+                                                                    data-comment-id="@c.Id"
+                                                                    style="font-size: 0.6rem; position: absolute; right: 0; top: 0; white-space: nowrap; z-index: 10;">
+                                                                CONFIRM
+                                                            </button>
+                                                        </div>
+                                                    }
                                                 </div>
                                             }
                                         }
@@ -199,64 +214,52 @@
             </div>
         </div>
 
-        <!-- RIGHT SIDEBAR: INLINE TOGGLE PANELS -->
+        <!-- RIGHT SIDEBAR: EXPANDABLE HUB SECTIONS -->
         <div id="hubSidebar" class="col-lg-3 d-none d-lg-flex flex-column border-start border-secondary border-opacity-10 h-100 bg-surface p-0 overflow-hidden">
             
-            <!-- Default Button State -->
-            <div id="sidebarButtons" class="p-4 d-flex flex-column gap-4 h-100">
-                <h6 class="fw-bold mb-2 text-white ls-1 text-uppercase small opacity-50">Social Sync</h6>
-
-                <!-- Friends Toggle Button -->
-                <button class="btn btn-ghost w-100 d-flex flex-column align-items-center justify-content-center gap-3 p-5 border-secondary border-opacity-25 sidebar-toggle-btn" 
-                        onclick="toggleSidebarPanel('friendsPanel')" style="height: 200px; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);">
-                    <div class="d-flex align-items-center justify-content-center bg-black rounded-circle border border-secondary border-opacity-25" style="width: 70px; height: 70px;">
-                        <i class="fa-solid fa-user-group text-accent fs-3"></i>
-                    </div>
-                    <div class="text-center">
-                        <span class="d-block fw-bold text-white ls-1 text-uppercase small">Directory</span>
-                        <small class="text-muted text-uppercase ls-1" style="font-size: 0.6rem;">Manage Contacts</small>
-                    </div>
-                </button>
-
-                <!-- Messages Toggle Button -->
-                <button class="btn btn-ghost w-100 d-flex flex-column align-items-center justify-content-center gap-3 p-5 border-secondary border-opacity-25 sidebar-toggle-btn" 
-                        onclick="toggleSidebarPanel('messagesPanel')" style="height: 200px; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);">
-                    <div class="d-flex align-items-center justify-content-center bg-black rounded-circle border border-secondary border-opacity-25" style="width: 70px; height: 70px;">
-                        <i class="fa-solid fa-envelope-open-text text-accent fs-3"></i>
-                    </div>
-                    <div class="text-center">
-                        <span class="d-block fw-bold text-white ls-1 text-uppercase small">Transmissions</span>
-                        <small class="text-muted text-uppercase ls-1" style="font-size: 0.6rem;">Direct Lines</small>
-                    </div>
-                </button>
-
-                <div class="mt-auto p-4 border border-secondary border-opacity-10 text-center">
-                    <i class="fa-solid fa-signal text-accent mb-2 small d-block"></i>
-                    <small class="text-muted text-uppercase ls-1" style="font-size: 0.55rem;">All systems operational</small>
-                </div>
+            <div class="p-4 border-bottom border-secondary border-opacity-10 bg-black bg-opacity-20">
+                <h6 class="fw-bold mb-0 text-white ls-1 text-uppercase small opacity-75"><i class="fa-solid fa-layer-group me-2 text-accent"></i>Social Sync</h6>
             </div>
 
-            <!-- Friends Active Panel -->
-            <div id="friendsPanel" class="sidebar-panel d-none flex-column h-100 bg-black">
-                <div class="p-3 border-bottom border-secondary border-opacity-20 d-flex align-items-center justify-content-between bg-surface">
-                    <button class="btn btn-ghost border-0 p-1 text-muted" onclick="toggleSidebarPanel('sidebarButtons')"><i class="fa-solid fa-arrow-left"></i></button>
-                    <span class="fw-bold text-white ls-1 text-uppercase small">Directory</span>
-                    <i class="fa-solid fa-user-group text-accent small"></i>
+            <div class="flex-grow-1 overflow-auto custom-scrollbar p-3">
+                
+                <!-- Directory Section -->
+                <div class="hub-section mb-4">
+                    <button class="btn btn-ghost w-100 d-flex flex-column align-items-center justify-content-center gap-3 p-5 border-secondary border-opacity-25 sidebar-toggle-btn section-toggle mb-2" 
+                            onclick="toggleSection('directorySection')" style="min-height: 180px;">
+                        <div class="d-flex align-items-center justify-content-center bg-black rounded-circle border border-secondary border-opacity-25" style="width: 60px; height: 60px;">
+                            <i class="fa-solid fa-user-group text-accent fs-4"></i>
+                        </div>
+                        <div class="text-center">
+                            <span class="d-block fw-bold text-white ls-1 text-uppercase small">Directory</span>
+                            <small class="text-muted text-uppercase ls-1" style="font-size: 0.55rem;">Manage Contacts</small>
+                        </div>
+                    </button>
+                    <div id="directorySection" class="section-content d-none bg-black border border-secondary border-opacity-10" style="height: 500px;">
+                        <iframe src="/Friends?embed=true" class="w-100 h-100 border-0" title="Friends"></iframe>
+                    </div>
                 </div>
-                <div class="flex-grow-1 position-relative">
-                    <iframe src="/Friends?embed=true" class="w-100 h-100 border-0" title="Friends"></iframe>
-                </div>
-            </div>
 
-            <!-- Messages Active Panel -->
-            <div id="messagesPanel" class="sidebar-panel d-none flex-column h-100 bg-black">
-                <div class="p-3 border-bottom border-secondary border-opacity-20 d-flex align-items-center justify-content-between bg-surface">
-                    <button class="btn btn-ghost border-0 p-1 text-muted" onclick="toggleSidebarPanel('sidebarButtons')"><i class="fa-solid fa-arrow-left"></i></button>
-                    <span class="fw-bold text-white ls-1 text-uppercase small">Transmissions</span>
-                    <i class="fa-solid fa-envelope-open-text text-accent small"></i>
+                <!-- Transmissions Section -->
+                <div class="hub-section mb-4">
+                    <button class="btn btn-ghost w-100 d-flex flex-column align-items-center justify-content-center gap-3 p-5 border-secondary border-opacity-25 sidebar-toggle-btn section-toggle mb-2" 
+                            onclick="toggleSection('transmissionsSection')" style="min-height: 180px;">
+                        <div class="d-flex align-items-center justify-content-center bg-black rounded-circle border border-secondary border-opacity-25" style="width: 60px; height: 60px;">
+                            <i class="fa-solid fa-envelope-open-text text-accent fs-4"></i>
+                        </div>
+                        <div class="text-center">
+                            <span class="d-block fw-bold text-white ls-1 text-uppercase small">Transmissions</span>
+                            <small class="text-muted text-uppercase ls-1" style="font-size: 0.55rem;">Direct Lines</small>
+                        </div>
+                    </button>
+                    <div id="transmissionsSection" class="section-content d-none bg-black border border-secondary border-opacity-10" style="height: 550px;">
+                        <iframe src="/Messages?embed=true" class="w-100 h-100 border-0" title="Messages"></iframe>
+                    </div>
                 </div>
-                <div class="flex-grow-1 position-relative">
-                    <iframe src="/Messages?embed=true" class="w-100 h-100 border-0" title="Messages"></iframe>
+
+                <div class="p-4 text-center opacity-40">
+                    <i class="fa-solid fa-microchip text-accent mb-2 small d-block"></i>
+                    <small class="text-muted text-uppercase ls-1" style="font-size: 0.5rem;">Neural Link Active</small>
                 </div>
             </div>
 
@@ -270,7 +273,15 @@
     
     .ls-1 { letter-spacing: 1px; }
     .cursor-pointer { cursor: pointer; }
+
+    .hub-section .section-toggle:hover { background: rgba(255,255,255,0.02); }
+    .hub-section .section-toggle .toggle-icon { transition: transform 0.3s ease; }
+    .hub-section.active .toggle-icon { transform: rotate(180deg); }
     
+    .hover-opacity-100:hover { opacity: 1 !important; }
+    .group-hover-visible-container .delete-trigger { visibility: hidden; }
+    .group-hover-visible-container:hover .delete-trigger { visibility: visible; }
+
     .rating-stars i:hover ~ i { color: var(--text-muted) !important; }
     .rating-stars i:hover, .rating-stars i.fa-solid:hover { color: var(--accent-color) !important; font-weight: 900 !important; }
 
@@ -285,17 +296,19 @@
 
 @section Scripts {
     <script>
-        function toggleSidebarPanel(panelId) {
-            document.getElementById('sidebarButtons').classList.add('d-none');
-            document.querySelectorAll('.sidebar-panel').forEach(p => p.classList.add('d-none'));
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            const container = section.closest('.hub-section');
+            const isActive = !section.classList.contains('d-none');
 
-            if (panelId === 'sidebarButtons') {
-                document.getElementById('sidebarButtons').classList.remove('d-none');
-                document.getElementById('sidebarButtons').classList.add('d-flex');
+            if (isActive) {
+                section.classList.add('d-none');
+                section.classList.remove('d-flex');
+                container.classList.remove('active');
             } else {
-                const panel = document.getElementById(panelId);
-                panel.classList.remove('d-none');
-                panel.classList.add('d-flex');
+                section.classList.remove('d-none');
+                section.classList.add('d-flex');
+                container.classList.add('active');
             }
         }
 
@@ -395,8 +408,22 @@
                         if(noMsg) noMsg.remove();
                         
                         const div = document.createElement('div');
-                        div.className = "mb-2 fade-up";
-                        div.innerHTML = `<strong class="text-white me-2 small fw-bold">${data.user}</strong><span class="text-muted small">${data.text}</span>`;
+                        div.className = "mb-2 fade-up d-flex align-items-center justify-content-between group-hover-visible-container";
+                        div.innerHTML = `
+                            <div>
+                                <strong class="text-white me-2 small fw-bold">${data.user}</strong>
+                                <span class="text-muted small">${data.text}</span>
+                            </div>
+                            <div class="ms-auto position-relative">
+                                <button class="btn btn-link text-danger p-0 delete-trigger" title="Delete comment" style="font-size: 0.7rem;">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm py-0 px-2 d-none delete-confirm-btn" 
+                                        data-comment-id="${data.id}"
+                                        style="font-size: 0.6rem; position: absolute; right: 0; top: 0; white-space: nowrap; z-index: 10;">
+                                    CONFIRM
+                                </button>
+                            </div>`;
                         list.appendChild(div);
                         
                         input.value = "";
@@ -404,6 +431,50 @@
                     }
                 });
             });
+        });
+
+        // DELETE COMMENT AJAX
+        // Inline Delete Confirmation
+        document.addEventListener('click', function(e) {
+            const trigger = e.target.closest('.delete-trigger');
+            if (trigger) {
+                const container = trigger.closest('.position-relative');
+                const confirmBtn = container.querySelector('.delete-confirm-btn');
+                trigger.classList.add('d-none');
+                confirmBtn.classList.remove('d-none');
+                
+                // Reset after 3 seconds if not clicked
+                setTimeout(() => {
+                    if (confirmBtn && !confirmBtn.classList.contains('d-none')) {
+                        trigger.classList.remove('d-none');
+                        confirmBtn.classList.add('d-none');
+                    }
+                }, 3000);
+                return;
+            }
+
+            const confirmBtn = e.target.closest('.delete-confirm-btn');
+            if (confirmBtn) {
+                const commentId = confirmBtn.dataset.commentId;
+                const commentRow = confirmBtn.closest('.mb-2');
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                fetch(`/Timeline/DeleteComment/${commentId}`, {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': token
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        commentRow.style.opacity = '0';
+                        commentRow.style.transform = 'translateX(20px)';
+                        commentRow.style.transition = 'all 0.3s ease';
+                        setTimeout(() => commentRow.remove(), 300);
+                    }
+                });
+            }
         });
     </script>
 }

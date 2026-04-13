@@ -189,10 +189,27 @@ namespace VirtualHair.Controllers
             return Json(new
             {
                 success = true,
+                id = comment.Id,
                 text = comment.Text,
                 user = _userManager.GetUserName(User),
                 createdAt = comment.CreatedAt.ToString("g")
             });
+        }
+
+        // DELETE COMMENT
+        [HttpPost]
+        public async Task<IActionResult> DeleteComment(int id)
+        {
+            var comment = await _context.Comments.FindAsync(id);
+            if (comment == null) return NotFound();
+
+            if (comment.UserId != _userManager.GetUserId(User))
+                return Forbid();
+
+            _context.Comments.Remove(comment);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true });
         }
 
         // VIEW POST DETAILS

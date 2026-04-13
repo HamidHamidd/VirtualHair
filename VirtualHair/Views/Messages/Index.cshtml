@@ -3,17 +3,17 @@
     ViewData["Title"] = "Messages";
 }
 
-<div class="h-100 d-flex flex-column cyber-messages" style="min-height: calc(100vh - 100px); @(Context.Request.Query.ContainsKey("embed") ? "min-height: 100vh;" : "")">
+<div class="cyber-messages bg-black overflow-hidden" style="height: calc(100vh - 75px);">
     
     <!-- Scanline Overlay -->
     <div class="scanlines"></div>
 
-    <div class="row g-0 flex-grow-1 shadow-lg bg-black border border-secondary border-opacity-10 overflow-hidden" style="border-radius: 0;">
+    <div id="chatInterface" class="d-flex h-100 shadow-lg border-top border-secondary border-opacity-10 overflow-hidden chat-view-list">
         
         <!-- Sidebar: Conversations List -->
-        <div class="col-12 col-md-4 col-lg-3 border-end border-secondary border-opacity-10 bg-surface d-flex flex-column">
+        <div id="chatSidebar" class="col-12 col-md-4 col-lg-3 border-end border-secondary border-opacity-10 bg-surface d-flex flex-column h-100 sidebar-panel">
             <div class="p-4 border-bottom border-secondary border-opacity-5 d-flex align-items-center justify-content-between">
-                <h6 class="mb-0 fw-bold brand-font text-white letter-spacing-2 text-uppercase small">Directory</h6>
+                <h6 class="mb-0 fw-bold brand-font text-white letter-spacing-2 text-uppercase small">Transmissions</h6>
                 <div class="badge bg-black border border-secondary border-opacity-25 text-accent ls-2 font-monospace" style="font-size: 0.6rem;">SYS.NET</div>
             </div>
             
@@ -56,12 +56,12 @@
         </div>
 
         <!-- Main Chat Area -->
-        <div class="col-12 col-md-8 col-lg-9 d-flex flex-column chat-main position-relative bg-black h-100">
+        <div id="chatMain" class="col-12 col-md-8 col-lg-9 d-flex flex-column chat-main position-relative bg-black h-100 flex-grow-1 main-panel">
             <!-- Chat Header -->
             <div class="p-4 border-bottom border-secondary border-opacity-10 d-flex align-items-center justify-content-between bg-surface" style="z-index: 10;">
                 <div class="d-flex align-items-center">
-                    <button class="btn btn-ghost text-white border-secondary border-opacity-25 rounded-0 d-md-none me-3 p-1" style="width: 32px; height: 32px;">
-                        <i class="fa-solid fa-chevron-left small"></i>
+                    <button id="backToList" class="btn btn-ghost text-white border-secondary border-opacity-25 rounded-0 me-3 p-1" style="width: 38px; height: 38px;">
+                        <i class="fa-solid fa-chevron-left"></i>
                     </button>
                     <div class="position-relative">
                         <img src="https://ui-avatars.com/api/?name=None&background=000&color=d4af37" id="chatHeaderAvatar" class="rounded-0 border border-secondary border-opacity-20" style="width: 42px; height: 42px; object-fit: cover;" alt="Avatar" onerror="this.src='https://ui-avatars.com/api/?name=' + currentUserName + '&background=000&color=d4af37'">
@@ -74,12 +74,12 @@
             </div>
 
             <!-- Chat Messages -->
-            <div id="chatMessages" class="chat-messages flex-grow-1 p-4 overflow-auto position-relative custom-scrollbar d-flex flex-column gap-4" style="background: radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.02) 0%, transparent 100%);">
+            <div id="chatMessages" class="chat-messages flex-grow-1 px-3 px-md-5 py-5 overflow-auto position-relative custom-scrollbar d-flex flex-column gap-3" style="background: radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.02) 0%, transparent 100%);">
                 <div class="my-auto text-center">
-                    <div class="d-inline-block p-4 border border-secondary border-opacity-10 bg-surface">
-                        <i class="fa-solid fa-terminal text-accent mb-3 d-block fs-4"></i>
-                        <h6 class="fw-bold text-white ls-2 text-uppercase mb-2 small">Terminal Ready</h6>
-                        <p class="text-muted small ls-1 mb-0 opacity-50">Please select a record from the directory to establish a secure link.</p>
+                    <div class="d-inline-block p-5 border border-secondary border-opacity-10 bg-surface shadow-sm">
+                        <i class="fa-solid fa-terminal text-accent mb-4 d-block fs-3"></i>
+                        <h6 class="fw-bold text-white ls-2 text-uppercase mb-3 small">Terminal Link Ready</h6>
+                        <p class="text-muted small ls-1 mb-0 opacity-50" style="max-width: 300px;">Secure channel established. Please select a node from the directory to begin transmission.</p>
                     </div>
                 </div>
             </div>
@@ -161,26 +161,47 @@
         border: 2px solid #000;
     }
 
+    /* Focus Mode Logic */
+    .chat-view-list .main-panel { display: none !important; }
+    .chat-view-chat .sidebar-panel { display: none !important; }
+    .chat-view-chat .main-panel { display: flex !important; width: 100% !important; flex: 0 0 100% !important; }
+
+    @@media (min-width: 992px) {
+        /* On large screens, maybe we want both? No, user explicitly asked for "others to disappear" */
+        .chat-view-chat .main-panel { flex: 1; }
+    }
+
     .message-bubble {
-        max-width: 75%;
-        padding: 1rem 1.5rem !important;
-        border-radius: 0 !important;
-        font-size: 0.85rem;
-        letter-spacing: 0.5px;
+        max-width: 80%;
+        padding: 0.9rem 1.4rem !important;
+        border-radius: 8px !important;
+        font-size: 0.95rem;
+        line-height: 1.6;
         position: relative;
         border: 1px solid rgba(255,255,255,0.05);
+        word-break: break-word;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
     .message-bubble.sent {
-        background: rgba(212, 175, 55, 0.08) !important;
-        color: var(--text-primary) !important;
-        border-right: 2px solid var(--accent-color) !important;
-        box-shadow: none !important;
+        background: var(--accent-color) !important;
+        color: #000 !important;
+        font-weight: 500;
+        margin-right: 10px;
     }
     .message-bubble.received {
         background: var(--bg-surface) !important;
         color: var(--text-primary) !important;
-        border-left: 2px solid var(--accent-color) !important;
-        opacity: 0.9;
+        border: 1px solid var(--border-subtle) !important;
+        margin-left: 10px;
+    }
+
+    .message-wrapper {
+        animation: messageSlide 0.3s ease-out forwards;
+    }
+
+    @@keyframes messageSlide {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
     .message-avatar {
@@ -228,6 +249,10 @@
                 
                 // Add active to clicked
                 this.classList.add('active');
+
+                // Switch to Chat View
+                document.getElementById('chatInterface').classList.remove('chat-view-list');
+                document.getElementById('chatInterface').classList.add('chat-view-chat');
                 
                 currentUserId = this.dataset.userid;
                 currentUserName = this.dataset.username;
@@ -240,6 +265,11 @@
                 // Load conversation using active user id
                 loadChat(currentUserId);
             });
+        });
+
+        document.getElementById('backToList').addEventListener('click', function() {
+            document.getElementById('chatInterface').classList.remove('chat-view-chat');
+            document.getElementById('chatInterface').classList.add('chat-view-list');
         });
 
         async function loadChat(userId) {
@@ -358,7 +388,9 @@
         
         function scrollToBottom() {
             const chatContainer = document.getElementById('chatMessages');
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            setTimeout(() => {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }, 50);
         }
 
         async function sendMessage() {

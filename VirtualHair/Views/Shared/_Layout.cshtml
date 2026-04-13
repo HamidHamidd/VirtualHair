@@ -252,8 +252,10 @@
         const htmlEl = document.documentElement;
 
         function setTheme(theme) {
+            htmlEl.classList.add('theme-transitioning');
             htmlEl.setAttribute('data-bs-theme', theme);
             localStorage.setItem('vh-theme', theme);
+            
             const isDark = theme === 'dark';
             const iconClass = isDark ? 'fa-sun' : 'fa-moon';
             
@@ -264,6 +266,11 @@
                 const text = isDark ? '@Localizer["LightMode"]' : '@Localizer["DarkMode"]';
                 mobileThemeToggle.innerHTML = `<i class="fa-solid ${iconClass} me-2"></i> ${text}`;
             }
+
+            // Remove transition class after animation finishes
+            setTimeout(() => {
+                htmlEl.classList.remove('theme-transitioning');
+            }, 400);
         }
 
         const savedTheme = localStorage.getItem('vh-theme') || 'dark';

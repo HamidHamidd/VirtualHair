@@ -1,26 +1,37 @@
-@{
-    ViewData["Title"] = "Create Post";
-}
-
 <div class="container py-5 mt-4" style="max-width: 600px;">
     <h3 class="fw-bold mb-4 brand-font text-white letter-spacing-1 text-uppercase text-center">New Publication</h3>
 
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert bg-danger border-0 text-white rounded-0 p-3 mb-4 text-center mx-auto" style="max-width: 400px;">
-            <i class="fa-solid fa-triangle-exclamation me-2"></i> @TempData["Error"]
-        </div>
-    }
+    <div class="editorial-card text-white p-4 p-md-5">
+        <form asp-action="Create" enctype="multipart/form-data" method="post" id="createPostForm">
+            <input type="hidden" name="croppedImageData" id="croppedImageData" />
 
-    <div class="editorial-card text-white">
-        <form asp-action="Create" enctype="multipart/form-data" method="post">
-
-            <div class="mb-5 position-relative">
-                <label class="form-label text-uppercase ls-1 small fw-bold text-muted mb-3 d-flex align-items-center gap-2">
+            <div class="mb-5">
+                <label class="form-label text-uppercase ls-2 small fw-bold text-muted mb-3 d-flex align-items-center gap-2">
                     <i class="fa-solid fa-image"></i> Primary Output
                 </label>
-                <div class="border border-secondary border-opacity-25" style="border-style: dashed !important;">
-                    <input type="file" name="imageFile" class="form-control bg-transparent border-0 text-white rounded-0 py-4 shadow-none" accept="image/*" required />
+                
+                <div id="imagePreviewContainer" class="position-relative border border-secondary border-opacity-25 d-flex align-items-center justify-content-center bg-black bg-opacity-25 overflow-hidden" 
+                     style="aspect-ratio: 16/10; cursor: pointer; border-style: dashed !important;">
+                    
+                    <div id="uploadPrompt" class="text-center p-4">
+                        <i class="fa-solid fa-cloud-arrow-up fs-2 mb-3 text-muted"></i>
+                        <p class="small text-uppercase ls-1 text-muted mb-0">Drag or click to choose a photo</p>
+                    </div>
+
+                    <img id="imagePreview" class="d-none w-100 h-100 object-fit-cover" />
+                    <input type="file" id="imageInput" name="imageFile" class="position-absolute inset-0 opacity-0 w-100 h-100" style="cursor: pointer;" accept="image/*" required />
+                </div>
+
+                <div id="cropAids" class="d-none mt-3 d-flex justify-content-between align-items-center">
+                    <span class="small text-muted text-uppercase ls-1" style="font-size: 0.65rem;">Image Selected</span>
+                    <div class="d-flex gap-2">
+                        <button type="button" id="btnResetPhoto" class="btn btn-sm text-uppercase ls-1 py-1 px-3" style="font-size: 0.65rem; border: 1px solid #ff4444; color: #ff4444; background: transparent; font-weight: 800;">
+                            <i class="fa-solid fa-rotate-left me-2"></i> Reset to Original
+                        </button>
+                        <button type="button" id="btnOpenCrop" class="btn btn-sm text-uppercase ls-1 py-1 px-3" style="font-size: 0.65rem; border: 1px solid #d4af37; color: #d4af37; background: transparent; font-weight: 800;">
+                            <i class="fa-solid fa-crop-simple me-2"></i> Crop Image
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -40,3 +51,112 @@
         </form>
     </div>
 </div>
+
+<!-- Crop Modal -->
+<div id="cropModalWrapper" class="d-none position-fixed w-100 h-100" style="top: 0; left: 0; background: rgba(0,0,0,0.85); z-index: 10000; backdrop-filter: blur(15px);">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 10px;">
+        <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); width: 100%; max-width: 500px; padding: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); color: var(--text-primary); border-radius: 8px;">
+            <h5 style="color: var(--text-primary) !important; font-weight: 900; text-align: center; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px;">CROP PUBLICATION</h5>
+            <div style="background: #000; margin-bottom: 20px; overflow: hidden; border: 1px solid var(--border-subtle); max-height: 45vh;">
+                <img id="cropperImage" style="max-width: 100%; display: block;">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button type="button" onclick="closeCrop()" style="flex: 1; padding: 15px; background: transparent; border: 2px solid var(--text-primary); color: var(--text-primary); text-transform: uppercase; font-weight: 900; font-size: 0.82rem; cursor: pointer; border-radius: 4px;">CANCEL</button>
+                <button type="button" onclick="applyCrop()" style="flex: 1; padding: 15px; background: var(--accent-color); border: none; color: #000; text-transform: uppercase; font-weight: 900; font-size: 0.82rem; cursor: pointer; border-radius: 4px;">APPLY CROP</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const uploadPrompt = document.getElementById('uploadPrompt');
+        const cropAids = document.getElementById('cropAids');
+        const croppedInput = document.getElementById('croppedImageData');
+        const btnReset = document.getElementById('btnResetPhoto');
+        
+        let cropper = null;
+        let originalSource = "";
+
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    originalSource = event.target.result;
+                    imagePreview.src = originalSource;
+                    imagePreview.classList.remove('d-none');
+                    uploadPrompt.classList.add('d-none');
+                    cropAids.classList.remove('d-none');
+                    
+                    croppedInput.value = "";
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        btnReset.addEventListener('click', function() {
+            if (originalSource) {
+                imagePreview.src = originalSource;
+                croppedInput.value = "";
+                alert("Photo reverted to original state.");
+            }
+        });
+
+        document.getElementById('btnOpenCrop').addEventListener('click', function() {
+            if (typeof Cropper === 'undefined') {
+                alert("Image processing engine is still loading. Please try again in a moment.");
+                return;
+            }
+            const modal = document.getElementById('cropModalWrapper');
+            const cropperImg = document.getElementById('cropperImage');
+            
+            cropperImg.src = imagePreview.src;
+            modal.classList.remove('d-none');
+            modal.style.display = 'block';
+
+            if (cropper) cropper.destroy();
+            
+            setTimeout(() => {
+                cropper = new Cropper(cropperImg, {
+                    aspectRatio: NaN,
+                    viewMode: 1,
+                    dragMode: 'move',
+                    background: false,
+                    autoCropArea: 1,
+                    responsive: true
+                });
+            }, 50);
+        });
+
+        function closeCrop() {
+            const modal = document.getElementById('cropModalWrapper');
+            modal.classList.add('d-none');
+            modal.style.display = 'none';
+            if (cropper) cropper.destroy();
+        }
+
+        function applyCrop() {
+            if (!cropper) return;
+            const canvas = cropper.getCroppedCanvas({
+                maxWidth: 2048,
+                maxHeight: 2048
+            });
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+            
+            imagePreview.src = dataUrl;
+            croppedInput.value = dataUrl;
+            
+            btnReset.classList.remove('d-none');
+            closeCrop();
+        }
+
+        document.getElementById('createPostForm').addEventListener('submit', function() {
+            const btn = this.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Publishing...';
+        });
+    </script>
+}

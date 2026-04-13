@@ -58,7 +58,7 @@ namespace VirtualHair.Controllers
 
         // CREATE POST SUBMIT
         [HttpPost]
-        public async Task<IActionResult> Create(IFormFile imageFile, string? description, string? tags)
+        public async Task<IActionResult> Create(IFormFile imageFile, string? description, string? tags, string? croppedImageData)
         {
             if (imageFile == null || imageFile.Length == 0)
             {
@@ -72,9 +72,18 @@ namespace VirtualHair.Controllers
             string fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
             string filePath = Path.Combine(folder, fileName);
 
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            if (!string.IsNullOrEmpty(croppedImageData))
             {
-                await imageFile.CopyToAsync(stream);
+                var base64Data = croppedImageData.Contains(",") ? croppedImageData.Split(',')[1] : croppedImageData;
+                var bytes = Convert.FromBase64String(base64Data);
+                await System.IO.File.WriteAllBytesAsync(filePath, bytes);
+            }
+            else
+            {
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await imageFile.CopyToAsync(stream);
+                }
             }
 
             var post = new Post

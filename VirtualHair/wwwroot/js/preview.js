@@ -93,17 +93,20 @@ document.getElementById('reScanFace')?.addEventListener('click', () => {
 
 const cropModal = document.createElement('div');
 cropModal.className = 'cropper-modal-overlay';
-cropModal.style.cssText = 'display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); z-index: 1050; align-items: center; justify-content: center;';
+/* Theme-aware styling */
+cropModal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); z-index: 10000; align-items: center; justify-content: center;';
 cropModal.innerHTML = `
-<div class="bg-surface border border-secondary border-opacity-25" style="width: 90%; max-width: 600px; padding: 3rem;">
-  <h4 class="brand-font text-white mb-2 text-center">Adjust Photo</h4>
-  <p class="text-secondary small mb-4 text-center text-uppercase letter-spacing-1">Center your face for best results</p>
-  <div class="cropper-img-container bg-black mb-4 position-relative overflow-hidden border border-secondary border-opacity-25" style="max-height: 50vh;">
+<div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); width: 95%; max-width: 550px; padding: 2.5rem; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border-radius: 8px;">
+  <h4 class="brand-font" style="letter-spacing: 4px; font-weight: 800; text-align: center; margin-bottom: 1rem; color: var(--text-primary) !important;">PREPARE PHOTO</h4>
+  <p style="font-size: 0.75rem; text-align: center; text-uppercase: uppercase; opacity: 0.7; letter-spacing: 1px; margin-bottom: 2rem; color: var(--text-primary) !important;">Center your face within the square for best AI results</p>
+  
+  <div style="background: #000; margin-bottom: 2rem; overflow: hidden; border: 1px solid var(--border-subtle); max-height: 45vh;">
     <img id="cropperImage" style="max-width:100%; display:block;">
   </div>
-  <div class="d-flex gap-3">
-    <button id="cancelCrop" class="btn btn-ghost flex-grow-1 py-3">Cancel</button>
-    <button id="confirmCrop" class="btn btn-luxury flex-grow-1 py-3">Confirm</button>
+
+  <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+    <button id="cancelCrop" style="flex: 1; padding: 1rem; background: transparent; border: 2px solid var(--text-primary); color: var(--text-primary); text-transform: uppercase; font-weight: 800; font-size: 0.75rem; letter-spacing: 2px; cursor: pointer; border-radius: 4px;">Cancel</button>
+    <button id="confirmCrop" style="flex: 1; padding: 1rem; background: var(--accent-color); border: none; color: #000; text-transform: uppercase; font-weight: 800; font-size: 0.75rem; letter-spacing: 2px; cursor: pointer; border-radius: 4px;">Confirm & Analyze</button>
   </div>
 </div>`;
 document.body.appendChild(cropModal);
@@ -124,15 +127,18 @@ uploadInput?.addEventListener('change', (e) => {
             cropperImg.onload = () => {
                 if (cropper) cropper.destroy();
                 cropper = new Cropper(cropperImg, {
-                    aspectRatio: 1,
+                    aspectRatio: 1, // Enforced 1:1 for better AI face detection
                     viewMode: 1,
                     dragMode: 'move',
                     movable: true,
                     zoomable: true,
+                    zoomOnTouch: true,
+                    zoomOnWheel: true,
                     background: false,
-                    guides: false,
+                    autoCropArea: 0.8,
+                    guides: true,
                     center: true,
-                    highlight: false,
+                    highlight: true,
                     cropBoxMovable: true,
                     cropBoxResizable: true,
                     toggleDragModeOnDblclick: false
@@ -146,25 +152,39 @@ uploadInput?.addEventListener('change', (e) => {
 document.getElementById('confirmCrop')?.addEventListener('click', () => {
     if (!cropper) return;
 
-    const croppedCanvas = cropper.getCroppedCanvas({ width: 500, height: 500 });
+    const croppedCanvas = cropper.getCroppedCanvas({ 
+        width: 1024, 
+        height: 1024,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high'
+    });
+    
     if (!croppedCanvas) return;
 
     baseImage = new Image();
     baseImage.onload = () => {
         isImageLoaded = true;
-        maskCanvas.width = 500;
-        maskCanvas.height = 500;
-        maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
+        
+        // Match canvas to high resolution crop
+        canvas.width = 1024;
+        canvas.height = 1024;
+        
         if (cropModal) cropModal.style.display = 'none';
+        
+        // Reset generated image
+        aiGeneratedImage = null;
+        
         drawCanvas();
-        detectFace(); // Trigger AI analysis
+        setTimeout(detectFace, 300); // Trigger AI analysis with small delay
     };
-    baseImage.src = croppedCanvas.toDataURL('image/png');
+    baseImage.src = croppedCanvas.toDataURL('image/jpeg', 0.9);
 });
 
 document.getElementById('cancelCrop')?.addEventListener('click', () => {
     if (cropModal) cropModal.style.display = 'none';
     if (cropper) cropper.destroy();
+    // Clear the input so user can pick the same file again
+    if (uploadInput) uploadInput.value = '';
 });
 
 /* ---------------- THUMBNAILS ---------------- */

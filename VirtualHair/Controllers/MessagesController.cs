@@ -70,7 +70,8 @@ namespace VirtualHair.Controllers
                     content = m.Content,
                     senderId = m.SenderId,
                     sentAt = m.SentAt,
-                    isMine = m.SenderId == currentUser.Id
+                    isMine = m.SenderId == currentUser.Id,
+                    canEdit = m.SenderId == currentUser.Id && (DateTime.UtcNow - m.SentAt).TotalMinutes < 20
                 })
                 .ToListAsync();
 
@@ -151,6 +152,48 @@ namespace VirtualHair.Controllers
                     isMine = true
                 }
             });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditMessage(int messageId, string newContent)
+        {
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null) return Unauthorized();
+
+            var message = await _context.Messages.FindAsync(messageId);
+            if (message == null) return NotFound();
+
+            if (message.SenderId != currentUser.Id) return Forbid();
+
+            // 20 minute rule
+            if ((DateTime.UtcNow - message.SentAt).TotalMinutes > 20)
+            {
+                return Json(new { success = false, message = "Messages can only be edited within 20 minutes of sending." });
+            }
+
+            if (string.IsNullOrWhiteSpace(newContent)) return BadRequest();
+
+            message.Content = newContent;
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteMessage(int messageId)
+        {
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null) return Unauthorized();
+
+            var message = await _context.Messages.FindAsync(messageId);
+            if (message == null) return NotFound();
+
+            if (message.SenderId != currentUser.Id) return Forbid();
+
+            _context.Messages.Remove(message);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true });
         }
     }
 }

@@ -173,30 +173,70 @@
 
     .message-bubble {
         max-width: 80%;
-        padding: 0.9rem 1.4rem !important;
-        border-radius: 8px !important;
+        padding: 0.8rem 1.2rem !important;
+        border-radius: 12px !important;
         font-size: 0.95rem;
-        line-height: 1.6;
+        line-height: 1.5;
         position: relative;
-        border: 1px solid rgba(255,255,255,0.05);
         word-break: break-word;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: all 0.2s ease;
     }
     .message-bubble.sent {
-        background: var(--accent-color) !important;
+        background: linear-gradient(135deg, var(--accent-color) 0%, #b8962d 100%) !important;
         color: #000 !important;
         font-weight: 500;
-        margin-right: 10px;
+        margin-right: 4px;
+        border-bottom-right-radius: 2px !important;
     }
     .message-bubble.received {
         background: var(--bg-surface) !important;
         color: var(--text-primary) !important;
         border: 1px solid var(--border-subtle) !important;
-        margin-left: 10px;
+        margin-left: 4px;
+        border-bottom-left-radius: 2px !important;
+    }
+
+    .message-options {
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        cursor: pointer;
+        padding: 5px;
+    }
+    .message-wrapper:hover .message-options {
+        opacity: 0.8;
+    }
+    .message-options:hover {
+        opacity: 1 !important;
+    }
+
+    /* Adjust dropdown position */
+    .dropdown-menu.message-menu {
+        transform: translate3d(-10px, 0px, 0px) !important;
+    }
+
+    .message-menu {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        border-radius: 4px;
+        z-index: 100;
+        min-width: 120px;
+    }
+    .message-menu-item {
+        padding: 8px 15px;
+        font-size: 0.75rem;
+        color: var(--text-primary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.2s ease;
+    }
+    .message-menu-item:hover {
+        background: rgba(255,255,255,0.05);
+        color: var(--accent-color);
     }
 
     .message-wrapper {
-        animation: messageSlide 0.3s ease-out forwards;
+        animation: messageSlide 0.3s cubic-bezier(0.2, 1, 0.3, 1) forwards;
     }
 
     @@keyframes messageSlide {
@@ -330,7 +370,7 @@
                 if (data.messages && data.messages.length > 0) {
                     data.messages.forEach(msg => {
                         const timeStr = new Date(msg.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                        appendMessage(msg.content, msg.isMine, timeStr);
+                        appendMessage(msg.content, msg.isMine, timeStr, msg.id, msg.canEdit);
                     });
                 } else {
                     chatContainer.innerHTML = `
@@ -354,7 +394,7 @@
             }
         }
 
-        function appendMessage(content, isMine, timeStr) {
+        function appendMessage(content, isMine, timeStr, messageId = 0, canEdit = false) {
             const chatContainer = document.getElementById('chatMessages');
             
             // If the only thing is the "start conversation" or "select a convo" pill, clear it first
@@ -364,26 +404,106 @@
             }
 
             const wrapper = document.createElement('div');
-            wrapper.className = isMine 
-                ? 'message-wrapper d-flex flex-row justify-content-end mb-4'
-                : 'message-wrapper d-flex flex-row justify-content-start mb-4';
+            wrapper.className = `d-flex ${isMine ? 'justify-content-end' : 'justify-content-start'} mb-4 message-wrapper`;
+            wrapper.id = `msg-${messageId}`;
 
             if (isMine) {
                 wrapper.innerHTML = `
-                    <div class="d-flex flex-column align-items-end">
-                        <div class="message-bubble sent p-3 rounded-4 shadow-sm text-white mb-1 px-4">${content}</div>
-                        <small class="text-muted small me-2 message-time opacity-75">${timeStr} <i class="fa-solid fa-check-double text-primary ms-1"></i></small>
+                    <div class="d-flex flex-column align-items-end" style="max-width: 80%;">
+                        <div class="d-flex align-items-center">
+                            ${canEdit ? `
+                                <div class="dropdown me-2 message-options">
+                                    <i class="fa-solid fa-ellipsis-vertical small" data-bs-toggle="dropdown" aria-expanded="false"></i>
+                                    <ul class="dropdown-menu dropdown-menu-dark message-menu p-0 shadow-lg border-secondary border-opacity-25">
+                                        <li><a class="dropdown-item message-menu-item" href="#" onclick="prepEditMessage(${messageId})"><i class="fa-solid fa-pen-to-square me-2" style="font-size: 0.6rem;"></i> Edit</a></li>
+                                        <li><hr class="dropdown-divider m-0 opacity-10"></li>
+                                        <li><a class="dropdown-item message-menu-item text-danger" href="#" onclick="showDeleteConfirm(${messageId})"><i class="fa-solid fa-trash-can me-2" style="font-size: 0.6rem;"></i> Delete</a></li>
+                                    </ul>
+                                </div>
+                            ` : ''}
+                            <div class="message-bubble sent p-3 px-4 shadow-sm mb-1 position-relative" id="msg-bubble-${messageId}">
+                                <div id="msg-content-${messageId}">${content}</div>
+                                <div id="msg-edit-tools-${messageId}" class="d-none mt-2 pt-2 border-top border-dark border-opacity-25">
+                                    <textarea id="msg-edit-input-${messageId}" class="form-control form-control-sm bg-black bg-opacity-25 text-white border-0 mb-2" rows="2" style="font-size: 0.85rem; color: #000 !important; font-weight: 500;"></textarea>
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <button class="btn btn-sm btn-link text-dark p-0" onclick="cancelEdit(${messageId})" style="font-size: 0.7rem;">Cancel</button>
+                                        <button class="btn btn-sm btn-dark px-3" onclick="saveEdit(${messageId})" style="font-size: 0.7rem;">Save</button>
+                                    </div>
+                                </div>
+                                <div id="msg-delete-confirm-${messageId}" class="d-none mt-2 pt-2 border-top border-dark border-opacity-25 text-center">
+                                    <p class="small mb-2 fw-bold" style="font-size: 0.65rem;">Discard transmission?</p>
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <button class="btn btn-sm btn-link text-dark p-0 fw-bold" onclick="cancelDelete(${messageId})" style="font-size: 0.6rem; text-decoration: none;">NO</button>
+                                        <button class="btn btn-sm btn-dark px-2 py-1" onclick="confirmDelete(${messageId})" style="font-size: 0.6rem; letter-spacing: 1px;">CONFIRM</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <small class="text-muted small me-2 message-time opacity-75">${timeStr}</small>
                     </div>`;
             } else {
                 wrapper.innerHTML = `
-                    <img src="/Profile/GetPhoto?userId=${currentUserId}" class="rounded-0 message-avatar me-2 align-self-end shadow-sm border" onerror="this.src='https://ui-avatars.com/api/?name=' + currentUserName + '&background=000&color=d4af37'">
-                    <div>
+                    <div class="d-flex flex-column align-items-start" style="max-width: 80%;">
                         <div class="message-bubble received p-3 rounded-4 shadow-sm mb-1 px-4">${content}</div>
                         <small class="text-muted small ms-2 message-time opacity-75">${timeStr}</small>
                     </div>`;
             }
 
             chatContainer.appendChild(wrapper);
+        }
+
+        function prepEditMessage(id) {
+            const contentDiv = document.getElementById(`msg-content-${id}`);
+            const editTools = document.getElementById(`msg-edit-tools-${id}`);
+            const editInput = document.getElementById(`msg-edit-input-${id}`);
+            
+            editInput.value = contentDiv.textContent.trim();
+            contentDiv.classList.add('d-none');
+            editTools.classList.remove('d-none');
+        }
+
+        function cancelEdit(id) {
+            document.getElementById(`msg-content-${id}`).classList.remove('d-none');
+            document.getElementById(`msg-edit-tools-${id}`).classList.add('d-none');
+        }
+
+        async function saveEdit(id) {
+            const editInput = document.getElementById(`msg-edit-input-${id}`);
+            const newContent = editInput.value.trim();
+            if (!newContent) return;
+
+            try {
+                const res = await fetch(`/Messages/EditMessage?messageId=${id}&newContent=${encodeURIComponent(newContent)}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById(`msg-content-${id}`).textContent = newContent;
+                    cancelEdit(id);
+                } else {
+                    alert(data.message || "Edit failed.");
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function showDeleteConfirm(id) {
+            document.getElementById(`msg-content-${id}`).classList.add('d-none');
+            document.getElementById(`msg-delete-confirm-${id}`).classList.remove('d-none');
+        }
+
+        function cancelDelete(id) {
+            document.getElementById(`msg-content-${id}`).classList.remove('d-none');
+            document.getElementById(`msg-delete-confirm-${id}`).classList.add('d-none');
+        }
+
+        async function confirmDelete(id) {
+            try {
+                const res = await fetch(`/Messages/DeleteMessage?messageId=${id}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById(`msg-${id}`).style.opacity = '0';
+                    document.getElementById(`msg-${id}`).style.transform = 'scale(0.9)';
+                    setTimeout(() => document.getElementById(`msg-${id}`).remove(), 300);
+                }
+            } catch (e) { console.error(e); }
         }
         
         function scrollToBottom() {
@@ -412,7 +532,7 @@
                 const data = await response.json();
                 if (data.success) {
                     const timeStr = new Date(data.msg.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    appendMessage(data.msg.content, true, timeStr);
+                    appendMessage(data.msg.content, true, timeStr, data.msg.id, true);
                     scrollToBottom();
                     
                     // Re-check status in case it was an invitation

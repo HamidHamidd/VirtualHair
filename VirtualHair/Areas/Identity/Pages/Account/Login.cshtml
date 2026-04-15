@@ -25,7 +25,12 @@
 
             <div class="mb-5">
                 <label class="form-label text-secondary text-uppercase ls-1" style="font-size: 0.7rem;">@Localizer["Password"]</label>
-                <input asp-for="Input.Password" class="form-control bg-transparent border-secondary border-opacity-25 text-white rounded-0 shadow-none focus-border-accent py-3" placeholder="••••••••" type="password" />
+                <div class="position-relative">
+                    <input asp-for="Input.Password" class="form-control bg-transparent border-secondary border-opacity-25 text-white rounded-0 shadow-none focus-border-accent py-3 pe-5" placeholder="••••••••" type="password" oninput="toggleEyeVisibility(this)" />
+                    <button type="button" class="btn text-secondary text-decoration-none position-absolute top-50 end-0 translate-middle-y d-none shadow-none pe-3 border-0 bg-transparent" onclick="togglePasswordVisibility(this)" tabindex="-1">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
                 <span asp-validation-for="Input.Password" class="text-danger small font-monospace mt-1 d-block"></span>
             </div>
 
@@ -34,6 +39,10 @@
             </button>
 
             <div class="text-center pt-4 border-top border-secondary border-opacity-25">
+                <span class="text-secondary text-uppercase ls-1" style="font-size: 0.65rem;">Forgot Password?</span><br />
+                <a asp-page="./ForgotPassword" class="text-white fw-bold text-decoration-none text-uppercase ls-1 mt-2 d-inline-block mb-4" style="font-size: 0.75rem;">
+                    Reset Password
+                </a><br />
                 <span class="text-secondary text-uppercase ls-1" style="font-size: 0.65rem;">@Localizer["DontHaveAccount"]</span><br />
                 <a asp-page="./Register" class="text-white fw-bold text-decoration-none text-uppercase ls-1 mt-2 d-inline-block" style="font-size: 0.75rem;">
                     @Localizer["CreateAccount"]
@@ -41,4 +50,30 @@
             </div>
         </form>
     </div>
-</div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function toggleEyeVisibility(input) {
+            const btn = input.nextElementSibling;
+            if (input.value.length > 0) {
+                btn.classList.remove('d-none');
+            } else {
+                btn.classList.add('d-none');
+                input.type = 'password';
+                btn.innerHTML = '<i class="fas fa-eye"></i>';
+            }
+        }
+        function togglePasswordVisibility(btn) {
+            const input = btn.previousElementSibling;
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.innerHTML = '<i class="fas fa-eye-slash text-white"></i>';
+            } else {
+                input.type = 'password';
+                btn.innerHTML = '<i class="fas fa-eye"></i>';
+            }
+        }
+    </script>
+}

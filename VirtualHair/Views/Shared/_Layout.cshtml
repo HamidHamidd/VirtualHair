@@ -48,10 +48,14 @@
     
     <!-- Site CSS -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        .page-transition { opacity: 0; transition: opacity 0.5s ease; }
+        .page-transition.loaded { opacity: 1; }
+    </style>
     @RenderSection("Styles", required: false)
 </head>
 
-<body class="@(isEmbed ? "bg-base" : "")">
+<body class="@(isEmbed ? "bg-base" : "") page-transition">
     @if (!isEmbed)
     {
     <!-- Top Navbar -->
@@ -73,12 +77,12 @@
                         <span data-localize="MyGallery">@Localizer["MyGallery"]</span>
                     </a>
                     <a asp-controller="Timeline" asp-action="Index" class="nav-link-editorial text-decoration-none">
-                        <span data-localize="Feed">HUB</span>
+                        <span data-localize="Feed">@Localizer["Hub"]</span>
                     </a>
                     @if (isAdmin)
                     {
-                        <a asp-controller="Admin" asp-action="Index" class="nav-link-editorial text-decoration-none" style="color: #d4af37;">
-                            <i class="fa-solid fa-crown me-1"></i> Dashboard
+                        <a asp-controller="Admin" asp-action="Index" class="nav-link-editorial text-decoration-none" style="color: var(--accent-color);">
+                            <i class="fa-solid fa-crown me-1"></i> @Localizer["Dashboard"]
                         </a>
                     }
                 }
@@ -87,7 +91,7 @@
             <!-- Right: Actions & Menu -->
             <div class="d-flex align-items-center gap-3">
                 <!-- Theme Switcher -->
-                <button id="themeToggle" class="btn btn-ghost px-3 py-1 me-2" style="font-size: 0.9rem; border-color: rgba(255,255,255,0.1);" title="Toggle Theme">
+                <button id="themeToggle" class="btn btn-ghost px-3 py-1 me-2" style="font-size: 0.9rem; border-color: var(--border-subtle); color: var(--text-primary);" title="@Localizer["DarkMode"]">
                     <i class="fa-solid fa-moon"></i>
                 </button>
 
@@ -95,7 +99,7 @@
                 <form asp-controller="Culture" asp-action="SetLanguage" method="post" id="cultureForm" class="d-none d-md-block m-0">
                     <input type="hidden" name="returnUrl" value="@($"{Context.Request.Path}{Context.Request.QueryString}")" />
                     <input type="hidden" name="culture" value="@(currentCulture == "en" ? "bg" : "en")" />
-                    <button type="submit" class="btn btn-ghost px-3 py-1" style="font-size: 0.7rem; border-color: rgba(255,255,255,0.1);" title="@Localizer[currentCulture == "en" ? "TranslateToBG" : "TranslateToEN"]">
+                    <button type="submit" class="btn btn-ghost px-3 py-1" style="font-size: 0.7rem; border-color: var(--border-subtle); color: var(--text-primary);" title="@Localizer[currentCulture == "en" ? "TranslateToBG" : "TranslateToEN"]">
                         @(currentCulture == "en" ? "BG" : "EN")
                     </button>
                 </form>
@@ -106,7 +110,7 @@
                 
                 @if (isAuthenticated)
                 {
-                    <a asp-controller="Profile" asp-action="Index" class="d-none d-lg-inline-block rounded-circle overflow-hidden ms-2" style="width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.1);">
+                    <a asp-controller="Profile" asp-action="Index" class="d-none d-lg-inline-block rounded-circle overflow-hidden ms-2" style="width: 40px; height: 40px; border: 1px solid var(--border-subtle);">
                         <img src="/Profile/Photo" alt="Profile" class="w-100 h-100 object-fit-cover" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=@(Uri.EscapeDataString(User?.Identity?.Name ?? "User"))&background=000&color=d4af37';" />
                     </a>
                 }
@@ -287,6 +291,11 @@
 
         if(themeToggle) themeToggle.addEventListener('click', toggleThemeAction);
         if(mobileThemeToggle) mobileThemeToggle.addEventListener('click', toggleThemeAction);
+
+        // Page Transition Trigger
+        window.addEventListener('load', () => {
+            document.body.classList.add('loaded');
+        });
     </script>
 
     @RenderSection("Scripts", required: false)

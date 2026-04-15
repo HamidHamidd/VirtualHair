@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.IO;
+using VirtualHair.Models;
 
 namespace VirtualHair.Data
 {
@@ -97,6 +98,29 @@ namespace VirtualHair.Data
                     await userManager.AddToRoleAsync(adminUser, "Admin");
                 }
             }
+            await SeedStylesAsync(context);
+        }
+
+        private static async Task SeedStylesAsync(ApplicationDbContext context)
+        {
+            if (!await context.Hairstyles.AnyAsync())
+            {
+                context.Hairstyles.AddRange(
+                    new Hairstyle { Name = "Classic Buzz", Length = "Short", Gender = Gender.Male },
+                    new Hairstyle { Name = "Pompadour", Length = "Medium", Gender = Gender.Male },
+                    new Hairstyle { Name = "Long Wavy", Length = "Long", Gender = Gender.Unisex },
+                    new Hairstyle { Name = "Undercut", Length = "Medium", Gender = Gender.Male }
+                );
+            }
+            if (!await context.FacialHairs.AnyAsync())
+            {
+                context.FacialHairs.AddRange(
+                    new FacialHair { Name = "Full Beard" },
+                    new FacialHair { Name = "Goatee" },
+                    new FacialHair { Name = "Stubble" }
+                );
+            }
+            await context.SaveChangesAsync();
         }
     }
 }

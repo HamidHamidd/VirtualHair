@@ -1,4 +1,6 @@
 @model IEnumerable<VirtualHair.Models.UserHairstyle>
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
 @{
     ViewData["Title"] = "My Gallery";
 }
@@ -7,10 +9,10 @@
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-5 border-bottom border-light border-opacity-10 pb-4">
         <h2 class="display-5 brand-font fw-bold mb-0 text-white">
-            <i class="fa-solid fa-images" style="color: var(--accent-color); margin-right: 0.75rem;"></i>My Gallery
+            <i class="fa-solid fa-images" style="color: var(--accent-color); margin-right: 0.75rem;"></i>@Localizer["MyGallery"]
         </h2>
         <a asp-controller="Home" asp-action="Index" class="btn btn-luxury d-flex align-items-center gap-2">
-            <i class="fa-solid fa-plus"></i> <span class="d-none d-sm-inline">New Look</span>
+            <i class="fa-solid fa-plus"></i> <span class="d-none d-sm-inline">@Localizer["NewLook"]</span>
         </a>
     </div>
 
@@ -35,9 +37,9 @@
             <div class="badge-editorial d-inline-block mb-4">
                 <i class="fa-regular fa-image fa-2x"></i>
             </div>
-            <h4 class="fw-bold brand-font mb-3">Your gallery is empty</h4>
-            <p class="text-secondary small letter-spacing-1 text-uppercase mb-4">Create your first AI-powered styling to start building your collection.</p>
-            <a asp-controller="Home" asp-action="Index" class="btn btn-ghost px-5 py-2">Create Now</a>
+            <h4 class="fw-bold brand-font mb-3">@Localizer["GalleryEmpty"]</h4>
+            <p class="text-secondary small letter-spacing-1 text-uppercase mb-4">@Localizer["GalleryEmptyDesc"]</p>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-ghost px-5 py-2">@Localizer["CreateNow"]</a>
         </div>
     }
     else
@@ -83,9 +85,15 @@
                                 <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-ghost text-warning flex-grow-1 py-2 px-0" title="Edit Info">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </a>
-                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-ghost text-danger flex-grow-1 py-2 px-0" title="Delete">
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-ghost text-danger flex-grow-1 py-2 px-0" title="@Localizer["Delete"]">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </a>
+                                <form asp-controller="Timeline" asp-action="PostHairstyle" method="post" class="flex-grow-1">
+                                    <input type="hidden" name="hairstyleId" value="@item.Id" />
+                                    <button type="submit" class="btn btn-ghost text-info w-100 py-2 px-0" title="@Localizer["ShareToHub"]">
+                                        <i class="fa-solid fa-paper-plane"></i>
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>

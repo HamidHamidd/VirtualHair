@@ -189,11 +189,9 @@ namespace VirtualHair.Controllers
 
         // ================= PREVIEW =================
 
-        public async Task<IActionResult> Preview()
+        public IActionResult Preview()
         {
-            ViewBag.Hairstyles = await _context.Hairstyles.ToListAsync();
-            ViewBag.FacialHairs = await _context.FacialHairs.ToListAsync();
-            return View();
+            return RedirectToAction("Index", "Home", new { area = "" });
         }
 
         // ================= SAVE LOOK =================

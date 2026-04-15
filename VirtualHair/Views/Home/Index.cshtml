@@ -5,32 +5,55 @@
     var hairstyles = ViewBag.Hairstyles as List<VirtualHair.Models.Hairstyle>;
     var facialHairs = ViewBag.FacialHairs as List<VirtualHair.Models.FacialHair>;
 }
+@using System
 
-<section class="d-flex flex-column justify-content-center align-items-center text-center fade-up" style="min-height: 85vh;">
+@section Styles {
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
+    <style>
+        .pulse-action { animation: pulseAction 0.6s infinite alternate; }
+        @@keyframes pulseAction { from { transform: scale(1); } to { transform: scale(1.05); box-shadow: 0 0 20px rgba(0,0,0,0.2); } }
+        .ai-badge-sm { font-size: 0.65rem; font-weight: 800; background: var(--bg-elevated); color: #4b6ef5; padding: 6px 14px; border-radius: 100px; }
+        .ai-badge-sm.success { background: rgba(22, 163, 74, 0.1); color: #16a34a; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #4b6ef5; animation: pulseBlue 2s infinite; }
+        @@keyframes pulseBlue { 0% { box-shadow: 0 0 0 0 rgba(75, 110, 245, 0.7); } 100% { box-shadow: 0 0 0 10px rgba(75, 110, 245, 0); } }
+        
+        .horizontal-catalog {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 1rem;
+            padding: 0.5rem 0 1rem 0;
+            scrollbar-width: thin;
+        }
+        .horizontal-catalog::-webkit-scrollbar { height: 6px; }
+        .horizontal-catalog::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 10px; }
+    </style>
+}
+
+<section class="d-flex flex-column justify-content-center align-items-center text-center py-5 reveal active" style="min-height: 80vh;">
     <div class="container" style="max-width: 900px;">
-        <span class="badge-editorial mb-4">The New Standard</span>
-        <h1 class="display-1 brand-font mb-4 text-gradient" style="letter-spacing: -0.03em;">
-            Liquid Obsidian
+        <span class="badge-editorial mb-4">@Localizer["TheFutureOfStyle"]</span>
+        <h1 class="display-1 brand-font mb-4 text-gradient fw-800" style="letter-spacing: -0.03em;">
+            @Localizer["AiHairstyleStudio"]
         </h1>
-        <p class="lead mb-5 mx-auto" style="color: var(--text-secondary); font-size: 1.15rem; max-width: 600px; font-weight: 300;">
-            @Localizer["UploadDescription"] Experience a world-class AI transformation engine wrapped in stunningly minimal design.
+        <p class="lead mb-5 mx-auto opacity-75" style="max-width: 600px; font-weight: 400;">
+            @Localizer["HeroDescription"]
         </p>
         
         @if (User.Identity != null && User.Identity.IsAuthenticated)
         {
-            <a href="#preview-tool" class="btn btn-luxury px-5">
-                @Localizer["TryNow"]
-            </a>
+            <div class="reveal-delayed-2">
+                <a href="#studio-section" class="btn btn-black-premium px-5 py-3 rounded-pill text-decoration-none">@Localizer["StartTransformation"]</a>
+            </div>
         }
         else
         {
-             <div class="d-flex justify-content-center gap-4">
-                 <a href="/Identity/Account/Login" class="btn btn-ghost px-5">
-                     @Localizer["LogInToTry"]
-                 </a>
-                 <a href="/Identity/Account/Register" class="btn btn-luxury px-5">
-                     Discover <i class="fa-solid fa-arrow-right ms-2 position-relative" style="top: 1px;"></i>
-                 </a>
+             <div class="d-flex justify-content-center gap-3">
+                 <a href="/Identity/Account/Login" class="btn btn-outline-dark rounded-pill px-5 py-3 text-decoration-none">@Localizer["Login"]</a>
+                 <a href="/Identity/Account/Register" class="btn btn-black-premium px-5 py-3 rounded-pill text-decoration-none">@Localizer["JoinNow"]</a>
              </div>
         }
     </div>
@@ -38,132 +61,181 @@
 
 @if (User.Identity != null && User.Identity.IsAuthenticated)
 {
-<div id="preview-tool" class="py-5 bg-black">
-    <div class="container reveal" style="max-width: 1400px;">
-        <div class="text-center mb-5 pb-3">
-            <h2 class="display-4 brand-font mb-3">@Localizer["TryYourLook"]</h2>
-            <p class="text-uppercase letter-spacing-1 small" style="color: var(--text-secondary);">@Localizer["UploadDescription"]</p>
-        </div>
-
-        <div class="row g-0 border border-secondary border-opacity-25 reveal reveal-delayed">
-            <!-- LEFT: Canvas + Upload -->
-            <div class="col-lg-7 border-end border-secondary border-opacity-25 bg-surface">
-                <div class="d-flex flex-column h-100 position-relative p-4">
-                    <div class="mb-4">
-                        <label for="imageUpload" class="d-flex flex-column align-items-center justify-content-center py-5 w-100" style="border: 1px dashed var(--border-focus); cursor: pointer; transition: all 0.3s ease;">
-                            <span class="text-uppercase letter-spacing-1 small" style="color: var(--accent-color);">@Localizer["UploadFacePhoto"]</span>
-                            <input type="file" id="imageUpload" accept="image/*" class="d-none" />
-                        </label>
+<div id="studio-section" class="py-5 bg-base border-top reveal" style="border-color: var(--border-subtle) !important;">
+    <div class="container py-5">
+        <div class="row g-5">
+            <!-- CANVAS SIDE -->
+            <div class="col-lg-7">
+                <div class="canvas-glass-card shadow-lg">
+                    <div class="canvas-header d-flex justify-content-between align-items-center mb-4">
+                        <div class="d-flex align-items-center">
+                            <div class="status-dot me-2"></div>
+                            <span class="small fw-bold text-uppercase opacity-50 me-3" id="canvasStatusText">@Localizer["StudioCanvas"]</span>
+                            <button id="reUploadFloatingBtn" class="btn btn-outline-dark btn-sm d-none rounded-pill fw-bold" onclick="document.getElementById('imageUpload').click()">
+                                <i class="fas fa-camera me-2"></i>@Localizer["ChangePhoto"]
+                            </button>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <div id="aiDetectorStatus" class="ai-badge-sm d-none"><i class="fas fa-robot fa-spin me-2"></i>@Localizer["Analyzing"]</div>
+                            <div id="aiSuccessStatus" class="ai-badge-sm success d-none"><i class="fas fa-check me-1"></i>@Localizer["FaceDetectedStatus"]</div>
+                        </div>
                     </div>
 
-                    <div class="position-relative flex-grow-1 d-flex align-items-center justify-content-center overflow-hidden bg-black" style="min-height: 500px; border: 1px solid var(--border-subtle);">
-                        <canvas id="previewCanvas" class="w-100 h-100 object-fit-contain"></canvas>
+                    <div class="main-canvas-wrapper">
+                        <canvas id="previewCanvas"></canvas>
+                        <!-- Fabric JS Overlay Hook -->
+                        <div id="fabricWrapper" style="display:none; position:absolute; top:0; left:0;"></div>
                         
-                        <div id="aiDetectorStatus" class="position-absolute top-0 start-0 m-3 px-3 py-2 small fw-bold text-black bg-white" style="opacity: 0.9; font-size: 0.75rem; text-transform: uppercase;">
-                            <i class="fa-solid fa-robot fa-spin me-2"></i>@Localizer["Analyzing"]
+                        <div id="initialUploadOverlay" class="upload-overlay-v2">
+                            <label for="imageUpload" class="upload-btn-v2" style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;">
+                                <i class="fas fa-camera-retro mb-3 display-3 opacity-10"></i>
+                                <span class="fw-800" style="letter-spacing: 2px; color: var(--text-primary);">@Localizer["BeginTransformation"]</span>
+                                <input type="file" id="imageUpload" accept="image/*" class="d-none" />
+                            </label>
                         </div>
-                        
-                        <div id="aiSuccessStatus" class="position-absolute top-0 start-0 m-3 px-3 py-2 small fw-bold text-black d-none" style="background: var(--accent-color); font-size: 0.75rem; text-transform: uppercase;">
-                            <i class="fa-solid fa-check me-2"></i> @Localizer["FaceDetected"]
-                        </div>
-                        
-                        <button id="reScanFace" class="btn btn-ghost btn-sm position-absolute bottom-0 start-0 m-3 px-3 py-2" style="font-size: 0.65rem;">
-                            Re-scan Focus
-                        </button>
+                    </div>
+
+                    <div class="mt-4 d-flex justify-content-between align-items-center" id="canvasFooterDefault">
+                        <button id="reScanFace" class="btn btn-link text-primary text-decoration-none p-0 small fw-bold" style="color: var(--text-primary) !important;"><i class="fas fa-sync me-1"></i> @Localizer["ReScanFace"]</button>
+                        <span class="small text-muted opacity-50">@Localizer["UhdStandard"]</span>
                     </div>
                 </div>
             </div>
 
-            <!-- RIGHT: Thumbnails + Controls -->
+            <!-- CONTROLS SIDE -->
             <div class="col-lg-5">
-                <div class="editorial-card h-100 border-0 p-4 p-md-5 d-flex flex-column">
-                    
-                    <!-- Styles selection -->
-                    <div class="mb-5">
-                        <h6 class="text-uppercase fw-bold small text-muted mb-4 letter-spacing-1">
-                            @Localizer["Hairstyles"]
-                        </h6>
-                        <div class="d-flex gap-3 overflow-x-auto pb-3" style="scrollbar-width: thin;">
-                            <div class="text-center flex-shrink-0" onclick="selectNone('hairstyle')" style="width: 70px; cursor: pointer;">
-                                <div class="d-flex align-items-center justify-content-center mb-2" style="width: 100%; aspect-ratio: 4/5; border: 1px solid var(--border-subtle);">
-                                    <i class="fa-solid fa-ban text-muted"></i>
-                                </div>
-                                <span class="small text-muted text-uppercase" style="font-size: 0.65rem;">None</span>
-                            </div>
-                            @if (hairstyles != null)
-                            {
-                                @foreach (var h in hairstyles)
-                                {
-                                    <div class="text-center flex-shrink-0 style-thumb-container" style="width: 70px; cursor: pointer;">
-                                        <div class="gallery-img-wrapper mb-2 border border-secondary border-opacity-10" style="aspect-ratio: 4/5;">
-                                            <img src="/Hairstyles/Image/@h.Id"
-                                                 alt="@h.Name"
-                                                 class="style-thumb gallery-img"
-                                                 data-type="hairstyle"
-                                                 data-id="@h.Id"
-                                                 data-src="/Hairstyles/Image/@h.Id" />
-                                        </div>
-                                        <span class="small text-muted text-truncate d-block text-uppercase" style="font-size: 0.65rem;">@h.Name</span>
-                                    </div>
-                                }
-                            }
-                        </div>
+                <div class="controls-glass-card shadow-lg h-100 d-flex flex-column">
+                    <div class="mode-toggle-card shadow-sm w-100 mb-4 d-flex">
+                        <button class="mode-btn active flex-grow-1" id="modeAi">@Localizer["AiStudio"]</button>
+                        <button class="mode-btn flex-grow-1" id="modeManual">@Localizer["ManualEditor"]</button>
                     </div>
 
-                    <div class="mb-5">
-                        <h6 class="text-uppercase fw-bold small text-muted mb-4 letter-spacing-1">
-                            @Localizer["FacialHair"]
-                        </h6>
-                        <div class="d-flex gap-3 overflow-x-auto pb-3" style="scrollbar-width: thin;">
-                            <div class="text-center flex-shrink-0" onclick="selectNone('facial')" style="width: 70px; cursor: pointer;">
-                                <div class="d-flex align-items-center justify-content-center mb-2" style="width: 100%; aspect-ratio: 4/5; border: 1px solid var(--border-subtle);">
-                                    <i class="fa-solid fa-ban text-muted"></i>
-                                </div>
-                                <span class="small text-muted text-uppercase" style="font-size: 0.65rem;">None</span>
+                    <div class="flex-grow-1">
+                        <!-- AI MODE SECTION -->
+                        <div id="aiModeSection">
+                            <div class="mb-4">
+                                <label class="text-uppercase small fw-800 letter-spacing-1 text-muted mb-2 d-block">@Localizer["CustomAiPrompt"]</label>
+                                <textarea id="customAiPrompt" class="form-control premium-input-v2" placeholder="@Localizer["AiPromptPlaceholder"]" rows="4"></textarea>
                             </div>
-                            @if (facialHairs != null)
-                            {
-                                @foreach (var f in facialHairs)
-                                {
-                                    <div class="text-center flex-shrink-0 style-thumb-container" style="width: 70px; cursor: pointer;">
-                                        <div class="gallery-img-wrapper mb-2 border border-secondary border-opacity-10" style="aspect-ratio: 4/5;">
-                                            <img src="/FacialHairs/Image/@f.Id"
-                                                 alt="@f.Name"
-                                                 class="style-thumb gallery-img"
-                                                 data-type="facial"
-                                                 data-id="@f.Id"
-                                                 data-src="/FacialHairs/Image/@f.Id" />
+
+                            <div class="mb-4">
+                                <label class="text-uppercase small fw-800 letter-spacing-1 text-muted mb-2 d-block">@Localizer["VisionName"]</label>
+                                <input type="text" id="lookTitleAi" class="form-control premium-input-v2" placeholder="@Localizer["VisionPlaceholder"]">
+                            </div>
+
+                            <button id="generateAiBtn" class="btn btn-black-premium w-100 py-4 mb-3 rounded-pill shadow-lg">@Localizer["GenerateNewLook"]</button>
+
+                            <div id="aiLoadingStatus" class="d-none text-center">
+                                <div class="progress mb-3" style="height: 4px; background: var(--border-subtle);"><div class="progress-bar bg-primary progress-bar-striped progress-bar-animated" style="width: 100%"></div></div>
+                                <span class="small text-muted fw-600">@Localizer["AiReconstructing"]</span>
+                            </div>
+
+                            <div id="aiSaveSection" class="mt-4 text-center">
+                                <button class="btn btn-outline-dark w-100 py-3 rounded-pill fw-bold saveLookBtn" style="color: var(--text-primary); border-color: var(--text-primary);">@Localizer["SaveToGallery"]</button>
+                                <div id="aiSuccessMessage" class="d-none mt-2">
+                                    <p class="small text-success fw-bold"><i class="fas fa-check-circle me-1"></i> @Localizer["TransformationComplete"]</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- MANUAL MODE SECTION (Catalog) -->
+                        <div id="manualModeSection" class="d-none">
+                            <div>
+                                <!-- HAIRSTYLES SECTION -->
+                                <button class="btn catalog-btn collapsed w-100 d-flex justify-content-between align-items-center mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#hairCollapse" aria-expanded="false">
+                                    <span><i class="fas fa-cut me-2"></i>@Localizer["Hairstyles"]</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="collapse" id="hairCollapse">
+                                    <div class="horizontal-catalog mb-4">
+                                        <div class="style-thumb-container flex-shrink-0" onclick="selectNone('hairstyle')" style="width: 80px;">
+                                            <div class="style-item-v2 empty"><i class="fas fa-times"></i></div>
+                                            <div class="style-label" style="text-align: center;">@Localizer["Original"]</div>
                                         </div>
-                                        <span class="small text-muted text-truncate d-block text-uppercase" style="font-size: 0.65rem;">@f.Name</span>
+                                        @if (hairstyles == null || !hairstyles.Any()) {
+                                            <div class="style-thumb-container flex-shrink-0" style="width: 80px;">
+                                                <img src="https://images.unsplash.com/photo-1549473501-1d889175b9f1?q=80&w=200&h=200&auto=format&fit=crop" class="style-item-v2 style-thumb" data-type="hairstyle" data-id="1" draggable="true" />
+                                                <div class="style-label" style="text-align: center;">Classic Buzz</div>
+                                            </div>
+                                        } else {
+                                            @foreach (var h in hairstyles) {
+                                                <div class="style-thumb-container flex-shrink-0" style="width: 80px;">
+                                                    @{
+                                                        var hSrc = h.ImageData != null ? $"data:{h.ContentType};base64,{Convert.ToBase64String(h.ImageData)}" : "https://images.unsplash.com/photo-1549473501-1d889175b9f1?q=80&w=200&h=200&auto=format&fit=crop";
+                                                    }
+                                                    <img src="@hSrc" class="style-item-v2 style-thumb" data-type="hairstyle" data-id="@h.Id" draggable="true" />
+                                                    <div class="style-label" style="text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@h.Name</div>
+                                                </div>
+                                            }
+                                        }
                                     </div>
-                                }
-                            }
-                        </div>
-                    </div>
+                                </div>
+                                
+                                <!-- BEARDS SECTION -->
+                                <button class="btn catalog-btn collapsed w-100 d-flex justify-content-between align-items-center mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#beardCollapse" aria-expanded="false">
+                                    <span><i class="fas fa-user-tie me-2"></i>@Localizer["Beards"]</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="collapse" id="beardCollapse">
+                                    <div class="horizontal-catalog mb-2">
+                                        <div class="style-thumb-container flex-shrink-0" onclick="selectNone('facial')" style="width: 80px;">
+                                            <div class="style-item-v2 empty"><i class="fas fa-times"></i></div>
+                                            <div class="style-label" style="text-align: center;">@Localizer["Original"]</div>
+                                        </div>
+                                        @if (facialHairs == null || !facialHairs.Any()) {
+                                            <div class="style-thumb-container flex-shrink-0" style="width: 80px;">
+                                                <img src="https://images.unsplash.com/photo-1581333100576-b73bbe92c19e?q=80&w=200&h=200&auto=format&fit=crop" class="style-item-v2 style-thumb" data-type="facial" data-id="1" draggable="true" />
+                                                <div class="style-label" style="text-align: center;">Full Beard</div>
+                                            </div>
+                                        } else {
+                                            @foreach (var f in facialHairs) {
+                                                <div class="style-thumb-container flex-shrink-0" style="width: 80px;">
+                                                    @{
+                                                        var fSrc = f.ImageData != null ? $"data:{f.ContentType};base64,{Convert.ToBase64String(f.ImageData)}" : "https://images.unsplash.com/photo-1581333100576-b73bbe92c19e?q=80&w=200&h=200&auto=format&fit=crop";
+                                                    }
+                                                    <img src="@fSrc" class="style-item-v2 style-thumb" data-type="facial" data-id="@f.Id" draggable="true" />
+                                                    <div class="style-label" style="text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@f.Name</div>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            </div>
 
-                    <!-- Fine tuning omitted for minimal look, kept basics -->
-                    <!-- AI Generation Panel -->
-                    <div class="mt-auto border-top border-secondary border-opacity-25 pt-4">
-                        <div class="form-group mb-4">
-                            <label for="lookTitle" class="form-label text-uppercase small letter-spacing-1 text-muted">@Localizer["NameYourLook"]</label>
-                            <input type="text" id="lookTitle" class="form-control bg-transparent border-secondary border-opacity-25 text-white rounded-0 shadow-none focus-border-accent" placeholder="E.g. The Milan Cut" maxlength="100">
-                        </div>
-                        
-                        <div id="aiLoadingState" class="d-none text-center py-4 mb-3 border border-secondary border-opacity-25 bg-black">
-                            <i class="fa-solid fa-wand-magic-sparkles fa-bounce mb-3" style="color: var(--accent-color); font-size: 1.5rem;"></i>
-                            <h6 class="text-uppercase ls-1 small text-white mb-2">Generating Reality...</h6>
-                            <p class="text-muted small mb-0" style="font-size: 0.7rem;">Please wait while our AI engine reconstructs your look.</p>
-                        </div>
+                            <div id="manualControls" class="mt-4 manual-tool-card">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                                    <div class="d-flex gap-2">
+                                        <button class="tool-btn active" id="toolSelect" title="@Localizer["SelectStyle"]"><i class="fas fa-mouse-pointer"></i></button>
+                                        <button class="tool-btn" id="toolBrush" title="@Localizer["BrushTool"]"><i class="fas fa-paint-brush"></i></button>
+                                        <button class="tool-btn" id="toolEraser" title="@Localizer["EraserTool"]"><i class="fas fa-eraser"></i></button>
+                                        <button class="tool-btn" id="toolUndo" title="@Localizer["UndoTool"]"><i class="fas fa-undo-alt"></i></button>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2 border-start ps-3" style="border-color: var(--border-subtle) !important;">
+                                        <div class="color-circle" style="background: #000;" data-color="#000"></div>
+                                        <div class="color-circle" style="background: #4A3228;" data-color="#4A3228"></div>
+                                        <div class="color-circle" style="background: #B59E81;" data-color="#B59E81"></div>
+                                        <div class="color-circle" style="background: #EED8AE;" data-color="#EED8AE"></div>
+                                        <div style="position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                            <button class="btn btn-link p-0 text-primary small m-0 d-flex align-items-center justify-content-center" style="width: 25px; height: 25px; color: var(--text-primary) !important;"><i class="fas fa-plus"></i></button>
+                                            <input type="color" id="customColor" style="position: absolute; opacity: 0; width: 200%; height: 200%; top:-50%; left:-50%; cursor: pointer;" />
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-3 border-start ps-3" style="border-color: var(--border-subtle) !important;">
+                                        <span class="small fw-bold text-muted">@Localizer["Size"]</span>
+                                        <input type="range" id="brushSize" min="1" max="50" value="10" style="width: 80px;" />
+                                    </div>
+                                </div>
+                                <p class="small text-muted mb-0 mt-3"><i class="fas fa-info-circle me-1"></i> @Localizer["DragStylesTip"]</p>
+                            </div>
 
-                        <div class="d-flex gap-2">
-                            <button id="generateAiBtn" class="btn btn-luxury py-3 flex-grow-1 text-uppercase ls-1" style="font-size: 0.8rem;">
-                                <i class="fa-solid fa-wand-magic-sparkles me-2"></i> Generate
-                            </button>
-                            <button id="saveLookBtn" class="btn btn-outline-secondary py-3 px-4 d-none" title="Save to Gallery">
-                                <i class="fa-solid fa-download"></i>
-                            </button>
+                            <div id="manualSaveSection" class="mt-4 pt-4 border-top" style="border-color: var(--border-subtle) !important;">
+                                <div class="mb-3">
+                                    <label class="text-uppercase small fw-800 letter-spacing-1 text-muted mb-2 d-block">@Localizer["DesignName"]</label>
+                                    <input type="text" id="lookTitleManual" class="form-control premium-input-v2" placeholder="@Localizer["VisionPlaceholder"]">
+                                </div>
+                                <button class="btn btn-black-premium w-100 py-3 rounded-pill fw-bold saveLookBtn">@Localizer["SaveDesign"]</button>
+                            </div>
                         </div>
-                        <div id="saveLookMsg" class="text-center mt-3 text-uppercase small text-muted" style="font-size: 0.7rem; letter-spacing: 1px;"></div>
                     </div>
                 </div>
             </div>
@@ -172,53 +244,45 @@
 </div>
 }
 
-<style>
-    .style-thumb-container .gallery-img-wrapper {
-        transition: all 0.3s ease;
-    }
-    .style-thumb-container:hover .gallery-img-wrapper {
-        border-color: var(--text-primary) !important;
-    }
-    .style-thumb.selected-thumb {
-        filter: grayscale(0%) !important;
-    }
-    /* Override for selected thumbnail border */
-    .style-thumb.selected-thumb {
-        border: 1px solid var(--accent-color) !important;
-    }
-</style>
-
 @section Scripts {
     @if (User.Identity != null && User.Identity.IsAuthenticated)
     {
         <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-        <script src="~/js/preview.js" asp-append-version="true"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@@mediapipe/selfie_segmentation/selfie_segmentation.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
         
         <script>
-            // Mark selected item border since we moved to wrapper architecture
-            document.addEventListener('click', function(e) {
-                if(e.target.classList.contains('style-thumb')) {
-                    document.querySelectorAll('.style-thumb').forEach(t => t.classList.remove('selected-thumb'));
-                    e.target.classList.add('selected-thumb');
-                }
-            });
+            window.L10N = {
+                PleaseUploadFirst: "@Localizer["PleaseUploadFirst"]",
+                NoFaceDetectedAlert: "@Localizer["NoFaceDetectedAlert"]",
+                describeLookAlert: "@Localizer["describeLookAlert"]",
+                selectStyleAlert: "@Localizer["selectStyleAlert"]",
+                Saving: "@Localizer["Saving"]",
+                NameYourLookAlert: "@Localizer["NameYourLookAlert"]",
+                TransformationFailedAlert: "@Localizer["TransformationFailedAlert"]",
+                AiEngineBusy: "@Localizer["AiEngineBusy"]"
+            };
+        </script>
 
-            // SCROLL REVEAL OBSERVER
-            const revealObserver = new IntersectionObserver((entries) => {
+        <script src="~/js/preview.js" asp-append-version="true"></script>
+
+        <script>
+            // Improved Reveal Observer (Bidirectional)
+            const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         entry.target.classList.add('active');
                     } else {
-                        // Fade out when scrolling up
+                        // Fade out when scrolling away
                         entry.target.classList.remove('active');
                     }
                 });
             }, { 
                 threshold: 0.1,
-                rootMargin: "0px 0px -50px 0px"
+                rootMargin: "-20px 0px -20px 0px" // Slight buffer
             });
-
-            document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
         </script>
     }
 }

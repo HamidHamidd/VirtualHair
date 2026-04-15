@@ -25,13 +25,23 @@
 
             <div class="mb-4">
                 <label class="form-label text-secondary text-uppercase ls-1" style="font-size: 0.7rem;">@Localizer["Password"]</label>
-                <input asp-for="Input.Password" class="form-control bg-transparent border-secondary border-opacity-25 text-white rounded-0 shadow-none focus-border-accent py-3" placeholder="••••••••" type="password" />
+                <div class="position-relative">
+                    <input asp-for="Input.Password" class="form-control bg-transparent border-secondary border-opacity-25 text-white rounded-0 shadow-none focus-border-accent py-3 pe-5" placeholder="••••••••" type="password" oninput="toggleEyeVisibility(this)" />
+                    <button type="button" class="btn text-secondary text-decoration-none position-absolute top-50 end-0 translate-middle-y d-none shadow-none pe-3 border-0 bg-transparent" onclick="togglePasswordVisibility(this)" tabindex="-1">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
                 <span asp-validation-for="Input.Password" class="text-danger small font-monospace mt-1 d-block"></span>
             </div>
 
             <div class="mb-5">
                 <label class="form-label text-secondary text-uppercase ls-1" style="font-size: 0.7rem;">@Localizer["ConfirmPassword"]</label>
-                <input asp-for="Input.ConfirmPassword" class="form-control bg-transparent border-secondary border-opacity-25 text-white rounded-0 shadow-none focus-border-accent py-3" placeholder="••••••••" type="password" />
+                <div class="position-relative">
+                    <input asp-for="Input.ConfirmPassword" class="form-control bg-transparent border-secondary border-opacity-25 text-white rounded-0 shadow-none focus-border-accent py-3 pe-5" placeholder="••••••••" type="password" oninput="toggleEyeVisibility(this)" />
+                    <button type="button" class="btn text-secondary text-decoration-none position-absolute top-50 end-0 translate-middle-y d-none shadow-none pe-3 border-0 bg-transparent" onclick="togglePasswordVisibility(this)" tabindex="-1">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger small font-monospace mt-1 d-block"></span>
             </div>
 
@@ -48,3 +58,29 @@
         </form>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function toggleEyeVisibility(input) {
+            const btn = input.nextElementSibling;
+            if (input.value.length > 0) {
+                btn.classList.remove('d-none');
+            } else {
+                btn.classList.add('d-none');
+                input.type = 'password';
+                btn.innerHTML = '<i class="fas fa-eye"></i>';
+            }
+        }
+        function togglePasswordVisibility(btn) {
+            const input = btn.previousElementSibling;
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.innerHTML = '<i class="fas fa-eye-slash text-white"></i>';
+            } else {
+                input.type = 'password';
+                btn.innerHTML = '<i class="fas fa-eye"></i>';
+            }
+        }
+    </script>
+}

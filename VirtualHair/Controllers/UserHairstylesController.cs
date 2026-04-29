@@ -221,7 +221,9 @@ namespace VirtualHair.Controllers
             var base64Data = Regex.Replace(req.ImageData, @"^data:image\/[a-zA-Z]+;base64,", string.Empty);
             var bytes = Convert.FromBase64String(base64Data);
 
-
+            // Prevent FK Constraint Exception when AI mode is used without selecting a catalog hairstyle
+            int defaultHairId = await _context.Hairstyles.Select(h => h.Id).FirstOrDefaultAsync();
+            if (defaultHairId == 0) defaultHairId = 1;
 
             var look = new UserHairstyle
             {
@@ -229,7 +231,7 @@ namespace VirtualHair.Controllers
                 Title = title,
                 ImageData = bytes,
                 ContentType = "image/png",
-                HairstyleId = req.HairstyleId ?? 0,
+                HairstyleId = req.HairstyleId ?? defaultHairId,
                 FacialHairId = req.FacialHairId,
                 CreatedAt = DateTime.UtcNow
             };

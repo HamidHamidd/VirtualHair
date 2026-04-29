@@ -452,34 +452,106 @@ async function generateProductionMask(type) {
     const mCanvas = document.createElement('canvas');
     mCanvas.width = 1024; mCanvas.height = 1024;
     const mCtx = mCanvas.getContext('2d');
-    mCtx.fillStyle = 'black'; mCtx.fillRect(0,0,1024,1024);
+    
+    // 1. Fill entire canvas black (protected area)
+    mCtx.fillStyle = 'black'; 
+    mCtx.fillRect(0, 0, 1024, 1024);
+    
+    // 2. Draw segmentation mask
     const segMask = await getPersonSegmentation(baseImage);
     mCtx.drawImage(segMask, 0, 0, 1024, 1024);
+    
+    // 3. Make the person silhouette pure white (area to change)
     mCtx.globalCompositeOperation = 'source-in';
-    mCtx.fillStyle = 'white'; mCtx.fillRect(0,0,1024,1024);
-    mCtx.globalCompositeOperation = 'destination-out';
+    mCtx.fillStyle = 'white'; 
+    mCtx.fillRect(0, 0, 1024, 1024);
+    
+    // Switch back to normal drawing over the silhouette
+    mCtx.globalCompositeOperation = 'source-over';
+    
+    // 4. Protect the face by drawing black over the face area
     if (detectedFace) {
+        mCtx.fillStyle = 'black';
         const l = detectedFace.landmarks;
-        [l.getLeftEye(), l.getRightEye(), l.getMouth(), l.getNose(), l.getLeftEyeBrow(), l.getRightEyeBrow()].forEach(pts => {
-            mCtx.beginPath(); mCtx.moveTo(pts[0].x, pts[0].y);
-            pts.slice(1).forEach(p => mCtx.lineTo(p.x, p.y));
-            mCtx.closePath(); mCtx.fill();
-        });
-        const jaw = l.getJawOutline();
-        mCtx.beginPath(); mCtx.moveTo(jaw[4].x, jaw[0].y); mCtx.lineTo(jaw[12].x, jaw[0].y);
-        mCtx.lineTo(jaw[12].x, jaw[12].y); mCtx.quadraticCurveTo(jaw[8].x, jaw[8].y + 15, jaw[4].x, jaw[4].y);
-        mCtx.closePath(); mCtx.fill();
+        
+        // Create a solid polygon covering the face from the eyebrows down to the chin
+        // This protects the identity (eyes, nose, mouth, cheeks) but leaves the forehead
+        // white so the AI can generate new hairlines and skin there if needed.
+        
+        const jaw = l.getJawOutline(); // 17 points (0 to 16)
+        const leftBrow = l.getLeftEyeBrow(); // 5 points (0 to 4)
+        const rightBrow = l.getRightEyeBrow(); // 5 points (0 to 4)
+        
+        mCtx.beginPath();
+        // Start at left edge of jaw (near left ear)
+        mCtx.moveTo(jaw[0].x, jaw[0].y);
+        
+        // Trace down the jawline to the chin and up to the right ear
+        for (let i = 1; i < jaw.length; i++) {
+            mCtx.lineTo(jaw[i].x, jaw[i].y);
+        }
+        
+        // Connect right ear to the right edge of the right eyebrow
+        mCtx.lineTo(rightBrow[4].x, rightBrow[4].y - 10); // slightly above brow
+        
+        // Trace right eyebrow backwards
+        for (let i = 3; i >= 0; i--) {
+            mCtx.lineTo(rightBrow[i].x, rightBrow[i].y - 10);
+        }
+        
+        // Connect to left eyebrow
+        mCtx.lineTo(leftBrow[4].x, leftBrow[4].y - 10);
+        
+        // Trace left eyebrow backwards
+        for (let i = 3; i >= 0; i--) {
+            mCtx.lineTo(leftBrow[i].x, leftBrow[i].y - 10);
+        }
+        
+        // Close the polygon back to the left ear
+        mCtx.closePath();
+        mCtx.fill();
+        
+        // Draw a protective ellipse around the center of the face just to be extra safe
+        // for inner cheeks and nose area that might be missed by aggressive jaw outlines
+        const box = detectedFace.detection.box;
+        mCtx.beginPath();
+        mCtx.ellipse(
+            box.x + box.width / 2, 
+            box.y + box.height / 2 + (box.height * 0.1), // shifted slightly down
+            box.width * 0.4,  // radius X
+            box.height * 0.4, // radius Y
+            0, 0, 2 * Math.PI
+        );
+        mCtx.fill();
     }
-    mCtx.globalCompositeOperation = 'destination-in';
-    const grad = mCtx.createLinearGradient(0,0,0,1024);
-    if (type === 'hair') { grad.addColorStop(0,'white'); grad.addColorStop(0.5,'white'); grad.addColorStop(0.75,'black'); }
-    else { grad.addColorStop(0,'black'); grad.addColorStop(0.45,'black'); grad.addColorStop(0.65,'white'); grad.addColorStop(1,'white'); }
-    mCtx.fillStyle = grad; mCtx.fillRect(0,0,1024,1024);
+    
+    // 5. Protect the bottom half (if hair) or top half (if beard) with a black gradient
+    const grad = mCtx.createLinearGradient(0, 0, 0, 1024);
+    if (type === 'hair') { 
+        grad.addColorStop(0, 'rgba(0,0,0,0)'); 
+        grad.addColorStop(0.5, 'rgba(0,0,0,0)'); 
+        grad.addColorStop(0.8, 'rgba(0,0,0,1)'); 
+        grad.addColorStop(1, 'rgba(0,0,0,1)'); 
+    } else { 
+        grad.addColorStop(0, 'rgba(0,0,0,1)'); 
+        grad.addColorStop(0.4, 'rgba(0,0,0,1)'); 
+        grad.addColorStop(0.65, 'rgba(0,0,0,0)'); 
+        grad.addColorStop(1, 'rgba(0,0,0,0)'); 
+    }
+    mCtx.fillStyle = grad; 
+    mCtx.fillRect(0, 0, 1024, 1024);
+    
+    // 6. Blur the final mask to soften edges
     const fCanvas = document.createElement('canvas');
     fCanvas.width = 1024; fCanvas.height = 1024;
     const fCtx = fCanvas.getContext('2d');
-    fCtx.filter = 'blur(12px)'; fCtx.drawImage(mCanvas, 0, 0);
-    return fCanvas.toDataURL("image/png");
+    fCtx.fillStyle = 'black';
+    fCtx.fillRect(0, 0, 1024, 1024);
+    fCtx.filter = 'blur(12px)'; 
+    fCtx.drawImage(mCanvas, 0, 0);
+    
+    // Ensure we send a JPEG so there is absolutely no alpha channel which could cause API errors
+    return fCanvas.toDataURL("image/jpeg", 0.95);
 }
 
 /* ---------------- GENERATE ACTUAL ACTION ---------------- */
@@ -499,8 +571,11 @@ generateAiBtn?.addEventListener("click", async () => {
     try {
         const type = selectedHairstyleId ? "hair" : (selectedFacialHairId ? "facial" : "hair");
         const mask = await generateProductionMask(type);
-        const prompt = promptText || `editorial studio grooming photo, man with ${selectedStyleName}, natural photorealistic hair texture, preserve face identity exactly, 8k resolution`;
-        const neg = "deformed face, identity change, extra eyes, bad anatomy, wig effect, fake person, blurry facial features";
+        
+        // Always wrap the user's prompt in a highly descriptive template so the AI understands the context
+        const baseLook = promptText || selectedStyleName;
+        const prompt = `A highly detailed professional portrait of a man. The man has exactly a "${baseLook}" hairstyle and hair color. The hair is absolutely ${baseLook}. Photorealistic, 8k, award-winning photography, flawless hair.`;
+        const neg = "deformed face, identity change, extra eyes, bad anatomy, wig effect, fake person, blurry facial features, cartoon, illustration, wrong color";
         
         const payload = { 
             OriginalImageBase64: canvas.toDataURL("image/jpeg", 0.95), 
@@ -527,7 +602,11 @@ generateAiBtn?.addEventListener("click", async () => {
             };
             img.src = data.imageUrl;
         } else {
-             if (window.L10N) alert(window.L10N.AiEngineBusy);
+             if (data.message) {
+                 alert("AI Service Note: " + data.message);
+             } else if (window.L10N) {
+                 alert(window.L10N.AiEngineBusy);
+             }
         }
     } catch(e) { console.error(e); if (window.L10N) alert(window.L10N.TransformationFailedAlert); }
     finally { generateAiBtn.disabled = false; aiLoadingStatus?.classList.add('d-none'); canvas.style.opacity = '1'; }

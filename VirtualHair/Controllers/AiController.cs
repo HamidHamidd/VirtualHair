@@ -44,23 +44,22 @@ namespace VirtualHair.Controllers
         private async Task<IActionResult> ExecuteAIWorkflowWithRetry(AiGenerateRequest request, int attempt)
         {
             var replicateApiKey = _configuration["ReplicateApiKey"];
-            if (string.IsNullOrEmpty(replicateApiKey)) return Ok(new { success = true, imageUrl = request.OriginalImageBase64 });
+            if (string.IsNullOrEmpty(replicateApiKey) || replicateApiKey == "YOUR_REPLICATE_API_KEY_HERE") return Ok(new { success = true, imageUrl = request.OriginalImageBase64 });
 
             var client = _httpClientFactory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", replicateApiKey);
             
-            // Using SDXL Lightning Inpainting (High Speed + Quality)
+            // Using verified SDXL Inpainting model version hash
             var payload = new {
-                version = "f2922ef653fb939316d8a39e8e50b6a7ee7b8f9e67ca08cc83b54af3a0b5f1de", 
+                version = "aca001c8b137114d5e594c68f7084ae6d82f364758aab8d997b233e8ef3c4d93",
                 input = new {
                     image = request.OriginalImageBase64,
                     mask = request.MaskImageBase64,
                     prompt = request.Prompt,
                     negative_prompt = request.NegativePrompt,
-                    num_inference_steps = 10, // Lightning is fast
-                    guidance_scale = 1.0,      // Optimized for Lightning
-                    width = 1024,
-                    height = 1024
+                    num_inference_steps = 35,
+                    guidance_scale = 15.0, // Extreme guidance to force the AI to respect color and style
+                    prompt_strength = 1.0 // 1.0 means 100% replacement of the old hair
                 }
             };
 
@@ -88,7 +87,13 @@ namespace VirtualHair.Controllers
                     else if (output.ValueKind == JsonValueKind.String) finalUrl = output.GetString();
                     return Ok(new { success = true, imageUrl = finalUrl });
                 }
-                if (status == "failed") return BadRequest(new { success = false, message = "AI Failed" });
+                if (status == "failed") {
+                    string errorMsg = "AI Generation Failed";
+                    if (statusData.TryGetProperty("error", out var errorProp) && errorProp.ValueKind == JsonValueKind.String) {
+                        errorMsg = errorProp.GetString() ?? errorMsg;
+                    }
+                    return BadRequest(new { success = false, message = errorMsg });
+                }
             }
             return StatusCode(408, new { success = false, message = "Timeout" });
         }
